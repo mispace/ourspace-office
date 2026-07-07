@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<!--
+  Escritório — Living OS · planta baixa densa (estilo Gather.town), v6.
+  Camada de RENDERIZAÇÃO reescrita: tilemap fixo, hand-authored, desenhado num
+  <canvas> com sprites pixel-art (imageSmoothingEnabled=false, escala inteira).
+  O CONTRATO DE DADOS não muda (agents.json/status.json, robustez, cripto) —
+  ver SPEC_ENGENHARIA.md. Só as salas/pisos/móveis/personagens mudaram de técnica.
+
+  Sprites: Modern Interiors (free) by LimeZu — https://limezu.itch.io/moderninteriors
+  — licença NÃO-COMERCIAL; uso interno aprovado pela Michelle (07/2026).
+-->
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Escritório — Living OS</title>
+<style>
+  :root{
+    --ground:#FBF7EF; --ink:#201E1A; --ink-secondary:#6B665D;
+    --accent:#E8A23D; --accent-edge:#C9860F;
+    --state-working:#1FA97A; --state-meeting:#2A78D6; --state-idle:#A39C8F; --state-parked:#7A5CE0;
+    --squad-content:#FF6F91; --squad-commercial:#D9772E; --squad-governance:#2E8C8C; --squad-video:#8D7E86; --squad-default:#9B9690;
+    --health-ok:#2F8F5B; --health-warn:#C6821F; --health-error:#C0392B;
+    --border:rgba(32,30,26,0.14); --border-strong:rgba(32,30,26,0.26); --shadow:rgba(32,30,26,0.16);
+    --state-chip-dark-text:#201E1A;
+    --map-bg:#DCEFD6;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#17140F; --ink:#F5F1E8; --ink-secondary:#B7B0A2;
+      --accent:#F4B860; --accent-edge:#D99A34;
+      --state-working:#2ECC91; --state-meeting:#4C93E8; --state-idle:#9C9686; --state-parked:#9B7FF0;
+      --squad-content:#FF8CA8; --squad-commercial:#E8933F; --squad-governance:#3AA8A8; --squad-video:#9B8D93; --squad-default:#B0AAA2;
+      --health-ok:#3FBE82; --health-warn:#E0A64A; --health-error:#E2685A;
+      --border:rgba(245,241,232,0.14); --border-strong:rgba(245,241,232,0.26); --shadow:rgba(0,0,0,0.45);
+      --map-bg:#14261d;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#17140F; --ink:#F5F1E8; --ink-secondary:#B7B0A2; --accent:#F4B860; --accent-edge:#D99A34;
+    --state-working:#2ECC91; --state-meeting:#4C93E8; --state-idle:#9C9686; --state-parked:#9B7FF0;
+    --squad-content:#FF8CA8; --squad-commercial:#E8933F; --squad-governance:#3AA8A8; --squad-video:#9B8D93; --squad-default:#B0AAA2;
+    --health-ok:#3FBE82; --health-warn:#E0A64A; --health-error:#E2685A;
+    --border:rgba(245,241,232,0.14); --border-strong:rgba(245,241,232,0.26); --shadow:rgba(0,0,0,0.45); --map-bg:#14261d;
+  }
+  :root[data-theme="light"]{
+    --ground:#FBF7EF; --ink:#201E1A; --ink-secondary:#6B665D; --accent:#E8A23D; --accent-edge:#C9860F;
+    --state-working:#1FA97A; --state-meeting:#2A78D6; --state-idle:#A39C8F; --state-parked:#7A5CE0;
+    --squad-content:#FF6F91; --squad-commercial:#D9772E; --squad-governance:#2E8C8C; --squad-video:#8D7E86; --squad-default:#9B9690;
+    --health-ok:#2F8F5B; --health-warn:#C6821F; --health-error:#C0392B;
+    --border:rgba(32,30,26,0.14); --border-strong:rgba(32,30,26,0.26); --shadow:rgba(32,30,26,0.16); --map-bg:#DCEFD6;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{ font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight:400; line-height:1.5; background:var(--ground); color:var(--ink); display:flex; flex-direction:column; min-height:100vh; }
+  .font-display{ font-family:ui-rounded, "SF Pro Rounded", "Segoe UI Rounded", system-ui, sans-serif; font-weight:700; }
+  .font-mono{ font-family:ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-variant-numeric:tabular-nums; }
+
+  header{ flex:none; padding:10px 16px 8px 16px; border-bottom:1px solid var(--border); background:var(--ground); box-shadow:0 1px 0 var(--border); }
+  header h1{ font-size:16px; margin:0 0 6px 0; }
+  .statusbar{ display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:var(--ground); }
+  .statusbar .health{ display:flex; align-items:center; gap:6px; font-size:12.5px; }
+  .health .dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--ink-secondary);}
+  .health.ok .dot{background:var(--health-ok);}
+  .health.warn .dot{background:var(--health-warn);}
+  .health.error .dot{background:var(--health-error);}
+  .health .h-label{font-weight:700;}
+  .health .h-val{color:var(--ink-secondary);}
+  .statusbar .updated{ margin-left:auto; font-size:12.5px; color:var(--ink-secondary); white-space:nowrap; }
+  .statusbar .updated strong{color:var(--ink);font-weight:700;}
+  .banner{ margin-top:8px; background:var(--health-warn); color:#2b1c00; font-size:13px; font-weight:700; padding:7px 10px; border-radius:8px; }
+  .fatal-error{ max-width:560px; margin:60px auto; padding:24px; border:1px solid var(--border); border-radius:14px; background:var(--ground); }
+  .fatal-error h1{font-size:18px;margin:0 0 10px 0;}
+  .fatal-error p{font-size:14px;color:var(--ink-secondary);line-height:1.5;}
+
+  .legend{ display:flex; flex-wrap:wrap; gap:6px 14px; padding:6px 16px; background:var(--ground); border-bottom:1px solid var(--border); font-size:11.5px; color:var(--ink-secondary); }
+  .legend-item{display:flex;align-items:center;gap:6px;}
+  .legend-item .chip{ width:11px;height:11px;border-radius:3px;display:inline-block;flex:none; }
+  .chip.state-working{background:var(--state-working);}
+  .chip.state-meeting{background:var(--state-meeting);}
+  .chip.state-idle{background:var(--state-idle);}
+  .chip.state-parked{background:var(--state-parked);}
+  .chip.state-unknown{background:transparent;border:2px dashed var(--ink-secondary);}
+  .chip.visitor{background:transparent;border:2px dashed var(--health-warn);}
+
+  main{ flex:1; display:flex; min-height:0; position:relative; overflow:hidden; }
+  .canvas-wrapper{ flex:1; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y; background:var(--map-bg); display:block; }
+  #officeCanvas{ display:block; image-rendering:pixelated; image-rendering:crisp-edges; cursor:pointer; margin:0 auto; }
+
+  aside.detail-panel{ position:absolute; top:0;right:0;bottom:0; width:340px; max-width:88vw; background:var(--ground); border-left:1px solid var(--border); box-shadow:-4px 0 18px var(--shadow); padding:18px; overflow-y:auto; transform:translateX(102%); transition:transform .25s ease; z-index:20; }
+  aside.detail-panel.open{transform:translateX(0);}
+  .close-btn{ position:absolute;top:10px;right:10px; width:28px;height:28px;border-radius:50%; border:1px solid var(--border); background:var(--ground); color:var(--ink); font-size:14px; cursor:pointer; }
+  #dp-nome{font-size:18px;margin:4px 30px 2px 0;}
+  #dp-papel{font-size:13px;color:var(--ink-secondary);margin:0 0 14px 0;line-height:1.5;}
+  .dp-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .dp-label{color:var(--ink-secondary);flex:none;}
+  .state-chip{font-weight:700;padding:2px 9px;border-radius:10px;font-size:11px;color:#fff;}
+  .state-chip.state-working{background:var(--state-working);}
+  .state-chip.state-meeting{background:var(--state-meeting);}
+  .state-chip.state-idle{background:var(--state-idle);color:var(--state-chip-dark-text);}
+  .state-chip.state-parked{background:var(--state-parked);}
+  .state-chip.state-unknown{background:transparent;border:2px dashed var(--ink-secondary);color:var(--ink-secondary);}
+  .state-chip.state-assistant{background:var(--accent);color:#201E1A;}
+  .visitor-badge{ display:inline-block;margin-top:10px; background:var(--health-warn);color:#2b1c00; font-size:11px;font-weight:700; padding:3px 8px;border-radius:6px; }
+  #dp-events{list-style:none;margin:8px 0 0 0;padding:0;}
+  #dp-events li{ font-size:12.5px; padding:8px 0; border-bottom:1px solid var(--border); }
+  #dp-events li:last-child{border-bottom:none;}
+  #dp-events .ev-time{color:var(--ink-secondary);font-size:11px;display:block;}
+  #dp-events .ev-body{margin-top:2px;}
+  #dp-events a{color:var(--state-meeting);text-decoration:none;font-size:11.5px;}
+  #dp-events a:hover{text-decoration:underline;}
+  h3.dp-h3{font-size:13px;margin:16px 0 4px 0;color:var(--ink-secondary);}
+  .dp-empty{font-size:12.5px;color:var(--ink-secondary);font-style:italic;}
+
+  footer.meta{ padding:5px 16px; font-size:11px; color:var(--ink-secondary); background:var(--ground); border-top:1px solid var(--border); }
+
+  /* controle de zoom — flutuante no canto inferior-esquerdo do canvas */
+  .zoom-ctrl{ position:absolute; left:12px; bottom:12px; z-index:8; display:flex; align-items:center; gap:4px; background:var(--ground); border:1px solid var(--border); border-radius:10px; padding:4px 5px; box-shadow:0 2px 10px var(--shadow); }
+  .zoom-ctrl button{ width:26px; height:26px; border-radius:7px; border:1px solid var(--border); background:var(--ground); color:var(--ink); font-size:15px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .zoom-ctrl button:hover{ background:var(--map-bg); }
+  .zoom-ctrl button.zoom-fit{ width:auto; padding:0 8px; font-size:11px; font-weight:700; }
+  .zoom-ctrl .zoom-val{ min-width:40px; text-align:center; font-size:11.5px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+
+  @media (max-width:800px){
+    aside.detail-panel{ top:auto;left:0;right:0;bottom:0; width:100%;max-width:100%; height:70vh; border-left:none; border-top:1px solid var(--border); border-radius:14px 14px 0 0; transform:translateY(102%); }
+    aside.detail-panel.open{transform:translateY(0);}
+  }
+
+  /* Histórico = painel flutuante ancorado no canto INFERIOR direito; meia altura por
+     padrão, scroll interno, expansível pra altura cheia (cresce PRA CIMA a partir da
+     base). O escritório fica com a largura toda. */
+  aside.history-panel{ position:absolute; bottom:0; right:0; top:auto; z-index:5; width:340px; max-width:38vw; height:52%; display:flex; flex-direction:column; min-height:0; background:var(--ground); border-left:1px solid var(--border); border-top:1px solid var(--border); border-top-left-radius:12px; box-shadow:-3px -6px 18px rgba(0,0,0,.14); transition:width .22s ease, height .22s ease; }
+  aside.history-panel.expanded{ height:100%; border-top-left-radius:0; box-shadow:none; }
+  aside.history-panel.collapsed{ width:auto; height:auto; }
+  .history-header{ display:flex;align-items:center;justify-content:space-between; gap:8px; padding:10px 14px; border-bottom:1px solid var(--border); flex:none; }
+  aside.history-panel.collapsed .history-header{ padding:10px 4px; justify-content:center; }
+  aside.history-panel.collapsed .history-header h2{ display:none; }
+  .history-header h2{font-size:14px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .history-count{font-size:11px;color:var(--ink-secondary);font-weight:400;margin-left:4px;}
+  .history-btns{ display:flex; gap:6px; align-items:center; flex:none; }
+  aside.history-panel.collapsed #historyExpand{ display:none; }
+  .history-toggle{ width:26px;height:26px;border-radius:6px;flex:none; border:1px solid var(--border); background:var(--ground); color:var(--ink); font-size:12px; cursor:pointer; }
+  .history-toggle:hover{ background:var(--surface-2, rgba(0,0,0,0.05)); }
+  .history-body{ flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:4px 12px 16px 12px; }
+  aside.history-panel.collapsed .history-body{display:none;}
+  .hist-day{ position:sticky;top:0; background:var(--ground); font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em; color:var(--ink-secondary); margin:0;padding:10px 0 6px 0; }
+  ul.hist-list{list-style:none;margin:0 0 4px 0;padding:0;}
+  li.hist-event{ padding:7px 4px; border-radius:6px; cursor:pointer; font-size:12.5px; line-height:1.45; border-bottom:1px solid var(--border); }
+  li.hist-event:last-child{border-bottom:none;}
+  li.hist-event:hover{background:var(--map-bg);opacity:.94;}
+  li.hist-event:focus-visible{outline:2px solid var(--state-meeting);outline-offset:-1px;}
+  .hist-time{color:var(--ink-secondary);font-size:11px;margin-right:6px;}
+  .hist-actor{font-weight:700;margin-right:2px;}
+  .hist-actor.unknown-actor{color:var(--health-warn);}
+  .hist-badge{ display:inline-block; font-size:9px;font-weight:700;color:#2b1c00; background:var(--health-warn); border-radius:5px;padding:1px 5px; margin-left:4px;vertical-align:middle; }
+  .hist-body-text{display:block;margin-top:2px;color:var(--ink-secondary);}
+  .hist-link{color:var(--state-meeting);text-decoration:none;font-size:11px;margin-left:6px;white-space:nowrap;}
+  .hist-link:hover{text-decoration:underline;}
+  .hist-empty{font-size:12.5px;color:var(--ink-secondary);font-style:italic;padding:12px 4px;}
+
+  .lock-overlay{ position:fixed;inset:0;z-index:200; background:rgba(10,10,8,0.6); display:flex;align-items:center;justify-content:center; padding:20px; }
+  #lockOverlay[hidden]{display:none;}
+  .lock-box{ background:var(--ground); border:1px solid var(--border); border-radius:14px; padding:26px 24px; max-width:360px;width:100%; box-shadow:0 12px 40px var(--shadow); }
+  .lock-box h2{font-size:17px;margin:0 0 8px 0;}
+  .lock-box p{font-size:13px;color:var(--ink-secondary);margin:0 0 16px 0;line-height:1.45;}
+  .lock-box form{display:flex;gap:8px;}
+  .lock-box input[type=password]{ flex:1;min-width:0; padding:9px 10px;border-radius:8px; border:1px solid var(--border); background:var(--ground);color:var(--ink); font-size:14px; }
+  .lock-box button{ padding:9px 16px;border-radius:8px;border:none; background:var(--state-meeting);color:#fff;font-weight:700;font-size:14px; cursor:pointer;flex:none; }
+  .lock-box button:disabled{opacity:.6;cursor:default;}
+  .lock-error{ margin:12px 0 0 0;color:#fff;background:var(--health-error); padding:8px 10px;border-radius:8px;font-size:12.5px; }
+
+  @media (max-width:800px){
+    main#app{flex-direction:column;}
+    .canvas-wrapper{flex:1;min-height:0;}
+    aside.history-panel{ position:absolute; top:auto; bottom:0; left:0; right:0; width:100%;max-width:100%; height:42vh; border-left:none; border-top:1px solid var(--border); border-radius:12px 12px 0 0; box-shadow:0 -3px 14px rgba(0,0,0,.14); }
+    aside.history-panel.expanded{ height:80vh; }
+    aside.history-panel.collapsed{ height:auto; width:100%;max-width:100%; }
+    .statusbar{gap:6px 12px;}
+    .statusbar .updated{margin-left:0;width:100%;}
+    /* no mobile o histórico é bottom-sheet: joga o zoom pro topo-esquerdo p/ não colidir */
+    .zoom-ctrl{ bottom:auto; top:10px; left:10px; }
+  }
+</style>
+</head>
+<body>
+  <div id="lockOverlay" class="lock-overlay" hidden aria-hidden="true">
+    <div class="lock-box">
+      <h2 class="font-display">Escritório protegido</h2>
+      <p>Os dados deste escritório (planta e histórico) são publicados cifrados. Digite a senha para decifrar no seu navegador.</p>
+      <form id="lockForm" autocomplete="off">
+        <input type="password" id="lockPassword" name="lockPassword" autocomplete="current-password" placeholder="senha" required>
+        <button type="submit">Entrar</button>
+      </form>
+      <p id="lockError" class="lock-error" hidden></p>
+    </div>
+  </div>
+  <header>
+    <h1 class="font-display">Escritório — Living OS</h1>
+    <div class="statusbar" aria-label="Saúde da fonte de dados">
+      <span id="healthTrello" class="health"><span class="dot"></span><span class="h-label">Trello</span><span class="h-val font-mono">—</span></span>
+      <span id="healthTriggers" class="health"><span class="dot"></span><span class="h-label">Triggers</span><span class="h-val font-mono">—</span></span>
+      <span id="updatedAt" class="updated font-mono">carregando…</span>
+    </div>
+    <div id="banner" class="banner" hidden></div>
+  </header>
+  <div class="legend" aria-label="Legenda de estados">
+    <span class="legend-item"><span class="chip state-working"></span>Trabalhando</span>
+    <span class="legend-item"><span class="chip state-meeting"></span>Reunião</span>
+    <span class="legend-item"><span class="chip state-idle"></span>Ocioso</span>
+    <span class="legend-item"><span class="chip state-parked"></span>Descansando</span>
+    <span class="legend-item"><span class="chip state-unknown"></span>Sem dados</span>
+    <span class="legend-item"><span class="chip visitor"></span>Não registrado</span>
+  </div>
+  <main id="app">
+    <div class="canvas-wrapper" id="canvasWrapper">
+      <canvas id="officeCanvas" width="10" height="10" aria-label="Planta do escritório"></canvas>
+    </div>
+    <div id="zoomCtrl" class="zoom-ctrl" role="group" aria-label="Zoom do escritório">
+      <button id="zoomOut" type="button" aria-label="Diminuir zoom" title="Diminuir">−</button>
+      <span id="zoomVal" class="zoom-val font-mono" aria-live="polite">70%</span>
+      <button id="zoomIn" type="button" aria-label="Aumentar zoom" title="Aumentar">+</button>
+      <button id="zoomFit" type="button" class="zoom-fit" aria-label="Ajustar à largura" title="Ajustar à largura">ajustar</button>
+    </div>
+    <aside id="historyPanel" class="history-panel">
+      <div class="history-header">
+        <h2 class="font-display">Histórico <span id="historyCount" class="history-count"></span></h2>
+        <span class="history-btns">
+          <button id="historyExpand" class="history-toggle" type="button" aria-pressed="false" aria-label="Expandir/reduzir altura do histórico" title="Expandir/reduzir">⤢</button>
+          <button id="historyToggle" class="history-toggle" type="button" aria-expanded="true" aria-controls="historyBody" aria-label="Mostrar/ocultar histórico">▾</button>
+        </span>
+      </div>
+      <div id="historyBody" class="history-body" aria-label="Linha do tempo de eventos"></div>
+    </aside>
+    <aside id="detailPanel" class="detail-panel" aria-hidden="true">
+      <button id="closeDetail" class="close-btn" aria-label="Fechar">&#10005;</button>
+      <h2 id="dp-nome" class="font-display"></h2>
+      <p id="dp-papel"></p>
+      <div class="dp-row"><span class="dp-label">Estado</span><span id="dp-estado" class="state-chip font-display"></span></div>
+      <div class="dp-row"><span class="dp-label">Atividade atual</span><span id="dp-atividade"></span></div>
+      <div id="dp-badge-visitor" class="visitor-badge" style="display:none">não registrado</div>
+      <h3 class="dp-h3 font-display">Últimos eventos</h3>
+      <ol id="dp-events"></ol>
+    </aside>
+  </main>
+  <footer class="meta font-mono"><span id="footerNote">planta gerada a partir de agents.json + status.json · sprites: Modern Interiors (LimeZu, free, uso interno)</span></footer>
+
+<script>
+(function(){
+  "use strict";
+  // ==========================================================================
+  // CONSTANTES DE MAPA (tudo em pixels-de-fonte; 1 tile = 16px; ctx.scale(S) na hora)
+  // ==========================================================================
+  var TILE = 16;
+  var S = 3;                       // escala inteira (16px -> 48px na tela)
+  var MAP_W_T = 40, MAP_H_T = 26;  // tiles do canvas inteiro (jardim + prédio)
+  var POLL_MS = 45000;
+  var RECENT_MIN = 15;
+
+  var ESTADO_LABELS = {working:"Trabalhando", meeting:"Reunião", idle:"Ocioso", parked:"Descansando", unknown:"Sem dados", assistant:"Disponível"};
+  var STATE_ICON = {working:"✏️", meeting:"💬", idle:"💤", parked:"🌙", unknown:"❓", assistant:"✨"};
+
+  // ---- Assistente: entidade SINTÉTICA (não vem de agents.json/status.json).
+  // É a IA de tarefas SOB DEMANDA (o chat que a Michelle usa direto, roda em Sonnet),
+  // distinta das ROTINAS. Figura fixa, ao lado da Michelle na Direção. Nunca entra
+  // nas contagens/lógicas que assumem dado de status.json (não tem `rec`). ----
+  var ASSISTANT = {
+    id:"assistente", nome:"Assistente",
+    papel:"Tarefas sob demanda que a Michelle pede — não é uma rotina.",
+    squad:null, type:"assistant", isVisitor:false, synthetic:true, model:"Sonnet"
+  };
+
+  // ---- estado de dados / cripto (contrato inalterado — ver SPEC_ENGENHARIA) ----
+  var agentsData = null, statusData = null, lastEtag = null;
+  var registryById = {};
+  var deskPos = {};                // id -> {x,y} centro do personagem (pixels-fonte)
+  var charHit = [];                // hit-testing dos personagens
+  var lastCharState = {};
+  var selectedId = null;
+  var highlightId = null;
+  var hoveredId = null;            // personagem sob o mouse (mostra nome no hover)
+  var CRYPTO_MODE = false, cryptoKey = null, encAgentsEnvelope = null, encStatusEnvelope = null;
+  var pollIntervalStarted = false;
+
+  // ---- assets (sprite sheets) ----
+  var SHEETS = {
+    room: "./assets/modern_interiors/Interiors_free/Room_Builder_free_16x16.png",
+    int:  "./assets/modern_interiors/Interiors_free/Interiors_free_16x16.png",
+    Adam:   "./assets/modern_interiors/Characters_free/Adam_idle_16x16.png",
+    Alex:   "./assets/modern_interiors/Characters_free/Alex_idle_16x16.png",
+    Amelia: "./assets/modern_interiors/Characters_free/Amelia_idle_16x16.png",
+    Bob:    "./assets/modern_interiors/Characters_free/Bob_idle_16x16.png"
+  };
+  var CHAR_KEYS = ["Adam","Alex","Amelia","Bob"];
+  var img = {};        // key -> HTMLImageElement
+  var assetsReady = false;
+
+  // ---- tiles de piso confirmados na folha Room_Builder (col,row) ----
+  var FLOOR = {
+    corridor:   {c:12, r:8},    // creme cruz — corredor bege
+    boss:       {c:12, r:14},   // herringbone (madeira) — Direção
+    content:    {c:14, r:8},    // carpete xadrez cinza — Content
+    commercial: {c:12, r:6},    // tijolo vermelho — Commercial
+    governance: {c:12, r:10},   // losango teal — Governance
+    open:       {c:12, r:12},   // concreto cinza liso — open space
+    visitor:    {c:15, r:12}    // cinza pontilhado neutro — visitantes
+  };
+
+  // ---- móveis (folha Interiors) — {c,r,w,h} em tiles (confirmados nas bandas) ----
+  var F = {
+    deskA:   {c:2, r:36, w:1, h:2},  // mesa madeira
+    deskB:   {c:3, r:36, w:1, h:2},  // mesa c/ livro
+    deskC:   {c:1, r:36, w:1, h:2},  // mesa c/ objeto
+    deskD:   {c:4, r:36, w:1, h:2},  // mesa c/ porta-caneta
+    chair:   {c:2, r:38, w:1, h:1},  // cadeira madeira (frente)
+    bigTableTop:{c:6, r:10, w:2, h:2},
+    bigTableLeg:{c:6, r:12, w:2, h:1},
+    bookshelf:{c:5, r:14, w:2, h:3}, // estante cheia de livros
+    sofa:    {c:7, r:13, w:3, h:2},  // sofá marrom longo
+    sofaMauve:{c:8, r:18, w:3, h:2}, // (na verdade tapete) — não usar como sofá
+    coffee:  {c:6, r:13, w:1, h:2},  // mesinha redonda
+    globe:   {c:13, r:36, w:1, h:2}, // globo (Governance)
+    plantBig:{c:11, r:44, w:1, h:3},
+    plantSm: {c:12, r:45, w:1, h:2},
+    palm:    {c:14, r:44, w:1, h:3},
+    aloe:    {c:0, r:49, w:1, h:2},
+    aquarium:{c:0, r:21, w:2, h:2},
+    lamp:    {c:13, r:55, w:1, h:2},
+    picture: {c:0, r:13, w:1, h:1},
+    // tapetes
+    rugRedBig:{c:7, r:15, w:4, h:3},
+    rugGold: {c:11, r:20, w:2, h:2},
+    rugBlue: {c:11, r:16, w:2, h:2},
+    rugGreen:{c:11, r:18, w:2, h:2}
+  };
+
+  // ==========================================================================
+  // DEFINIÇÃO DA PLANTA (hand-authored). Tudo em TILES.
+  // Jardim (verde) só na coluna esquerda; prédio ocupa o resto.
+  // ==========================================================================
+  var GARDEN_W = 4;                 // cols 0..3 = jardim
+  var BUILD = {x:4, y:1, w:35, h:24};  // prédio (cols 4..38, rows 1..24)
+
+  // salas: {key, floorKey, squad, label, sub, x,y,w,h, tint}
+  var ROOMS = [
+    {key:"boss",       floorKey:"boss",       label:"Direção",      x:5,  y:2,  w:9,  h:6,  tintVar:"--accent"},
+    {key:"content",    floorKey:"content",    squad:"content",     label:"Content Squad", x:5,  y:9,  w:9,  h:6,  tintVar:"--squad-content"},
+    {key:"commercial", floorKey:"commercial", squad:"commercial",  label:"Commercial Squad", x:5,  y:16, w:9,  h:7,  tintVar:"--squad-commercial"},
+    {key:"open",       floorKey:"open",       label:"Open space — mesas individuais", x:16, y:2,  w:13, h:11, neutral:true},
+    {key:"lounge",     floorKey:"lounge",     label:"Zona de Descanso", x:16, y:15, w:13, h:8,  tintVar:"--state-parked"},
+    {key:"governance", floorKey:"governance", squad:"governance",  label:"Governance Squad", x:31, y:2,  w:7,  h:9,  tintVar:"--squad-governance"},
+    {key:"visitor",    floorKey:"visitor",    label:"Visitantes",   x:31, y:13, w:7,  h:7,  tintVar:"--health-warn"}
+  ];
+  var roomByKey = {};
+  ROOMS.forEach(function(r){ roomByKey[r.key] = r; });
+
+  // vãos de porta (segmento sem parede) — {room, side:'bottom'|'right'|'left'|'top', at:tileOffset, len}
+  // corredores bege ligam tudo; as portas abrem pros corredores.
+  var DOORS = [
+    {key:"boss",       side:"right",  frac:0.5, len:2},
+    {key:"content",    side:"right",  frac:0.5, len:2},
+    {key:"commercial", side:"right",  frac:0.5, len:2},
+    {key:"open",       side:"bottom", frac:0.5, len:3},
+    {key:"open",       side:"left",   frac:0.55, len:2},
+    {key:"lounge",     side:"top",    frac:0.5, len:3},
+    {key:"governance", side:"left",   frac:0.5, len:2},
+    {key:"governance", side:"bottom", frac:0.5, len:2},
+    {key:"visitor",    side:"left",   frac:0.4, len:2}
+  ];
+
+  // ==========================================================================
+  // HELPERS gerais
+  // ==========================================================================
+  function truncate(str, n){ if(!str) return str; str=String(str); return str.length>n ? str.slice(0,n-1)+"…" : str; }
+  function fmtTime(iso){ if(iso==null) return null; var d=new Date(iso); if(isNaN(d.getTime())) return null; return d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"}); }
+  function fmtDateTime(iso){ if(iso==null) return "—"; var d=new Date(iso); if(isNaN(d.getTime())) return "—"; return d.toLocaleString(undefined,{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}); }
+  function isRecent(iso,minutes){ if(iso==null) return false; var t=Date.parse(iso); if(isNaN(t)) return false; var diff=Date.now()-t; return diff<minutes*60*1000 && diff>-60000; }
+  function hashId(str){ var s=String(str||"x"),h=0; for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0;} return Math.abs(h); }
+
+  var rootStyleCache=null;
+  function cssVar(name,fallback){ if(!rootStyleCache) rootStyleCache=getComputedStyle(document.documentElement); var v=rootStyleCache.getPropertyValue(name); return v?v.trim():fallback; }
+  function isDark(){
+    var attr=document.documentElement.getAttribute("data-theme");
+    if(attr==="dark") return true; if(attr==="light") return false;
+    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  }
+
+  var canvas, ctx, wrapperEl;
+
+  // ---- zoom de EXIBIÇÃO (não muda a resolução de render p/ manter nitidez) ----
+  // canvas.width/height ficam sempre em MAP_W_T*TILE*S (render nítido); só o
+  // canvas.style.width/height escala por `zoom`. Hit-testing usa getBoundingClientRect
+  // (tamanho de exibição) → continua proporcional em qualquer zoom.
+  var zoom = 0.7, ZOOM_MIN = 0.4, ZOOM_MAX = 2.0;
+  function applyCanvasDisplaySize(){
+    if(!canvas) return;
+    canvas.style.width  = Math.round(MAP_W_T*TILE*S*zoom)+"px";
+    canvas.style.height = Math.round(MAP_H_T*TILE*S*zoom)+"px";
+  }
+  function updateZoomLabel(){ var el=document.getElementById("zoomVal"); if(el) el.textContent=Math.round(zoom*100)+"%"; }
+  function clampZoom(z){ return Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z)); }
+  // nz = novo zoom; (cx,cy) = ponto-âncora em coords de tela (mantém o ponto sob
+  // o cursor fixo). Sem âncora → centraliza no centro do wrapper visível.
+  function setZoom(nz, cx, cy){
+    nz = clampZoom(Math.round(nz*100)/100);
+    if(!wrapperEl){ zoom=nz; applyCanvasDisplaySize(); updateZoomLabel(); return; }
+    var oldW=MAP_W_T*TILE*S*zoom, oldH=MAP_H_T*TILE*S*zoom;
+    var newW=MAP_W_T*TILE*S*nz,   newH=MAP_H_T*TILE*S*nz;
+    var wr=wrapperEl.getBoundingClientRect();
+    var ax=(cx!=null)?(cx-wr.left):wrapperEl.clientWidth/2;
+    var ay=(cy!=null)?(cy-wr.top):wrapperEl.clientHeight/2;
+    var fracX=(wrapperEl.scrollLeft+ax)/oldW, fracY=(wrapperEl.scrollTop+ay)/oldH;
+    zoom=nz; applyCanvasDisplaySize(); updateZoomLabel();
+    wrapperEl.scrollLeft=Math.max(0, fracX*newW-ax);
+    wrapperEl.scrollTop =Math.max(0, fracY*newH-ay);
+  }
+  function fitZoom(){ if(!wrapperEl) return; setZoom((wrapperEl.clientWidth-8)/(MAP_W_T*TILE*S)); }
+
+  // ==========================================================================
+  // CRIPTO / PORTA DE SENHA (inalterado — SPEC "Hospedagem — decisão dela 05/07")
+  // ==========================================================================
+  var KEY_CACHE_NAME="office_enc_key_b64";
+  function b64ToBytes(b64){ var bin=atob(b64),bytes=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); return bytes; }
+  function bytesToB64(bb){ var bytes=(bb instanceof ArrayBuffer)?new Uint8Array(bb):bb,bin=""; for(var i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]); return btoa(bin); }
+  function decryptEnvelope(env,key){ var iv=b64ToBytes(env.iv),ct=b64ToBytes(env.ct); return crypto.subtle.decrypt({name:"AES-GCM",iv:iv},key,ct).then(function(buf){ return new TextDecoder("utf-8").decode(buf); }); }
+  function deriveKeyFromPassword(password,saltB64,iterations){
+    var enc=new TextEncoder(),salt=b64ToBytes(saltB64);
+    return crypto.subtle.importKey("raw",enc.encode(password),{name:"PBKDF2"},false,["deriveBits"])
+      .then(function(bk){ return crypto.subtle.deriveBits({name:"PBKDF2",salt:salt,iterations:iterations,hash:"SHA-256"},bk,256); })
+      .then(function(bits){ return crypto.subtle.importKey("raw",bits,{name:"AES-GCM"},false,["decrypt"]).then(function(key){ return {key:key,raw:bits}; }); });
+  }
+  function importRawKey(bytes){ return crypto.subtle.importKey("raw",bytes,{name:"AES-GCM"},false,["decrypt"]); }
+  function cacheKeyBytes(bits){ try{ sessionStorage.setItem(KEY_CACHE_NAME,bytesToB64(bits)); }catch(e){} }
+  function readCachedKeyBytes(){ try{ var v=sessionStorage.getItem(KEY_CACHE_NAME); return v?b64ToBytes(v):null; }catch(e){ return null; } }
+  function clearCachedKey(){ try{ sessionStorage.removeItem(KEY_CACHE_NAME); }catch(e){} }
+
+  var lockOverlay,lockForm,lockPasswordInput,lockError;
+  function showLockOverlay(){ lockOverlay.hidden=false; lockOverlay.setAttribute("aria-hidden","false"); lockError.hidden=true; setTimeout(function(){ if(lockPasswordInput) lockPasswordInput.focus(); },30); }
+  function hideLockOverlay(){ lockOverlay.hidden=true; lockOverlay.setAttribute("aria-hidden","true"); }
+  function showLockError(msg){ lockError.textContent=msg; lockError.hidden=false; lockPasswordInput.value=""; lockPasswordInput.focus(); }
+
+  // ==========================================================================
+  // CARREGAMENTO DE DADOS (inalterado)
+  // ==========================================================================
+  var bannerEl,appEl,detailPanel,healthTrelloEl,healthTriggersEl,updatedAtEl;
+
+  function fetchAgents(){
+    return fetch("./agents.json",{cache:"no-store"}).catch(function(){ throw new Error("falha de rede ao buscar agents.json"); })
+      .then(function(res){ if(!res.ok) throw new Error("agents.json respondeu HTTP "+res.status); return res.json().catch(function(){ throw new Error("agents.json não é um JSON válido"); }); })
+      .then(function(data){ if(!data||!Array.isArray(data.agents)) throw new Error("agents.json com formato inesperado"); return data; });
+  }
+  function renderFatal(msg){
+    appEl.innerHTML="";
+    var div=document.createElement("div"); div.className="fatal-error";
+    var h1=document.createElement("h1"); h1.className="font-display"; h1.textContent="Escritório indisponível";
+    var p1=document.createElement("p"); p1.textContent=msg;
+    var p2=document.createElement("p"); p2.textContent="Verifique se agents.json existe, está no mesmo diretório de office.html e é um JSON válido.";
+    div.appendChild(h1); div.appendChild(p1); div.appendChild(p2); appEl.appendChild(div);
+  }
+  function showBanner(iso){ bannerEl.textContent= iso? ("⚠️ desatualizado desde "+fmtDateTime(iso)) : "⚠️ sem dados de status ainda"; bannerEl.hidden=false; }
+  function hideBanner(){ bannerEl.hidden=true; }
+
+  function fetchStatusRaw(headers){
+    if(CRYPTO_MODE){
+      return fetch("./status.enc",{headers:headers,cache:"no-store"}).catch(function(){ return Promise.reject({soft:true,message:"falha de rede"}); })
+        .then(function(res){
+          if(res.status===304) return {status:304};
+          if(!res.ok) return Promise.reject({soft:true,message:"HTTP "+res.status});
+          var etag=res.headers.get("ETag");
+          return res.json().catch(function(){ return Promise.reject({soft:true,message:"status.enc malformado"}); })
+            .then(function(env){ if(!cryptoKey) return Promise.reject({soft:true,message:"sem chave"});
+              return decryptEnvelope(env,cryptoKey).catch(function(){ return Promise.reject({soft:true,message:"falha ao decifrar status.enc"}); })
+                .then(function(text){ return {status:200,etag:etag,text:text}; }); });
+        });
+    }
+    return fetch("./status.json",{headers:headers,cache:"no-store"}).catch(function(){ return Promise.reject({soft:true,message:"falha de rede"}); })
+      .then(function(res){ if(res.status===304) return {status:304}; if(!res.ok) return Promise.reject({soft:true,message:"HTTP "+res.status}); var etag=res.headers.get("ETag"); return res.text().then(function(text){ return {status:200,etag:etag,text:text}; }); });
+  }
+  function pollStatus(){
+    var headers={}; if(lastEtag) headers["If-None-Match"]=lastEtag;
+    return fetchStatusRaw(headers).then(function(result){
+      if(result.status===304){ hideBanner(); return null; }
+      var data; try{ data=JSON.parse(result.text); }catch(e){ return Promise.reject({soft:true,message:"status malformado"}); }
+      if(!data||typeof data.generated_at!=="string"||typeof data.agents!=="object") return Promise.reject({soft:true,message:"status inesperado"});
+      if(result.etag) lastEtag=result.etag;
+      statusData=data;
+      try{ localStorage.setItem("office_status_cache",result.text); }catch(e){}
+      hideBanner(); return "ok";
+    }).then(function(r){ if(r) renderOffice(); }).catch(function(){
+      if(statusData){ showBanner(statusData.generated_at); renderOffice(); }
+      else{ var cached=null; try{ var c=localStorage.getItem("office_status_cache"); if(c) cached=JSON.parse(c); }catch(e){}
+        if(cached){ statusData=cached; showBanner(cached.generated_at); } else showBanner(null); renderOffice(); }
+    });
+  }
+  function startPollLoop(){ if(pollIntervalStarted) return; pollIntervalStarted=true; setInterval(pollStatus,POLL_MS); }
+  function startPlainFlow(){ fetchAgents().then(function(data){ agentsData=data; return pollStatus(); }).then(function(){ startPollLoop(); }).catch(function(err){ renderFatal(err&&err.message?err.message:String(err)); }); }
+  function startEncryptedFlow(agentsEnv,statusEnv){
+    encAgentsEnvelope=agentsEnv; encStatusEnvelope=statusEnv;
+    function proceedWithKey(keyObj,rawBits){
+      return Promise.all([decryptEnvelope(encAgentsEnvelope,keyObj),decryptEnvelope(encStatusEnvelope,keyObj)]).then(function(res){
+        var aj,sj; try{ aj=JSON.parse(res[0]); }catch(e){ throw new Error("agents.enc inválido"); }
+        if(!aj||!Array.isArray(aj.agents)) throw new Error("agents.enc formato inesperado");
+        try{ sj=JSON.parse(res[1]); }catch(e){ throw new Error("status.enc inválido"); }
+        cryptoKey=keyObj; if(rawBits) cacheKeyBytes(rawBits);
+        agentsData=aj; statusData=sj;
+        try{ localStorage.setItem("office_status_cache",res[1]); }catch(e){}
+        hideBanner(); hideLockOverlay(); renderOffice(); startPollLoop();
+      });
+    }
+    if(!lockForm.dataset.wired){
+      lockForm.dataset.wired="1";
+      lockForm.addEventListener("submit",function(ev){ ev.preventDefault(); var pwd=lockPasswordInput.value; if(!pwd) return;
+        var btn=lockForm.querySelector("button[type=submit]"); if(btn) btn.disabled=true; lockError.hidden=true;
+        deriveKeyFromPassword(pwd,encAgentsEnvelope.salt,encAgentsEnvelope.iter).then(function(d){ return proceedWithKey(d.key,d.raw); })
+          .catch(function(){ showLockError("Senha incorreta. Verifique e tente de novo."); }).then(function(){ if(btn) btn.disabled=false; });
+      });
+    }
+    var cached=readCachedKeyBytes();
+    if(cached){ importRawKey(cached).then(function(key){ return proceedWithKey(key,null); }).catch(function(){ clearCachedKey(); showLockOverlay(); }); }
+    else showLockOverlay();
+  }
+  function detectModeAndStart(){
+    Promise.all([
+      fetch("./status.enc",{cache:"no-store"}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; }),
+      fetch("./agents.enc",{cache:"no-store"}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; })
+    ]).then(function(res){ var s=res[0],a=res[1]; if(s&&a&&s.ct&&a.ct){ CRYPTO_MODE=true; startEncryptedFlow(a,s); } else startPlainFlow(); })
+      .catch(function(){ startPlainFlow(); });
+  }
+
+  // ==========================================================================
+  // REGISTRO + ATRIBUIÇÃO DE ATOR->SALA (única parte dinâmica; contrato preservado)
+  // ==========================================================================
+  function buildRegistry(){
+    var known={}; agentsData.agents.forEach(function(a){ known[a.id]=true; });
+    var registry=agentsData.agents.map(function(a){ return {id:a.id,nome:a.nome,papel:a.papel,squad:a.squad,type:a.type,isVisitor:false}; });
+    var visitorIds={};
+    if(statusData){
+      Object.keys(statusData.agents||{}).forEach(function(id){ if(!known[id]) visitorIds[id]=true; });
+      (statusData.events||[]).forEach(function(e){ if(e.actor&&!known[e.actor]) visitorIds[e.actor]=true; if(e.target&&!known[e.target]) visitorIds[e.target]=true; });
+    }
+    Object.keys(visitorIds).sort().forEach(function(id){
+      registry.push({id:id,nome:id.replace(/^desconhecido:/,""),papel:"Visitante — não registrado",squad:null,type:"visitor",isVisitor:true});
+    });
+    return registry;
+  }
+  // qual sala cada agente pertence
+  function roomForAgent(a){
+    if(a.type==="boss") return "boss";
+    if(a.type==="visitor") return "visitor";
+    if(a.type==="parked") return "lounge";
+    if(a.squad==="content") return "content";
+    if(a.squad==="commercial") return "commercial";
+    if(a.squad==="governance") return "governance";
+    return "open"; // squad null / routine / session / agent sem squad -> open space
+  }
+
+  // ==========================================================================
+  // DESENHO DE TILES
+  // ==========================================================================
+  function drawSprite(sheetKey, s, dx, dy){
+    var im=img[sheetKey]; if(!im) return;
+    ctx.drawImage(im, s.c*TILE, s.r*TILE, s.w*TILE, s.h*TILE, dx, dy, s.w*TILE, s.h*TILE);
+  }
+  // preenche uma região retangular (em tiles) repetindo 1 tile da folha
+  function fillFloorTile(sheetKey, tile, tx, ty, tw, th){
+    var im=img[sheetKey]; if(!im) return;
+    for(var yy=0; yy<th; yy++) for(var xx=0; xx<tw; xx++){
+      ctx.drawImage(im, tile.c*TILE, tile.r*TILE, TILE, TILE, (tx+xx)*TILE, (ty+yy)*TILE, TILE, TILE);
+    }
+  }
+  // clip retangular (em tiles) para móveis/tapetes não vazarem da sala
+  function withClipTiles(tx,ty,tw,th,fn){
+    ctx.save(); ctx.beginPath(); ctx.rect(tx*TILE,ty*TILE,tw*TILE,th*TILE); ctx.clip(); fn(); ctx.restore();
+  }
+
+  // ---- jardim (verde) desenhado à mão: não há tile de grama na folha interiors ----
+  function drawGarden(){
+    var dark=isDark();
+    var g1=dark?"#1c3a28":"#8FC46A", g2=dark?"#173021":"#7CB85C";
+    // base
+    ctx.fillStyle=g1; ctx.fillRect(0,0, GARDEN_W*TILE, MAP_H_T*TILE);
+    // textura em tufos (pixels 4x4)
+    ctx.fillStyle=g2;
+    for(var y=0;y<MAP_H_T*TILE;y+=8){ for(var x=0;x<GARDEN_W*TILE;x+=8){ if(((x*7+y*13)>>3)%3===0) ctx.fillRect(x+2,y+2,3,3); } }
+    // caminho de terra ligando jardim à entrada (faixa clara)
+    // árvores simples (copa + tronco), pixel-art à mão
+    drawTree(1.4*TILE, 2.4*TILE, dark);
+    drawTree(2.5*TILE, 8.5*TILE, dark);
+    drawTree(1.2*TILE, 14*TILE, dark);
+    drawTree(2.7*TILE, 20*TILE, dark);
+  }
+  function drawTree(cx, topY, dark){
+    var trunk=dark?"#4a3320":"#6b4a2b";
+    var leafD=dark?"#1f5233":"#3E8E4F", leafL=dark?"#2c6b45":"#5FB56B";
+    ctx.fillStyle=trunk; ctx.fillRect(cx-3, topY+26, 6, 12);
+    // copa (círculos empilhados de pixels)
+    function blob(bx,by,r,col){ ctx.fillStyle=col; ctx.beginPath(); ctx.arc(bx,by,r,0,7); ctx.fill(); }
+    blob(cx, topY+14, 15, leafD);
+    blob(cx-8, topY+18, 10, leafD);
+    blob(cx+8, topY+18, 10, leafD);
+    blob(cx-3, topY+10, 11, leafL);
+    blob(cx+5, topY+13, 8, leafL);
+  }
+
+  // ---- paredes procedurais (grey-blue, tipo as "north walls" da referência) ----
+  function wallColors(){
+    var dark=isDark();
+    return dark
+      ? {face:"#3a4453", top:"#4d596b", line:"#1b2029"}
+      : {face:"#aeb7c6", top:"#c9d0dc", line:"#4a5160"};
+  }
+  // desenha uma parede fina retangular (em pixels-fonte)
+  function wallBand(px,py,pw,ph){
+    var c=wallColors();
+    ctx.fillStyle=c.face; ctx.fillRect(px,py,pw,ph);
+    ctx.fillStyle=c.top;  ctx.fillRect(px,py,pw,Math.max(2,Math.floor(ph*0.4)));
+    ctx.fillStyle=c.line; ctx.fillRect(px,py,pw,1); ctx.fillRect(px,py+ph-1,pw,1);
+  }
+  var WT_TOP=10;   // espessura da parede norte (px-fonte)
+  var WT=5;        // demais paredes
+  // portas: para cada sala calcula segmentos abertos por lado
+  function doorSegmentsFor(key, side){
+    var segs=[];
+    DOORS.forEach(function(d){ if(d.key===key && d.side===side) segs.push(d); });
+    return segs;
+  }
+  function drawRoomWalls(room){
+    var x0=room.x*TILE, y0=room.y*TILE, w=room.w*TILE, h=room.h*TILE;
+    // TOP (parede norte, mais grossa)
+    drawWallEdge(room,"top",   x0, y0, w, WT_TOP, true);
+    // BOTTOM
+    drawWallEdge(room,"bottom",x0, y0+h-WT, w, WT, true);
+    // LEFT
+    drawWallEdge(room,"left",  x0, y0, WT, h, false);
+    // RIGHT
+    drawWallEdge(room,"right", x0+w-WT, y0, WT, h, false);
+  }
+  function drawWallEdge(room, side, px,py,pw,ph, horizontal){
+    var segs=doorSegmentsFor(room.key, side);
+    if(!segs.length){ wallBand(px,py,pw,ph); return; }
+    // abre um vão: desenha parede exceto no trecho da porta
+    var d=segs[0];
+    if(horizontal){
+      var doorPx = d.len*TILE;
+      var start = px + Math.max(0, Math.min(pw-doorPx, d.frac*pw - doorPx/2));
+      wallBand(px, py, start-px, ph);
+      wallBand(start+doorPx, py, (px+pw)-(start+doorPx), ph);
+    } else {
+      var doorPy = d.len*TILE;
+      var starty = py + Math.max(0, Math.min(ph-doorPy, d.frac*ph - doorPy/2));
+      wallBand(px, py, pw, starty-py);
+      wallBand(px, starty+doorPy, pw, (py+ph)-(starty+doorPy));
+    }
+  }
+
+  // ---- piso da sala (sprite ou procedural p/ lounge) ----
+  function drawRoomFloor(room){
+    if(room.floorKey==="lounge"){ drawLoungeFloor(room); return; }
+    var tile=FLOOR[room.floorKey]||FLOOR.open;
+    fillFloorTile("room", tile, room.x, room.y, room.w, room.h);
+  }
+  function drawLoungeFloor(room){
+    // carpete listrado roxo (procedural) — não há tile roxo na folha free
+    var dark=isDark();
+    var a=dark?"#3a2c5c":"#8E7BC7", b=dark?"#463670":"#A594D6";
+    for(var yy=0; yy<room.h; yy++){
+      ctx.fillStyle=(yy%2===0)?a:b;
+      ctx.fillRect(room.x*TILE, (room.y+yy)*TILE, room.w*TILE, TILE);
+    }
+  }
+
+  // ==========================================================================
+  // MOBÍLIA POR SALA + VAGAS DE MESA
+  // deskSlotsFor(room): array estável de {tx,ty} (canto inf-esq da MESA) —
+  // vaga = mesa (madeira) + personagem sentado atrás. Layout determinístico.
+  // ==========================================================================
+  function deskSlotsFor(room){
+    // salas sem mesa (assentos explícitos): Direção (mesa executiva) e Lounge (sofás)
+    if(room.key==="boss"){
+      var btx=room.x+Math.floor(room.w/2)-1;
+      return [{tx:btx, ty:room.y+5}];
+    }
+    if(room.key==="lounge"){
+      var rx=room.x, ry=room.y, rw=room.w, rh=room.h;
+      return [
+        {tx:rx+2,        ty:ry+4},        // sofá esquerdo
+        {tx:rx+rw-3,     ty:ry+4},        // sofá direito
+        {tx:rx+Math.floor(rw/2), ty:ry+rh-1} // sofá inferior
+      ];
+    }
+    var slots=[];
+    var innerX0=room.x+1, innerX1=room.x+room.w-1;
+    var innerY0=room.y+4, innerY1=room.y+room.h-1;   // topo reservado p/ rótulo+parede
+    var pitchX=3, pitchY=3;
+    for(var ty=innerY0; ty+1<=innerY1; ty+=pitchY){
+      for(var tx=innerX0; tx+1<=innerX1; tx+=pitchX){
+        slots.push({tx:tx, ty:ty});
+      }
+    }
+    return slots;
+  }
+  function roomHasDesks(room){ return room.key!=="boss" && room.key!=="lounge"; }
+
+  // decoração fixa por sala (móveis não-mesa), em coords relativas
+  function drawRoomDecor(room){
+    withClipTiles(room.x,room.y,room.w,room.h,function(){
+      var rx=room.x, ry=room.y, rw=room.w, rh=room.h;
+      if(room.key==="boss"){
+        drawSprite("int", F.rugRedBig, (rx+rw/2-2)*TILE, (ry+rh-4)*TILE);
+        // mesa executiva grande (Michelle senta atrás dela)
+        var tx=rx+Math.floor(rw/2)-1, ty=ry+5;
+        drawSprite("int", F.bigTableTop, tx*TILE, ty*TILE);
+        drawSprite("int", F.bigTableLeg, tx*TILE, (ty+2)*TILE);
+        drawSprite("int", F.bookshelf, (rx+1)*TILE, (ry+2)*TILE - 8);
+        drawSprite("int", F.plantBig, (rx+rw-2)*TILE, (ry+1)*TILE);
+        drawSprite("int", F.aloe, (rx+rw-2)*TILE, (ry+rh-3)*TILE);
+      } else if(room.key==="content"){
+        drawSprite("int", F.rugBlue, (rx+rw-3)*TILE, (ry+rh-3)*TILE);
+        drawSprite("int", F.bookshelf, (rx+1)*TILE, (ry+2)*TILE - 8);
+        drawSprite("int", F.plantSm, (rx+rw-2)*TILE, (ry+2)*TILE);
+        drawSprite("int", F.aquarium, (rx+rw-3)*TILE, (ry+1)*TILE+2);
+        drawSprite("int", F.plantBig, (rx+rw-2)*TILE, (ry+rh-4)*TILE);
+      } else if(room.key==="commercial"){
+        drawSprite("int", F.rugGold, (rx+rw-3)*TILE, (ry+rh-3)*TILE);
+        drawSprite("int", F.sofa, (rx+1)*TILE, (ry+rh-3)*TILE);
+        drawSprite("int", F.plantBig, (rx+rw-2)*TILE, (ry+2)*TILE);
+        drawSprite("int", F.picture, (rx+2)*TILE, (ry+1)*TILE+2);
+        drawSprite("int", F.lamp, (rx+rw-2)*TILE, (ry+rh-4)*TILE);
+      } else if(room.key==="governance"){
+        drawSprite("int", F.rugGreen, (rx+rw-3)*TILE, (ry+rh-3)*TILE);
+        drawSprite("int", F.globe, (rx+rw-2)*TILE, (ry+3)*TILE);
+        drawSprite("int", F.plantSm, (rx+1)*TILE, (ry+rh-3)*TILE);
+        drawSprite("int", F.bookshelf, (rx+1)*TILE, (ry+2)*TILE - 8);
+        drawSprite("int", F.plantBig, (rx+rw-2)*TILE, (ry+rh-4)*TILE);
+      } else if(room.key==="open"){
+        // bullpen: mesas preenchem a sala; plantas na coluna livre à direita
+        drawSprite("int", F.palm, (rx+rw-2)*TILE, (ry+2)*TILE);
+        drawSprite("int", F.plantBig, (rx+rw-2)*TILE, (ry+rh-4)*TILE);
+      } else if(room.key==="lounge"){
+        drawSprite("int", F.rugRedBig, (rx+2)*TILE, (ry+rh/2-1)*TILE);
+        drawSprite("int", F.sofa, (rx+1)*TILE, (ry+2)*TILE);
+        drawSprite("int", F.sofa, (rx+rw-4)*TILE, (ry+2)*TILE);
+        drawSprite("int", F.sofa, (rx+rw/2-1)*TILE, (ry+rh-3)*TILE);
+        drawSprite("int", F.coffee, (rx+rw/2)*TILE, (ry+rh/2)*TILE);
+        drawSprite("int", F.plantBig, (rx+1)*TILE, (ry+rh-4)*TILE);
+        drawSprite("int", F.palm, (rx+rw-2)*TILE, (ry+rh-4)*TILE);
+        drawSprite("int", F.lamp, (rx+rw-2)*TILE, (ry+2)*TILE);
+      } else if(room.key==="visitor"){
+        drawSprite("int", F.plantSm, (rx+rw-2)*TILE, (ry+rh-3)*TILE);
+        drawSprite("int", F.picture, (rx+2)*TILE, (ry)*TILE+2);
+      }
+    });
+  }
+
+  // rótulo da sala: pílula no topo, cor do squad (ou neutra)
+  function drawRoomLabel(room){
+    var text=room.label;
+    ctx.save();
+    ctx.font='700 6px ui-rounded, system-ui, sans-serif';
+    var tw=ctx.measureText(text).width;
+    var padX=5, h=11, w=tw+padX*2;
+    var bx=room.x*TILE + room.w*TILE/2 - w/2;
+    var by=room.y*TILE + 2;
+    var tint = room.tintVar ? cssVar(room.tintVar, "#9B9690") : null;
+    roundRect(bx,by,w,h,5);
+    if(room.neutral || !tint){ ctx.fillStyle="rgba(250,247,239,0.92)"; ctx.fill(); ctx.strokeStyle="rgba(40,40,40,0.25)"; ctx.lineWidth=0.6; ctx.stroke(); ctx.fillStyle="#3a352d"; }
+    else { ctx.fillStyle=tint; ctx.fill(); ctx.fillStyle=isLightHex(tint)?"#201E1A":"#fff"; }
+    ctx.textBaseline="middle"; ctx.textAlign="left";
+    ctx.fillText(text, bx+padX, by+h/2+0.5);
+    ctx.restore();
+  }
+  function isLightHex(hex){ var m=/^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex||""); if(!m) return false; var r=parseInt(m[1],16),g=parseInt(m[2],16),b=parseInt(m[3],16); return (0.299*r+0.587*g+0.114*b)/255>0.62; }
+
+  // ==========================================================================
+  // PERSONAGENS (sprites idle, frame frente = f3 sx=48)
+  // ==========================================================================
+  function charSheetKey(id){ return CHAR_KEYS[hashId(id)%CHAR_KEYS.length]; }
+  // desenha o personagem sentado atrás da mesa em (tx,ty) [canto inf-esq da mesa]
+  // retorna centro p/ hit/label
+  function deskAnchor(slot){
+    // mesa ocupa rows ty-1..ty ; personagem rows ty-2..ty-1 (metade coberta pela mesa)
+    return {
+      charX: slot.tx*TILE,
+      charY: (slot.ty-2)*TILE,
+      deskX: slot.tx*TILE,
+      deskY: (slot.ty-1)*TILE,
+      cx: slot.tx*TILE + TILE/2,
+      cy: (slot.ty-2)*TILE + TILE      // centro aprox do torso
+    };
+  }
+  function drawDeskFurniture(slot, variantIdx){
+    var a=deskAnchor(slot);
+    var variants=[F.deskA,F.deskB,F.deskC,F.deskD];
+    drawSprite("int", variants[variantIdx%variants.length], a.deskX, a.deskY);
+    // cadeira de escritório na frente da mesa (densidade — como na referência)
+    drawSprite("int", F.chair, a.deskX, a.deskY + TILE*2 - 3);
+  }
+  function drawCharacter(agent, x, y, stateKey){
+    var dark=isDark();
+    var isAssistant = (agent.type==="assistant");
+    // anel sutil de estado atrás dos pés (assistente = dourado neutro, não é estado de rotina)
+    var col = isAssistant ? cssVar("--accent","#E8A23D")
+                          : cssVar("--state-"+ (stateKey==="unknown"?"idle":stateKey), "#A39C8F");
+    ctx.save();
+    ctx.globalAlpha = (stateKey==="unknown")?0.5:0.9;
+    ctx.fillStyle = col;
+    ctx.beginPath(); ctx.ellipse(x+TILE/2, y+TILE*2-2, 9, 3.5, 0, 0, 7); ctx.fill();
+    ctx.restore();
+    // assistente: glow dourado sutil extra p/ diferenciar das rotinas
+    if(isAssistant){
+      ctx.save();
+      ctx.globalAlpha=0.28; ctx.fillStyle=cssVar("--accent","#E8A23D");
+      ctx.beginPath(); ctx.ellipse(x+TILE/2, y+TILE*2-2, 13, 6, 0, 0, 7); ctx.fill();
+      ctx.restore();
+    }
+    // sprite (boss = Michelle sempre feminina → Amelia; assistente = Alex fixo; demais por hash do id)
+    var key = agent.type==="boss" ? "Amelia" : (isAssistant ? "Alex" : charSheetKey(agent.id));
+    var im=img[key];
+    if(im){
+      ctx.save();
+      if(stateKey==="unknown" || stateKey==="parked") ctx.globalAlpha=0.75;
+      ctx.drawImage(im, 48, 0, 16, 32, x, y, 16, 32); // frame f3 (frente)
+      ctx.restore();
+    }
+    // coroa da boss
+    if(agent.type==="boss"){
+      ctx.fillStyle=cssVar("--accent","#E8A23D");
+      ctx.fillRect(x+5, y+1, 6, 3);
+      ctx.fillRect(x+5, y-1, 1, 2); ctx.fillRect(x+8, y-1, 1, 2); ctx.fillRect(x+10, y-1, 1, 2);
+    }
+  }
+  // etiqueta flutuante (nome + ícone estado), sempre acima da cabeça
+  // Etiqueta de nome em DOIS níveis:
+  //  - repouso (prominent=false): nome pequeno, fundo discreto, sem ícone — presente
+  //    pra saber quem é, sem poluir salas cheias.
+  //  - destaque (prominent=true: ativo / hover / boss): maior, fundo sólido, com ícone
+  //    de estado — salta à vista.
+  function drawNameplate(agent, x, y, stateKey, prominent, isHover){
+    var icon=STATE_ICON[stateKey]||STATE_ICON.unknown;
+    ctx.save();
+    ctx.textBaseline="middle"; ctx.textAlign="left";
+    if(prominent){
+      var name=truncate(agent.nome||agent.id, 11);
+      var text=icon+" "+name;
+      ctx.font='700 6px ui-rounded, system-ui, sans-serif';
+      var tw=ctx.measureText(text).width;
+      var padX=3, h=10, w=tw+padX*2;
+      var bx=x+TILE/2 - w/2, by=y-3 - h;
+      roundRect(bx,by,w,h,3);
+      ctx.fillStyle= agent.isVisitor ? "rgba(120,70,10,0.95)" : (isHover ? "rgba(18,16,12,0.98)" : "rgba(18,16,12,0.88)");
+      ctx.fill();
+      if(isHover && !agent.isVisitor){ ctx.strokeStyle="rgba(255,255,255,0.55)"; ctx.lineWidth=0.6; ctx.stroke(); }
+      if(agent.isVisitor){ ctx.strokeStyle="rgba(255,200,90,0.9)"; ctx.lineWidth=0.6; ctx.stroke(); }
+      ctx.fillStyle="#fff";
+      ctx.fillText(text, bx+padX, by+h/2+0.5);
+    } else {
+      // repouso: só o nome, pequeno e discreto
+      var nameR=truncate(agent.nome||agent.id, 9);
+      ctx.font='600 4.6px ui-rounded, system-ui, sans-serif';
+      var twR=ctx.measureText(nameR).width;
+      var padR=2, hR=7, wR=twR+padR*2;
+      var bxR=x+TILE/2 - wR/2, byR=y-2 - hR;
+      roundRect(bxR,byR,wR,hR,2.5);
+      ctx.fillStyle= agent.isVisitor ? "rgba(120,70,10,0.55)" : "rgba(18,16,12,0.42)";
+      ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,0.9)";
+      ctx.fillText(nameR, bxR+padR, byR+hR/2+0.4);
+    }
+    ctx.restore();
+  }
+  function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+  // ==========================================================================
+  // ESTADO DO PERSONAGEM (contrato de dados preservado)
+  // ==========================================================================
+  function computeRawEventInfo(agent){
+    var rec=statusData?statusData.agents[agent.id]:null;
+    var events=(statusData&&Array.isArray(statusData.events))?statusData.events.filter(function(e){ return e.actor===agent.id; }):[];
+    events.sort(function(a,b){ return Date.parse(b.ts)-Date.parse(a.ts); });
+    var latest=events[0];
+    var targetDesk=latest&&latest.target?deskPos[latest.target]:null;
+    var isRecentTarget=!!(latest&&latest.target&&latest.target!==agent.id&&isRecent(latest.ts,RECENT_MIN)&&targetDesk);
+    return {agent:agent,rec:rec,latest:latest,isRecentTarget:isRecentTarget,targetId:isRecentTarget?latest.target:null};
+  }
+  var VISIT_OFFSETS=[{dx:-18,dy:4},{dx:18,dy:4},{dx:-18,dy:-14},{dx:18,dy:-14},{dx:0,dy:-18}];
+  function finalizeCharState(raw, visitIndex){
+    var agent=raw.agent, rec=raw.rec, latest=raw.latest;
+    var own=deskPos[agent.id]||{x:0,y:0};
+    var x=own.x, y=own.y, visiting=false;
+    if(raw.isRecentTarget){ var td=deskPos[raw.targetId]; var o=VISIT_OFFSETS[visitIndex%VISIT_OFFSETS.length]; x=td.x+o.dx; y=td.y+o.dy; visiting=true; }
+    var state,bubble=null;
+    if(visiting){ state="meeting"; bubble=latest.verb+": "+latest.object; }
+    else if(rec){ state=rec.state||"unknown";
+      if(state==="working") bubble=rec.activity||null;
+      else if(state==="idle"){ var since=fmtTime(rec.since); bubble=since?("desde "+since):(rec.activity||"ocioso"); }
+      else if(state==="meeting") bubble=rec.activity||"em reunião";
+    }
+    else if(agent.type==="parked") state="parked";
+    else state="unknown";
+    return {x:x,y:y,state:state,bubble:bubble,visiting:visiting,rec:rec,latestEvent:latest};
+  }
+
+  // ==========================================================================
+  // RENDER MESTRE
+  // ==========================================================================
+  function assignAgentsToSlots(registry){
+    // agrupa por sala, ordem estável (por id) -> vaga; overflow -> open space
+    deskPos={};
+    var bucket={}; ROOMS.forEach(function(r){ bucket[r.key]=[]; });
+    registry.slice().sort(function(a,b){ return String(a.id)<String(b.id)?-1:1; }).forEach(function(a){
+      var rk=roomForAgent(a);
+      (bucket[rk]=bucket[rk]||[]).push(a);
+    });
+    var placement=[];   // {agent, slot}
+    var overflow=[];
+    ROOMS.forEach(function(room){
+      var slots=deskSlotsFor(room);
+      var members=bucket[room.key]||[];
+      members.forEach(function(a,i){
+        if(i<slots.length){ placement.push({agent:a, slot:slots[i], room:room, variant:i}); }
+        else overflow.push(a);
+      });
+    });
+    // overflow -> open space extra
+    if(overflow.length){
+      var openRoom=roomByKey.open;
+      var used=(bucket.open||[]).length;
+      var oslots=deskSlotsFor(openRoom);
+      overflow.forEach(function(a,i){ var idx=used+i; if(idx<oslots.length) placement.push({agent:a, slot:oslots[idx], room:openRoom, variant:idx}); });
+    }
+    // registra deskPos (centro do personagem)
+    placement.forEach(function(p){ var a=deskAnchor(p.slot); deskPos[p.agent.id]={x:a.charX, y:a.charY}; });
+    return placement;
+  }
+
+  function renderOffice(){
+    if(!assetsReady || !agentsData){ return; }
+    rootStyleCache=null;
+    var registry=buildRegistry();
+    registryById={}; registry.forEach(function(a){ registryById[a.id]=a; });
+
+    // canvas dims: resolução interna sempre cheia (nitidez); exibição escala por zoom
+    canvas.width = MAP_W_T*TILE*S; canvas.height = MAP_H_T*TILE*S;
+    applyCanvasDisplaySize();
+    ctx=canvas.getContext("2d");
+    ctx.setTransform(S,0,0,S,0,0);
+    ctx.imageSmoothingEnabled=false;
+
+    // fundo total (jardim claro)
+    ctx.fillStyle=cssVar("--map-bg","#DCEFD6"); ctx.fillRect(0,0,MAP_W_T*TILE,MAP_H_T*TILE);
+
+    // 1) jardim verde (borda esquerda) + árvores
+    drawGarden();
+
+    // 2) corredor bege em todo o interior do prédio (piso base)
+    fillFloorTile("room", FLOOR.corridor, BUILD.x, BUILD.y, BUILD.w, BUILD.h);
+
+    // 3) piso de cada sala por cima
+    ROOMS.forEach(drawRoomFloor);
+
+    // 4) paredes (perímetro do prédio + molduras das salas c/ portas)
+    // perímetro externo
+    (function(){
+      var x0=BUILD.x*TILE, y0=BUILD.y*TILE, w=BUILD.w*TILE, h=BUILD.h*TILE;
+      wallBand(x0,y0,w,WT_TOP);
+      wallBand(x0,y0+h-WT,w,WT);
+      wallBand(x0,y0,WT,h);
+      wallBand(x0+w-WT,y0,WT,h);
+    })();
+    ROOMS.forEach(drawRoomWalls);
+
+    // 5) móveis/decoração + tapetes por sala
+    ROOMS.forEach(drawRoomDecor);
+
+    // 6) vagas de mesa + personagens
+    var placement=assignAgentsToSlots(registry);
+
+    // injeta a Assistente (sintética, fixa ao lado da Michelle na Direção) — não vem
+    // dos dados, então entra DEPOIS do assignAgentsToSlots e é registrada à parte.
+    var bossRoom=roomByKey.boss;
+    var assistSlot={tx: bossRoom.x+Math.floor(bossRoom.w/2)+2, ty: bossRoom.y+5};
+    registryById[ASSISTANT.id]=ASSISTANT;
+    var aAnchor=deskAnchor(assistSlot);
+    deskPos[ASSISTANT.id]={x:aAnchor.charX, y:aAnchor.charY};
+    placement.push({agent:ASSISTANT, slot:assistSlot, room:bossRoom, variant:0, synthetic:true});
+
+    // estado (visitas etc.) — precisa de deskPos já pronto
+    var raws=registry.map(computeRawEventInfo);
+    var groupsByTarget={};
+    raws.forEach(function(r){ if(r.isRecentTarget)(groupsByTarget[r.targetId]=groupsByTarget[r.targetId]||[]).push(r); });
+    Object.keys(groupsByTarget).forEach(function(tid){ groupsByTarget[tid].forEach(function(r,i){ r.visitIndex=i; }); });
+    var stateById={};
+    raws.forEach(function(raw){ stateById[raw.agent.id]=finalizeCharState(raw, raw.visitIndex||0); lastCharState[raw.agent.id]=stateById[raw.agent.id]; });
+    // estado próprio da Assistente (não tem `rec`; nunca "Sem dados")
+    stateById[ASSISTANT.id]={state:"assistant", bubble:"Tarefas sob demanda — atua quando a Michelle pede", visiting:false};
+    lastCharState[ASSISTANT.id]=stateById[ASSISTANT.id];
+
+    // rótulos das salas (pílula com nome + cor do squad)
+    ROOMS.forEach(drawRoomLabel);
+
+    // desenha mesas primeiro (todas), depois personagens sentados nas suas próprias mesas
+    charHit=[];
+    // mesas (só salas com mesa; boss/lounge têm móvel próprio)
+    placement.forEach(function(p){ if(roomHasDesks(p.room)) drawDeskFurniture(p.slot, p.variant); });
+    // personagens (ordem: por Y p/ sobreposição correta)
+    var drawList=placement.map(function(p){ return p; }).sort(function(a,b){ return a.slot.ty-b.slot.ty; });
+    drawList.forEach(function(p){
+      var st=stateById[p.agent.id]||{state:"unknown"};
+      var a=deskAnchor(p.slot);
+      var cx=a.charX, cy=a.charY;
+      // se estiver "visitando" outra mesa, desenha no destino (offset)
+      if(st.visiting){ cx=st.x; cy=st.y; }
+      drawCharacter(p.agent, cx, cy, st.state);
+      // etiqueta de nome: só para quem está ATIVO (working/meeting) ou sob o hover;
+      // ocioso/parked/desconhecido mostram só o sprite + anel de estado (leitura limpa,
+      // como a referência). Nome de qualquer um aparece ao passar o mouse.
+      // nome SEMPRE visível; nível de destaque = ativo / hover / boss (grande),
+      // senão pequeno e discreto
+      var prominent = (p.agent.type==="boss" || p.agent.type==="assistant" || st.state==="working" || st.state==="meeting" || hoveredId===p.agent.id);
+      drawNameplate(p.agent, cx, cy, st.state, prominent, hoveredId===p.agent.id);
+      // highlight ring
+      if(highlightId===p.agent.id){ ctx.save(); ctx.strokeStyle=cssVar("--health-error","#C0392B"); ctx.lineWidth=2; roundRect(cx-4,cy-4,24,40,5); ctx.stroke(); ctx.restore(); }
+      charHit.push({id:p.agent.id, x:cx-2, y:cy-12, w:20, h:46});
+    });
+
+    updateTopStatusBar();
+    renderHistory();
+    if(selectedId){ if(registryById[selectedId]) fillDetailPanel(selectedId); else closeDetailPanel(); }
+  }
+
+  // ==========================================================================
+  // BARRA DE SAÚDE
+  // ==========================================================================
+  function healthChip(el,value){ el.classList.remove("ok","warn","error"); var v=el.querySelector(".h-val"); if(!value){ v.textContent="—"; return; } v.textContent=value; if(value==="ok") el.classList.add("ok"); else if(value==="stale") el.classList.add("warn"); else el.classList.add("error"); }
+  function updateTopStatusBar(){
+    var health=(statusData&&statusData.source_health)||{};
+    healthChip(healthTrelloEl, health.trello); healthChip(healthTriggersEl, health.triggers);
+    if(statusData&&statusData.generated_at){ updatedAtEl.innerHTML=""; updatedAtEl.appendChild(document.createTextNode("Última atualização: ")); var s=document.createElement("strong"); s.textContent=fmtDateTime(statusData.generated_at); updatedAtEl.appendChild(s); }
+    else updatedAtEl.textContent="aguardando primeira leitura de status.json…";
+  }
+
+  // ==========================================================================
+  // HISTÓRICO
+  // ==========================================================================
+  var historyPanel,historyToggleBtn,historyBodyEl,historyCountEl,highlightTimer=null;
+  function clearNode(n){ while(n.firstChild) n.removeChild(n.firstChild); }
+  function actorDisplay(id){ if(!id) return {label:"—",isVisitor:false}; var a=registryById[id]; if(a) return {label:a.nome||id,isVisitor:!!a.isVisitor}; return {label:String(id).replace(/^desconhecido:/,""),isVisitor:true}; }
+  function dayLabel(d,now){ var d0=new Date(d.getFullYear(),d.getMonth(),d.getDate()),n0=new Date(now.getFullYear(),now.getMonth(),now.getDate()); var dd=Math.round((n0-d0)/86400000); if(dd===0) return "Hoje"; if(dd===1) return "Ontem"; return d.toLocaleDateString(undefined,{day:"2-digit",month:"2-digit",year:"numeric"}); }
+  function highlightDesk(actorId){
+    if(!actorId||!deskPos[actorId]) return;
+    highlightId=actorId; renderOffice();
+    // scroll até a mesa
+    var p=deskPos[actorId];
+    if(wrapperEl){ wrapperEl.scrollTo({left:p.x*S - wrapperEl.clientWidth/2, top:p.y*S - wrapperEl.clientHeight/2, behavior:"smooth"}); }
+    if(highlightTimer) clearTimeout(highlightTimer);
+    highlightTimer=setTimeout(function(){ highlightId=null; renderOffice(); },3000);
+  }
+  function updateHistoryCount(n){ if(historyCountEl) historyCountEl.textContent=n?("("+n+")"):""; }
+  function renderHistory(){
+    if(!historyBodyEl) return;
+    clearNode(historyBodyEl);
+    var events=(statusData&&Array.isArray(statusData.events))?statusData.events.slice():[];
+    events.sort(function(a,b){ return Date.parse(b.ts)-Date.parse(a.ts); });
+    updateHistoryCount(events.length);
+    if(!events.length){ var e=document.createElement("div"); e.className="hist-empty"; e.textContent="sem eventos registrados ainda"; historyBodyEl.appendChild(e); return; }
+    var now=new Date(),currentKey=null,list=null;
+    events.forEach(function(e){
+      var d=new Date(e.ts); if(isNaN(d.getTime())) return;
+      var key=d.toDateString();
+      if(key!==currentKey){ currentKey=key; var h=document.createElement("div"); h.className="hist-day"; h.textContent=dayLabel(d,now); historyBodyEl.appendChild(h); list=document.createElement("ul"); list.className="hist-list"; historyBodyEl.appendChild(list); }
+      var ai=actorDisplay(e.actor);
+      var li=document.createElement("li"); li.className="hist-event"; li.tabIndex=0; li.setAttribute("role","button");
+      var t=document.createElement("span"); t.className="hist-time font-mono"; t.textContent=fmtTime(e.ts)||"--:--"; li.appendChild(t);
+      var ac=document.createElement("span"); ac.className="hist-actor"+(ai.isVisitor?" unknown-actor":""); ac.textContent=ai.label; li.appendChild(ac);
+      if(ai.isVisitor){ var b=document.createElement("span"); b.className="hist-badge"; b.textContent="não registrado"; li.appendChild(b); }
+      var body=document.createElement("span"); body.className="hist-body-text"; var line=(e.verb||"")+(e.object?(": "+e.object):""); if(e.target) line+=" → "+actorDisplay(e.target).label; body.textContent=line; li.appendChild(body);
+      if(e.url){ var a=document.createElement("a"); a.className="hist-link font-mono"; a.href=e.url; a.target="_blank"; a.rel="noopener noreferrer"; a.textContent="abrir evidência ↗"; a.addEventListener("click",function(ev){ ev.stopPropagation(); }); li.appendChild(a); }
+      (function(actorId){ li.addEventListener("click",function(){ highlightDesk(actorId); }); li.addEventListener("keydown",function(ev){ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); highlightDesk(actorId); } }); })(e.actor);
+      list.appendChild(li);
+    });
+  }
+  function setHistoryCollapsed(collapsed){ if(!historyPanel||!historyToggleBtn) return; historyPanel.classList.toggle("collapsed",collapsed); historyToggleBtn.setAttribute("aria-expanded",String(!collapsed)); historyToggleBtn.textContent=collapsed?"▸":"▾"; }
+
+  // ==========================================================================
+  // DETALHE (só leitura)
+  // ==========================================================================
+  function fillDetailPanel(id){
+    var agent=registryById[id]; if(!agent) return; selectedId=id;
+    var state=lastCharState[id]||finalizeCharState(computeRawEventInfo(agent),0);
+    document.getElementById("dp-nome").textContent=agent.nome||agent.id;
+    document.getElementById("dp-papel").textContent=agent.papel||"";
+    var e=document.getElementById("dp-estado"); e.textContent=ESTADO_LABELS[state.state]||state.state; e.className="state-chip font-display state-"+state.state;
+    var isAssistant=(agent.type==="assistant");
+    document.getElementById("dp-atividade").textContent = isAssistant
+      ? ("Tarefas sob demanda — modelo " + (agent.model||"Sonnet"))
+      : (state.bubble||"—");
+    document.getElementById("dp-badge-visitor").style.display=agent.isVisitor?"inline-block":"none";
+    var evList=document.getElementById("dp-events"); evList.innerHTML="";
+    // a Assistente é sintética: não tem eventos no status.json
+    var events= isAssistant ? [] : ((statusData&&Array.isArray(statusData.events))?statusData.events.filter(function(ev){ return ev.actor===id; }):[]);
+    events.sort(function(a,b){ return Date.parse(b.ts)-Date.parse(a.ts); }); events=events.slice(0,5);
+    if(!events.length){ var em=document.createElement("li"); em.className="dp-empty"; em.textContent= isAssistant ? "sem eventos — atua sob demanda" : "sem eventos registrados para este ator"; evList.appendChild(em); }
+    else events.forEach(function(ev){
+      var li=document.createElement("li");
+      var t=document.createElement("span"); t.className="ev-time font-mono"; t.textContent=fmtDateTime(ev.ts)+(ev.target?(" → "+ev.target):""); li.appendChild(t);
+      var b=document.createElement("span"); b.className="ev-body"; b.textContent=(ev.verb||"")+": "+(ev.object||""); li.appendChild(b);
+      if(ev.url){ var a=document.createElement("a"); a.className="font-mono"; a.href=ev.url; a.target="_blank"; a.rel="noopener noreferrer"; a.textContent="abrir evidência ↗"; var w=document.createElement("div"); w.appendChild(a); li.appendChild(w); }
+      evList.appendChild(li);
+    });
+    detailPanel.classList.add("open"); detailPanel.setAttribute("aria-hidden","false");
+  }
+  function closeDetailPanel(){ selectedId=null; detailPanel.classList.remove("open"); detailPanel.setAttribute("aria-hidden","true"); }
+
+  function canvasHitAt(ev){
+    var rect=canvas.getBoundingClientRect();
+    var px=(ev.clientX-rect.left)/rect.width * (MAP_W_T*TILE);
+    var py=(ev.clientY-rect.top)/rect.height * (MAP_H_T*TILE);
+    for(var i=charHit.length-1;i>=0;i--){ var h=charHit[i]; if(px>=h.x&&px<=h.x+h.w&&py>=h.y&&py<=h.y+h.h){ return h; } }
+    return null;
+  }
+  function onCanvasClick(ev){
+    var hit=canvasHitAt(ev);
+    if(hit) fillDetailPanel(hit.id);
+  }
+  function onCanvasHover(ev){
+    var hit=canvasHitAt(ev);
+    var id=hit?hit.id:null;
+    if(id!==hoveredId){ hoveredId=id; canvas.style.cursor=id?"pointer":"default"; if(agentsData) renderOffice(); }
+  }
+  function onCanvasLeave(){ if(hoveredId!==null){ hoveredId=null; canvas.style.cursor="default"; if(agentsData) renderOffice(); } }
+
+  // ==========================================================================
+  // BOOT
+  // ==========================================================================
+  function loadAssets(cb){
+    var keys=Object.keys(SHEETS), pending=keys.length, failed=false;
+    keys.forEach(function(k){
+      var im=new Image();
+      im.onload=function(){ img[k]=im; if(--pending===0) cb(failed); };
+      im.onerror=function(){ failed=true; if(--pending===0) cb(failed); };
+      im.src=SHEETS[k];
+    });
+  }
+
+  function init(){
+    canvas=document.getElementById("officeCanvas");
+    ctx=canvas.getContext("2d");
+    wrapperEl=document.getElementById("canvasWrapper");
+    bannerEl=document.getElementById("banner");
+    appEl=document.getElementById("app");
+    detailPanel=document.getElementById("detailPanel");
+    lockOverlay=document.getElementById("lockOverlay");
+    lockForm=document.getElementById("lockForm");
+    lockPasswordInput=document.getElementById("lockPassword");
+    lockError=document.getElementById("lockError");
+    healthTrelloEl=document.getElementById("healthTrello");
+    healthTriggersEl=document.getElementById("healthTriggers");
+    updatedAtEl=document.getElementById("updatedAt");
+    historyPanel=document.getElementById("historyPanel");
+    historyToggleBtn=document.getElementById("historyToggle");
+    historyBodyEl=document.getElementById("historyBody");
+    historyCountEl=document.getElementById("historyCount");
+
+    canvas.addEventListener("click", onCanvasClick);
+    canvas.addEventListener("mousemove", onCanvasHover);
+    canvas.addEventListener("mouseleave", onCanvasLeave);
+    document.getElementById("closeDetail").addEventListener("click", closeDetailPanel);
+    if(historyToggleBtn) historyToggleBtn.addEventListener("click",function(){ setHistoryCollapsed(!historyPanel.classList.contains("collapsed")); });
+    var historyExpandBtn=document.getElementById("historyExpand");
+    if(historyExpandBtn) historyExpandBtn.addEventListener("click",function(){
+      var exp=historyPanel.classList.toggle("expanded");
+      historyExpandBtn.setAttribute("aria-pressed",String(exp));
+      historyExpandBtn.textContent=exp?"⤡":"⤢";
+      // se expandir estando recolhido, reabre
+      if(exp && historyPanel.classList.contains("collapsed")) setHistoryCollapsed(false);
+    });
+    setHistoryCollapsed(!!(window.matchMedia && window.matchMedia("(max-width:800px)").matches));
+
+    // ---- zoom: botões −/valor/+ , "ajustar" , e Ctrl/⌘ + roda apontando pro cursor ----
+    var zoomInBtn=document.getElementById("zoomIn"), zoomOutBtn=document.getElementById("zoomOut"), zoomFitBtn=document.getElementById("zoomFit");
+    if(zoomInBtn)  zoomInBtn.addEventListener("click", function(){ setZoom(zoom+0.05); });
+    if(zoomOutBtn) zoomOutBtn.addEventListener("click", function(){ setZoom(zoom-0.05); });
+    if(zoomFitBtn) zoomFitBtn.addEventListener("click", fitZoom);
+    wrapperEl.addEventListener("wheel", function(ev){
+      if(ev.ctrlKey || ev.metaKey){ ev.preventDefault(); setZoom(zoom + (ev.deltaY<0?0.04:-0.04), ev.clientX, ev.clientY); }
+    }, {passive:false});
+    applyCanvasDisplaySize(); updateZoomLabel();
+
+    function onThemeMaybeChanged(){ rootStyleCache=null; if(agentsData) renderOffice(); }
+    if(window.matchMedia){ var mq=window.matchMedia("(prefers-color-scheme: dark)"); if(mq.addEventListener) mq.addEventListener("change",onThemeMaybeChanged); else if(mq.addListener) mq.addListener(onThemeMaybeChanged); }
+    if(window.MutationObserver){ new MutationObserver(onThemeMaybeChanged).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]}); }
+
+    loadAssets(function(){
+      assetsReady=true;
+      detectModeAndStart();
+    });
+  }
+
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init);
+  else init();
+})();
+</script>
+</body>
+</html>
