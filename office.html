@@ -548,6 +548,7 @@
   // ==========================================================================
   function buildRegistry(){
     var known={}; agentsData.agents.forEach(function(a){ known[a.id]=true; });
+    known[ASSISTANT.id]=true; // Assistente é sintética (injetada à parte) — nunca vira "visitante"
     var registry=agentsData.agents.map(function(a){ return {id:a.id,nome:a.nome,papel:a.papel,squad:a.squad,type:a.type,isVisitor:false}; });
     var visitorIds={};
     if(statusData){
@@ -993,8 +994,15 @@
     Object.keys(groupsByTarget).forEach(function(tid){ groupsByTarget[tid].forEach(function(r,i){ r.visitIndex=i; }); });
     var stateById={};
     raws.forEach(function(raw){ stateById[raw.agent.id]=finalizeCharState(raw, raw.visitIndex||0); lastCharState[raw.agent.id]=stateById[raw.agent.id]; });
-    // estado próprio da Assistente (não tem `rec`; nunca "Sem dados")
-    stateById[ASSISTANT.id]={state:"assistant", bubble:"Tarefas sob demanda — atua quando a Michelle pede", visiting:false};
+    // estado próprio da Assistente (não tem `rec`; nunca "Sem dados").
+    // Quando o feed (status.json.agents.assistente) traz atividade real, reflete o
+    // estado dela (working/idle/etc.) e usa a `activity` como balão; senão, o default.
+    var assistRec=(statusData&&statusData.agents)?statusData.agents[ASSISTANT.id]:null;
+    if(assistRec&&assistRec.state){
+      stateById[ASSISTANT.id]={state:assistRec.state, bubble:(assistRec.activity||"Tarefas sob demanda — atua quando a Michelle pede"), visiting:false};
+    } else {
+      stateById[ASSISTANT.id]={state:"assistant", bubble:"Tarefas sob demanda — atua quando a Michelle pede", visiting:false};
+    }
     lastCharState[ASSISTANT.id]=stateById[ASSISTANT.id];
 
     // ---- desenha o FUNDO estático no offscreen (ctx aponta pro bgCtx) ----
