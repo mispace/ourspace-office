@@ -282,6 +282,22 @@
   var CRYPTO_MODE = false, cryptoKey = null, encAgentsEnvelope = null, encStatusEnvelope = null;
   var pollIntervalStarted = false;
 
+  // ---- CAMADA DE ANIMAÇÃO (movimento por estado) --------------------------
+  // O fundo (jardim/salas/paredes/móveis/mesas/rótulos) é ESTÁTICO: desenhado
+  // uma vez num canvas offscreen (bgCanvas) sempre que os DADOS mudam. Só os
+  // personagens são redesenhados a cada frame (rAF), interpolando a posição
+  // atual {x,y} rumo ao alvo {tx,ty} ditado pelo estado do agente. Assim o
+  // contrato de dados, a cripto e o poll continuam intactos — isto é pura
+  // camada de apresentação.
+  var mainCtx = null, bgCanvas = null, bgCtx = null, bgReady = false;
+  var motion = {};            // id -> {x,y,tx,ty,homeX,homeY,phase,state,dist,drawX,drawY}
+  var sceneList = [];         // placement atual (agente+slot+sala) p/ o loop desenhar
+  var sceneStateById = {};    // id -> estado finalizado (state/bubble/visiting)
+  var rafId = null;
+  var WALK_THRESH = 1.4;      // px-fonte: acima disto o personagem está "andando"
+  // anel de posições de reunião ao redor do centro da sala (px-fonte, top-left do sprite)
+  var MEET_RING = [{dx:0,dy:2},{dx:-17,dy:4},{dx:17,dy:4},{dx:-11,dy:-13},{dx:11,dy:-13},{dx:0,dy:18},{dx:-20,dy:18},{dx:20,dy:18}];
+
   // ---- assets (sprite sheets) ----
   var SHEETS = {
     room: "./assets/modern_interiors/Interiors_free/Room_Builder_free_16x16.png",
@@ -933,6 +949,10 @@
     return placement;
   }
 
+  // renderOffice = "os DADOS mudaram": reconstrói o modelo da cena (registro,
+  // vagas, estados), redesenha o FUNDO estático para o offscreen e garante que
+  // o loop de animação esteja rodando. Não desenha personagens diretamente —
+  // isso é papel do loop (drawScene), a cada frame, nas posições animadas.
   function renderOffice(){
     if(!assetsReady || !agentsData){ return; }
     rootStyleCache=null;
@@ -942,37 +962,15 @@
     // canvas dims: resolução interna sempre cheia (nitidez); exibição escala por zoom
     canvas.width = MAP_W_T*TILE*S; canvas.height = MAP_H_T*TILE*S;
     applyCanvasDisplaySize();
-    ctx=canvas.getContext("2d");
-    ctx.setTransform(S,0,0,S,0,0);
-    ctx.imageSmoothingEnabled=false;
+    mainCtx=canvas.getContext("2d");
 
-    // fundo total (jardim claro)
-    ctx.fillStyle=cssVar("--map-bg","#DCEFD6"); ctx.fillRect(0,0,MAP_W_T*TILE,MAP_H_T*TILE);
+    // offscreen do fundo, mesma resolução interna do canvas visível
+    if(!bgCanvas){ bgCanvas=document.createElement("canvas"); }
+    bgCanvas.width=canvas.width; bgCanvas.height=canvas.height;
+    bgCtx=bgCanvas.getContext("2d");
 
-    // 1) jardim verde (borda esquerda) + árvores
-    drawGarden();
-
-    // 2) corredor bege em todo o interior do prédio (piso base)
-    fillFloorTile("room", FLOOR.corridor, BUILD.x, BUILD.y, BUILD.w, BUILD.h);
-
-    // 3) piso de cada sala por cima
-    ROOMS.forEach(drawRoomFloor);
-
-    // 4) paredes (perímetro do prédio + molduras das salas c/ portas)
-    // perímetro externo
-    (function(){
-      var x0=BUILD.x*TILE, y0=BUILD.y*TILE, w=BUILD.w*TILE, h=BUILD.h*TILE;
-      wallBand(x0,y0,w,WT_TOP);
-      wallBand(x0,y0+h-WT,w,WT);
-      wallBand(x0,y0,WT,h);
-      wallBand(x0+w-WT,y0,WT,h);
-    })();
-    ROOMS.forEach(drawRoomWalls);
-
-    // 5) móveis/decoração + tapetes por sala
-    ROOMS.forEach(drawRoomDecor);
-
-    // 6) vagas de mesa + personagens
+    // 6) vagas de mesa + personagens (calcula posições ANTES de desenhar o fundo,
+    // pois as mesas fazem parte do fundo estático)
     var placement=assignAgentsToSlots(registry);
 
     // injeta a Assistente (sintética, fixa ao lado da Michelle na Direção) — não vem
@@ -995,37 +993,170 @@
     stateById[ASSISTANT.id]={state:"assistant", bubble:"Tarefas sob demanda — atua quando a Michelle pede", visiting:false};
     lastCharState[ASSISTANT.id]=stateById[ASSISTANT.id];
 
-    // rótulos das salas (pílula com nome + cor do squad)
-    ROOMS.forEach(drawRoomLabel);
-
-    // desenha mesas primeiro (todas), depois personagens sentados nas suas próprias mesas
-    charHit=[];
-    // mesas (só salas com mesa; boss/lounge têm móvel próprio)
+    // ---- desenha o FUNDO estático no offscreen (ctx aponta pro bgCtx) ----
+    ctx=bgCtx;
+    ctx.setTransform(S,0,0,S,0,0);
+    ctx.imageSmoothingEnabled=false;
+    ctx.fillStyle=cssVar("--map-bg","#DCEFD6"); ctx.fillRect(0,0,MAP_W_T*TILE,MAP_H_T*TILE);
+    drawGarden();                                                     // 1) jardim + árvores
+    fillFloorTile("room", FLOOR.corridor, BUILD.x, BUILD.y, BUILD.w, BUILD.h); // 2) corredor
+    ROOMS.forEach(drawRoomFloor);                                    // 3) pisos das salas
+    (function(){                                                     // 4) perímetro do prédio
+      var x0=BUILD.x*TILE, y0=BUILD.y*TILE, w=BUILD.w*TILE, h=BUILD.h*TILE;
+      wallBand(x0,y0,w,WT_TOP); wallBand(x0,y0+h-WT,w,WT); wallBand(x0,y0,WT,h); wallBand(x0+w-WT,y0,WT,h);
+    })();
+    ROOMS.forEach(drawRoomWalls);
+    ROOMS.forEach(drawRoomDecor);                                    // 5) móveis/tapetes
+    ROOMS.forEach(drawRoomLabel);                                    // rótulos das salas
+    // mesas (fundo estático — o personagem que se afasta deixa a mesa vazia)
     placement.forEach(function(p){ if(roomHasDesks(p.room)) drawDeskFurniture(p.slot, p.variant); });
-    // personagens (ordem: por Y p/ sobreposição correta)
-    var drawList=placement.map(function(p){ return p; }).sort(function(a,b){ return a.slot.ty-b.slot.ty; });
-    drawList.forEach(function(p){
-      var st=stateById[p.agent.id]||{state:"unknown"};
-      var a=deskAnchor(p.slot);
-      var cx=a.charX, cy=a.charY;
-      // se estiver "visitando" outra mesa, desenha no destino (offset)
-      if(st.visiting){ cx=st.x; cy=st.y; }
-      drawCharacter(p.agent, cx, cy, st.state);
-      // etiqueta de nome: só para quem está ATIVO (working/meeting) ou sob o hover;
-      // ocioso/parked/desconhecido mostram só o sprite + anel de estado (leitura limpa,
-      // como a referência). Nome de qualquer um aparece ao passar o mouse.
-      // nome SEMPRE visível; nível de destaque = ativo / hover / boss (grande),
-      // senão pequeno e discreto
-      var prominent = (p.agent.type==="boss" || p.agent.type==="assistant" || st.state==="working" || st.state==="meeting" || hoveredId===p.agent.id);
-      drawNameplate(p.agent, cx, cy, st.state, prominent, hoveredId===p.agent.id);
-      // highlight ring
-      if(highlightId===p.agent.id){ ctx.save(); ctx.strokeStyle=cssVar("--health-error","#C0392B"); ctx.lineWidth=2; roundRect(cx-4,cy-4,24,40,5); ctx.stroke(); ctx.restore(); }
-      charHit.push({id:p.agent.id, x:cx-2, y:cy-12, w:20, h:46});
-    });
+    bgReady=true;
+
+    // ---- modelo da cena + alvos de movimento por estado ----
+    var roomOf={}; placement.forEach(function(p){ roomOf[p.agent.id]=p.room; });
+    var targets=computeTargets(placement, stateById, roomOf);
+    updateMotion(placement, targets, stateById);
+    sceneList=placement;
+    sceneStateById=stateById;
 
     updateTopStatusBar();
     renderHistory();
     if(selectedId){ if(registryById[selectedId]) fillDetailPanel(selectedId); else closeDetailPanel(); }
+
+    drawScene();       // desenha um frame já (evita canvas em branco após o rebuild)
+    ensureAnimating();
+  }
+
+  // ==========================================================================
+  // MOVIMENTO POR ESTADO — alvos, easing e micro-movimento (bob/wander)
+  // ==========================================================================
+  function clampInRoom(room, x, y){
+    var left=room.x*TILE + WT + 1;
+    var right=(room.x+room.w)*TILE - WT - 16;
+    var top=room.y*TILE + WT_TOP + 12;
+    var bot=(room.y+room.h)*TILE - WT - 32;
+    if(right<left) right=left; if(bot<top) bot=top;
+    return {x:Math.max(left,Math.min(right,x)), y:Math.max(top,Math.min(bot,y))};
+  }
+  // ponto de reunião: ao redor do centro da PRÓPRIA sala do agente; agentes em
+  // reunião da mesma sala se juntam num anel comum (mesa virtual) e ficam DENTRO
+  // dos limites da sala.
+  function meetingPoint(room, i){
+    var o=MEET_RING[i%MEET_RING.length];
+    var baseX=(room.x+room.w/2)*TILE - TILE/2 + o.dx;
+    var baseY=(room.y+room.h/2)*TILE - TILE + o.dy;
+    return clampInRoom(room, baseX, baseY);
+  }
+  // ponto de descanso na Zona de Descanso (lounge), espalhado por índice
+  function loungePoint(i){ return meetingPoint(roomByKey.lounge, i); }
+
+  function computeTargets(placement, stateById, roomOf){
+    var targets={}, meetIdx={}, parkIdx=0;
+    placement.forEach(function(p){
+      var id=p.agent.id, st=stateById[id]||{state:"unknown"};
+      var home=deskPos[id]||{x:0,y:0};
+      var tx=home.x, ty=home.y;
+      if(st.visiting){                 // já visita a mesa de outro → esse é o alvo
+        tx=st.x; ty=st.y;
+      } else if(st.state==="meeting"){ // reúne no centro da própria sala
+        var rm=roomOf[id]||p.room, k=rm.key;
+        var i=(meetIdx[k]=(meetIdx[k]||0)); meetIdx[k]=i+1;
+        var pt=meetingPoint(rm, i); tx=pt.x; ty=pt.y;
+      } else if(st.state==="parked"){  // caminha p/ Zona de Descanso e repousa
+        var rm2=roomOf[id]||p.room;
+        if(rm2.key!=="lounge"){ var pp=loungePoint(parkIdx++); tx=pp.x; ty=pp.y; }
+        // se já mora no lounge (type parked), fica na própria vaga (home)
+      }
+      // working / idle / assistant / unknown → home (o micro-movimento faz bob/wander)
+      targets[id]={tx:tx, ty:ty};
+    });
+    return targets;
+  }
+
+  // atualiza o mapa de movimento preservando a posição atual (re-rota suave,
+  // nunca teletransporta) e semeia agentes novos na sua mesa (home).
+  function updateMotion(placement, targets, stateById){
+    var live={};
+    placement.forEach(function(p){
+      var id=p.agent.id; live[id]=true;
+      var home=deskPos[id]||{x:0,y:0};
+      var tgt=targets[id]||{tx:home.x, ty:home.y};
+      var m=motion[id];
+      if(!m){ m={x:home.x, y:home.y, tx:tgt.tx, ty:tgt.ty, homeX:home.x, homeY:home.y, phase:(hashId(id)%628)/100, dist:0, drawX:home.x, drawY:home.y}; motion[id]=m; }
+      else { m.tx=tgt.tx; m.ty=tgt.ty; m.homeX=home.x; m.homeY=home.y; }
+      m.state=(stateById[id]&&stateById[id].state)||"unknown";
+    });
+    Object.keys(motion).forEach(function(id){ if(!live[id]) delete motion[id]; });
+  }
+
+  // ease cada agente rumo ao alvo (lerp; snap quando perto)
+  function stepMotion(){
+    Object.keys(motion).forEach(function(id){
+      var m=motion[id];
+      var dx=m.tx-m.x, dy=m.ty-m.y, d=Math.sqrt(dx*dx+dy*dy);
+      m.dist=d;
+      if(d>0.35){ m.x+=dx*0.08; m.y+=dy*0.08; }
+      else { m.x=m.tx; m.y=m.ty; m.dist=0; }
+    });
+  }
+
+  // micro-movimento sobreposto (não muda o alvo): bob de digitação, wander ocioso,
+  // bob de caminhada, respirar em pé. Determinístico por fase semeada no agente.
+  function microMotion(m, state, walking, t){
+    var ph=m.phase, ox=0, oy=0;
+    if(walking){ oy=Math.sin(t*11 + ph)*1.3; }           // balanço de passada
+    else if(state==="working"){ oy=Math.sin(t*3.2 + ph)*1.0; }   // digitando
+    else if(state==="idle"){                              // deriva lenta < 1 tile, ida e volta
+      ox=Math.sin(t*0.55 + ph)*6.5; oy=Math.cos(t*0.42 + ph*1.3)*4.0 + Math.sin(t*2 + ph)*0.5;
+    }
+    else if(state==="meeting"){ oy=Math.sin(t*2.2 + ph)*0.7; ox=Math.sin(t*1.3 + ph*0.7)*0.6; }
+    else if(state==="parked"){ oy=Math.sin(t*1.2 + ph)*0.9; }    // respiração lenta
+    else { oy=Math.sin(t*2 + ph)*0.6; }                  // assistant / unknown: bob mínimo
+    return {x:ox, y:oy};
+  }
+
+  // ==========================================================================
+  // LOOP DE ANIMAÇÃO (rAF) — só redesenha personagens sobre o fundo em cache
+  // ==========================================================================
+  function ensureAnimating(){ if(rafId==null && !document.hidden){ rafId=requestAnimationFrame(frame); } }
+  function frame(ts){
+    rafId=null;
+    if(document.hidden) return;              // pausa quando a aba não está visível
+    stepMotion();
+    drawScene(ts);
+    rafId=requestAnimationFrame(frame);      // micro-movimento é contínuo → segue rodando
+  }
+  function drawScene(ts){
+    if(!bgReady || !bgCanvas || !mainCtx) return;
+    // 1) blita o fundo estático (1:1)
+    mainCtx.setTransform(1,0,0,1,0,0);
+    mainCtx.imageSmoothingEnabled=false;
+    mainCtx.drawImage(bgCanvas, 0, 0);
+    // 2) personagens em coords de fonte (escala S), nas posições animadas
+    ctx=mainCtx;
+    ctx.setTransform(S,0,0,S,0,0);
+    ctx.imageSmoothingEnabled=false;
+    var t=(ts||performance.now())/1000;
+    charHit=[];
+    // ordena por Y de desenho p/ sobreposição correta
+    var list=sceneList.slice().sort(function(a,b){
+      var ma=motion[a.agent.id], mb=motion[b.agent.id];
+      return (ma?ma.y:a.slot.ty*TILE)-(mb?mb.y:b.slot.ty*TILE);
+    });
+    list.forEach(function(p){
+      var m=motion[p.agent.id]; if(!m) return;
+      var st=sceneStateById[p.agent.id]||{state:"unknown"};
+      var walking=(m.dist>WALK_THRESH);
+      var mic=microMotion(m, st.state, walking, t);
+      var dx=Math.round(m.x+mic.x), dy=Math.round(m.y+mic.y);
+      m.drawX=dx; m.drawY=dy;
+      drawCharacter(p.agent, dx, dy, st.state);
+      // nome SEMPRE visível; destaque = ativo / hover / boss (grande), senão pequeno
+      var prominent=(p.agent.type==="boss" || p.agent.type==="assistant" || st.state==="working" || st.state==="meeting" || hoveredId===p.agent.id);
+      drawNameplate(p.agent, dx, dy, st.state, prominent, hoveredId===p.agent.id);
+      if(highlightId===p.agent.id){ ctx.save(); ctx.strokeStyle=cssVar("--health-error","#C0392B"); ctx.lineWidth=2; roundRect(dx-4,dy-4,24,40,5); ctx.stroke(); ctx.restore(); }
+      charHit.push({id:p.agent.id, x:dx-2, y:dy-12, w:20, h:46});
+    });
   }
 
   // ==========================================================================
@@ -1048,12 +1179,12 @@
   function dayLabel(d,now){ var d0=new Date(d.getFullYear(),d.getMonth(),d.getDate()),n0=new Date(now.getFullYear(),now.getMonth(),now.getDate()); var dd=Math.round((n0-d0)/86400000); if(dd===0) return "Hoje"; if(dd===1) return "Ontem"; return d.toLocaleDateString(undefined,{day:"2-digit",month:"2-digit",year:"numeric"}); }
   function highlightDesk(actorId){
     if(!actorId||!deskPos[actorId]) return;
-    highlightId=actorId; renderOffice();
-    // scroll até a mesa
-    var p=deskPos[actorId];
+    highlightId=actorId; ensureAnimating();          // o anel é foreground → o loop mostra
+    // scroll até a mesa (posição atual do personagem, se estiver se movendo)
+    var mm=motion[actorId], p=(mm?{x:mm.drawX,y:mm.drawY}:deskPos[actorId]);
     if(wrapperEl){ wrapperEl.scrollTo({left:p.x*S - wrapperEl.clientWidth/2, top:p.y*S - wrapperEl.clientHeight/2, behavior:"smooth"}); }
     if(highlightTimer) clearTimeout(highlightTimer);
-    highlightTimer=setTimeout(function(){ highlightId=null; renderOffice(); },3000);
+    highlightTimer=setTimeout(function(){ highlightId=null; ensureAnimating(); },3000);
   }
   function updateHistoryCount(n){ if(historyCountEl) historyCountEl.textContent=n?("("+n+")"):""; }
   function renderHistory(){
@@ -1125,9 +1256,10 @@
   function onCanvasHover(ev){
     var hit=canvasHitAt(ev);
     var id=hit?hit.id:null;
-    if(id!==hoveredId){ hoveredId=id; canvas.style.cursor=id?"pointer":"default"; if(agentsData) renderOffice(); }
+    // hover só afeta o foreground (nameplate) → basta o loop refletir, sem reconstruir o fundo
+    if(id!==hoveredId){ hoveredId=id; canvas.style.cursor=id?"pointer":"default"; ensureAnimating(); }
   }
-  function onCanvasLeave(){ if(hoveredId!==null){ hoveredId=null; canvas.style.cursor="default"; if(agentsData) renderOffice(); } }
+  function onCanvasLeave(){ if(hoveredId!==null){ hoveredId=null; canvas.style.cursor="default"; ensureAnimating(); } }
 
   // ==========================================================================
   // BOOT
@@ -1144,7 +1276,7 @@
 
   function init(){
     canvas=document.getElementById("officeCanvas");
-    ctx=canvas.getContext("2d");
+    ctx=canvas.getContext("2d"); mainCtx=ctx;
     wrapperEl=document.getElementById("canvasWrapper");
     bannerEl=document.getElementById("banner");
     appEl=document.getElementById("app");
@@ -1189,6 +1321,12 @@
     function onThemeMaybeChanged(){ rootStyleCache=null; if(agentsData) renderOffice(); }
     if(window.matchMedia){ var mq=window.matchMedia("(prefers-color-scheme: dark)"); if(mq.addEventListener) mq.addEventListener("change",onThemeMaybeChanged); else if(mq.addListener) mq.addListener(onThemeMaybeChanged); }
     if(window.MutationObserver){ new MutationObserver(onThemeMaybeChanged).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]}); }
+
+    // retoma o loop de animação quando a aba volta a ficar visível (pausa quando oculta)
+    document.addEventListener("visibilitychange", function(){ if(!document.hidden) ensureAnimating(); });
+
+    // gancho de teste (posições de tela dos personagens, já com micro-movimento)
+    window.__agentPositions=function(){ var o={}; Object.keys(motion).forEach(function(id){ var m=motion[id]; o[id]={x:m.drawX, y:m.drawY, tx:m.tx, ty:m.ty, state:m.state}; }); return o; };
 
     loadAssets(function(){
       assetsReady=true;
