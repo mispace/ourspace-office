@@ -295,6 +295,8 @@
   var sceneStateById = {};    // id -> estado finalizado (state/bubble/visiting)
   var rafId = null;
   var WALK_THRESH = 1.4;      // px-fonte: acima disto o personagem está "andando"
+  var AMBIENT_ENABLED = true; // "vidinha": agentes ociosos passeiam de vez em quando (cosmético)
+  var ambientLastTs = 0;
   // anel de posições de reunião ao redor do centro da sala (px-fonte, top-left do sprite)
   var MEET_RING = [{dx:0,dy:2},{dx:-17,dy:4},{dx:17,dy:4},{dx:-11,dy:-13},{dx:11,dy:-13},{dx:0,dy:18},{dx:-20,dy:18},{dx:20,dy:18}];
 
@@ -1062,6 +1064,43 @@
   // ponto de descanso na Zona de Descanso (lounge), espalhado por índice
   function loungePoint(i){ return meetingPoint(roomByKey.lounge, i); }
 
+  // destino de um passeio cosmético: 55% Zona de Descanso, 45% passar na mesa de outro
+  function ambientDest(id){
+    if(roomByKey.lounge && Math.random()<0.55){ return loungePoint(Math.floor(Math.random()*4)); }
+    var others=Object.keys(deskPos).filter(function(k){ return k!==id; });
+    if(others.length){
+      var d=deskPos[others[Math.floor(Math.random()*others.length)]];
+      var off=VISIT_OFFSETS[Math.floor(Math.random()*VISIT_OFFSETS.length)];
+      return {x:d.x+off.dx, y:d.y+off.dy};
+    }
+    var h=deskPos[id]||{x:0,y:0}; return {x:h.x, y:h.y};
+  }
+  // "vidinha" cosmética: SÓ agentes ociosos (nunca boss/assistente, nunca quem
+  // trabalha/reúne/descansa). De vez em quando um sai da mesa, vai até a Zona de
+  // Descanso ou passa na mesa de outro, fica um pouco e volta. Não é atividade
+  // real — é só pra sala não parecer congelada.
+  function updateAmbient(t){
+    if(!AMBIENT_ENABLED) return;
+    var elig={};
+    sceneList.forEach(function(p){ if(p.agent.type!=="boss" && p.agent.type!=="assistant") elig[p.agent.id]=true; });
+    Object.keys(motion).forEach(function(id){
+      var m=motion[id];
+      var st=(sceneStateById[id]&&sceneStateById[id].state)||"unknown";
+      if(st!=="idle" || !elig[id]){ if(m.amb){ m.amb=null; m.tx=m.homeX; m.ty=m.homeY; } return; }
+      if(!m.amb){
+        if(Math.random()<0.05){                 // ~1 passeio por minuto por agente ocioso
+          var d=ambientDest(id); m.amb={phase:"going"}; m.tx=d.x; m.ty=d.y;
+        }
+      } else if(m.amb.phase==="going"){
+        if(m.dist<0.6){ m.amb.phase="linger"; m.amb.tEnd=t+5+Math.random()*7; }
+      } else if(m.amb.phase==="linger"){
+        if(t>m.amb.tEnd){ m.amb.phase="return"; m.tx=m.homeX; m.ty=m.homeY; }
+      } else if(m.amb.phase==="return"){
+        if(m.dist<0.6){ m.amb=null; m.tx=m.homeX; m.ty=m.homeY; }
+      }
+    });
+  }
+
   function computeTargets(placement, stateById, roomOf){
     var targets={}, meetIdx={}, parkIdx=0;
     placement.forEach(function(p){
@@ -1079,7 +1118,11 @@
         if(rm2.key!=="lounge"){ var pp=loungePoint(parkIdx++); tx=pp.x; ty=pp.y; }
         // se já mora no lounge (type parked), fica na própria vaga (home)
       }
-      // working / idle / assistant / unknown → home (o micro-movimento faz bob/wander)
+      // working / idle / assistant / unknown → home (o micro-movimento faz bob)
+      // exceção: passeio cosmético (ambient) ativo → preserva o alvo do passeio
+      // pra o refresh de dados não puxar o agente de volta no meio do caminho.
+      var mm=motion[id];
+      if(st.state==="idle" && mm && mm.amb){ tx=mm.tx; ty=mm.ty; }
       targets[id]={tx:tx, ty:ty};
     });
     return targets;
@@ -1115,17 +1158,18 @@
   // micro-movimento sobreposto (não muda o alvo): bob de digitação, wander ocioso,
   // bob de caminhada, respirar em pé. Determinístico por fase semeada no agente.
   function microMotion(m, state, walking, t){
-    // Movimento MUITO sutil: os corpos ficam basicamente parados, só uma leve
-    // "respiração"/bob de cabeça. Nada de perambular pela sala (a Michelle pediu
-    // pouco movimento). O deslocamento pra reunião (troca de alvo) continua — é
-    // o único movimento "grande", e é dirigido pelo dado real.
+    // Movimento sutil, mas VISÍVEL: como o desenho arredonda pra pixel inteiro,
+    // a amplitude precisa passar de ~1px pra aparecer na tela (antes era 0,3px e
+    // sumia no arredondamento — parecia tudo parado). Sem perambular pela sala:
+    // só respiração/bob de cabeça e um "tec-tec" de digitação quando trabalhando.
+    // O deslocamento pra reunião (troca de alvo) continua, dirigido pelo dado real.
     var ph=m.phase, ox=0, oy=0;
-    if(walking){ oy=Math.sin(t*6 + ph)*0.6; }            // caminhando: passada discreta
-    else if(state==="working"){ oy=Math.sin(t*2.6 + ph)*0.35; } // digitando: bob mínimo
-    else if(state==="idle"){ oy=Math.sin(t*1.1 + ph)*0.3; }     // ocioso: só respira (sem perambular)
-    else if(state==="meeting"){ oy=Math.sin(t*1.8 + ph)*0.3; }  // em reunião: bob mínimo
-    else if(state==="parked"){ oy=Math.sin(t*1.0 + ph)*0.4; }   // descansando: respiração lenta
-    else { oy=Math.sin(t*1.4 + ph)*0.3; }                // assistant / unknown: bob mínimo
+    if(walking){ oy=Math.sin(t*6 + ph)*1.8; ox=Math.sin(t*3 + ph)*0.7; }        // caminhando: passada
+    else if(state==="working"){ oy=Math.sin(t*3.4 + ph)*1.3; ox=Math.sin(t*7.5 + ph)*0.6; } // digitando: bob + tec-tec
+    else if(state==="idle"){ oy=Math.sin(t*1.2 + ph)*1.0; }     // ocioso: respira devagar
+    else if(state==="meeting"){ oy=Math.sin(t*1.9 + ph)*1.1; }  // reunião: bob leve
+    else if(state==="parked"){ oy=Math.sin(t*1.0 + ph)*1.2; }   // descansando: respiração lenta
+    else { oy=Math.sin(t*1.4 + ph)*1.0; }                // assistant / unknown: respira
     return {x:ox, y:oy};
   }
 
@@ -1136,6 +1180,7 @@
   function frame(ts){
     rafId=null;
     if(document.hidden) return;              // pausa quando a aba não está visível
+    if(ts-ambientLastTs>3000){ ambientLastTs=ts; updateAmbient(ts/1000); }  // passeios cosméticos
     stepMotion();
     drawScene(ts);
     rafId=requestAnimationFrame(frame);      // micro-movimento é contínuo → segue rodando
