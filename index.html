@@ -295,7 +295,9 @@
   var sceneStateById = {};    // id -> estado finalizado (state/bubble/visiting)
   var rafId = null;
   var WALK_THRESH = 1.4;      // px-fonte: acima disto o personagem está "andando"
-  var AMBIENT_ENABLED = true; // "vidinha": agentes ociosos passeiam de vez em quando (cosmético)
+  var AMBIENT_ENABLED = false; // passeios ociosos DESLIGADOS: sem pathfinding eles cortavam
+                               // parede em linha reta (pareciam "atirados"). Só religar junto
+                               // com navegação por portas/corredor. Fica só o bob de respirar/digitar.
   var ambientLastTs = 0;
   // anel de posições de reunião ao redor do centro da sala (px-fonte, top-left do sprite)
   var MEET_RING = [{dx:0,dy:2},{dx:-17,dy:4},{dx:17,dy:4},{dx:-11,dy:-13},{dx:11,dy:-13},{dx:0,dy:18},{dx:-20,dy:18},{dx:20,dy:18}];
