@@ -1007,6 +1007,20 @@
     } else {
       stateById[ASSISTANT.id]={state:"assistant", bubble:"Tarefas sob demanda — atua quando a Michelle pede", visiting:false};
     }
+    // Assistente ANDA até o agente que está ajudando: se o feed dela traz um evento
+    // recente com `target` (com quem), ela visita a mesa dele em vez de ficar parada.
+    if(statusData && Array.isArray(statusData.events)){
+      var aEv=null;
+      for(var aei=0; aei<statusData.events.length; aei++){
+        var ae=statusData.events[aei];
+        if(ae && ae.actor===ASSISTANT.id && ae.target && deskPos[ae.target] && isRecent(ae.ts, RECENT_MIN)){ aEv=ae; break; }
+      }
+      if(aEv){
+        var atd=deskPos[aEv.target], aoff=VISIT_OFFSETS[0];
+        stateById[ASSISTANT.id]={state:"meeting", visiting:true, x:atd.x+aoff.dx, y:atd.y+aoff.dy,
+          bubble:(aEv.verb?aEv.verb+": ":"")+(aEv.object||"com "+aEv.target)};
+      }
+    }
     lastCharState[ASSISTANT.id]=stateById[ASSISTANT.id];
 
     // ---- desenha o FUNDO estático no offscreen (ctx aponta pro bgCtx) ----
@@ -1103,8 +1117,72 @@
     });
   }
 
+  // ==========================================================================
+  // NAVEGAÇÃO — grade caminhável + A* (andar pela PORTA/corredor, nunca parede)
+  // ==========================================================================
+  function navClamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function navDoorRange(room, side){
+    var d=null; DOORS.forEach(function(x){ if(x.key===room.key && x.side===side) d=x; }); if(!d) return null;
+    if(side==="left"||side==="right"){ var s=navClamp(Math.round(d.frac*room.h - d.len/2),0,room.h-d.len); return {a:room.y+s, b:room.y+s+d.len-1}; }
+    var s2=navClamp(Math.round(d.frac*room.w - d.len/2),0,room.w-d.len); return {a:room.x+s2, b:room.x+s2+d.len-1};
+  }
+  function navInBuild(x,y){ return x>=BUILD.x && x<BUILD.x+BUILD.w && y>=BUILD.y && y<BUILD.y+BUILD.h; }
+  function navRegion(x,y){ if(!navInBuild(x,y)) return null; for(var i=0;i<ROOMS.length;i++){ var r=ROOMS[i]; if(x>=r.x&&x<r.x+r.w&&y>=r.y&&y<r.y+r.h) return r.key; } return "corr"; }
+  function navInRng(v,rg){ return rg && v>=rg.a && v<=rg.b; }
+  // duas casas adjacentes (ortogonais) estão ligadas? sala↔corredor só cruza na porta
+  function navConnected(ax,ay,bx,by){
+    if(Math.abs(ax-bx)+Math.abs(ay-by)!==1) return false;
+    var ra=navRegion(ax,ay), rb=navRegion(bx,by); if(ra===null||rb===null) return false; if(ra===rb) return true;
+    var room,rt,ct;
+    if(ra!=="corr"&&rb==="corr"){ room=roomByKey[ra]; rt={x:ax,y:ay}; ct={x:bx,y:by}; }
+    else if(rb!=="corr"&&ra==="corr"){ room=roomByKey[rb]; rt={x:bx,y:by}; ct={x:ax,y:ay}; }
+    else return false; // sala↔sala nunca (separadas por corredor)
+    var dx=ct.x-rt.x, dy=ct.y-rt.y;
+    if(dx===1)  return rt.x===room.x+room.w-1 && navInRng(rt.y,navDoorRange(room,"right"));
+    if(dx===-1) return rt.x===room.x           && navInRng(rt.y,navDoorRange(room,"left"));
+    if(dy===1)  return rt.y===room.y+room.h-1 && navInRng(rt.x,navDoorRange(room,"bottom"));
+    if(dy===-1) return rt.y===room.y           && navInRng(rt.x,navDoorRange(room,"top"));
+    return false;
+  }
+  function navAstar(sx,sy,gx,gy){
+    if(navRegion(sx,sy)===null || navRegion(gx,gy)===null) return null;
+    var key=function(x,y){ return x+","+y; };
+    var open=[{x:sx,y:sy,g:0,f:Math.abs(sx-gx)+Math.abs(sy-gy)}];
+    var came={}, gsc={}; gsc[key(sx,sy)]=0; var seen={}, guard=0;
+    while(open.length && guard++<5000){
+      var bi=0; for(var j=1;j<open.length;j++){ if(open[j].f<open[bi].f) bi=j; }
+      var c=open.splice(bi,1)[0];
+      if(c.x===gx&&c.y===gy){ var p=[[c.x,c.y]], k=key(c.x,c.y); while(came[k]){ var pr=came[k]; p.unshift(pr); k=key(pr[0],pr[1]); } return p; }
+      seen[key(c.x,c.y)]=1;
+      var dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+      for(var i=0;i<4;i++){ var nx=c.x+dirs[i][0], ny=c.y+dirs[i][1]; if(seen[key(nx,ny)]) continue; if(!navConnected(c.x,c.y,nx,ny)) continue;
+        var ng=c.g+1; if(gsc[key(nx,ny)]===undefined || ng<gsc[key(nx,ny)]){ gsc[key(nx,ny)]=ng; came[key(nx,ny)]=[c.x,c.y]; open.push({x:nx,y:ny,g:ng,f:ng+Math.abs(nx-gx)+Math.abs(ny-gy)}); } }
+    }
+    return null;
+  }
+  // pés ficam ~2 tiles abaixo do topo do sprite (char em coords top-left)
+  function navFeetTile(px,py){ return {tx: Math.round(px/TILE), ty: Math.round(py/TILE)+2}; }
+  function navTilePx(tx,ty){ return {x: tx*TILE, y: (ty-2)*TILE}; }
+  // monta o caminho (waypoints em px) até (gx,gy). Só chama A* quando o alvo muda.
+  function buildPath(m, gx, gy){
+    var s=navFeetTile(m.x,m.y), g=navFeetTile(gx,gy);
+    m.pathGoalX=gx; m.pathGoalY=gy; m.wp=0;
+    if(s.tx===g.tx && s.ty===g.ty){ m.path=[{x:gx,y:gy}]; return; }
+    var tiles=navAstar(s.tx,s.ty,g.tx,g.ty);
+    if(!tiles){ m.path=[{x:gx,y:gy}]; return; }         // fallback reto (não deveria ocorrer)
+    var wps=[]; for(var i=1;i<tiles.length;i++){ wps.push(navTilePx(tiles[i][0],tiles[i][1])); }
+    wps.push({x:gx,y:gy});                               // encaixe final exato (offset da mesa/vaga)
+    m.path=wps;
+  }
+  // vagas espalhadas na Zona de Descanso (px em coords de char)
+  function loungeRestSpot(i){
+    var r=roomByKey.lounge, spots=[];
+    for(var yy=3; yy<r.h-1; yy+=2){ for(var xx=2; xx<r.w-1; xx+=3){ spots.push({tx:r.x+xx, ty:r.y+yy}); } }
+    var s=spots[i%spots.length]; return navTilePx(s.tx, s.ty);
+  }
+
   function computeTargets(placement, stateById, roomOf){
-    var targets={}, meetIdx={}, parkIdx=0;
+    var targets={}, meetIdx={}, parkIdx=0, idleIdx=0;
     placement.forEach(function(p){
       var id=p.agent.id, st=stateById[id]||{state:"unknown"};
       var home=deskPos[id]||{x:0,y:0};
@@ -1119,12 +1197,11 @@
         var rm2=roomOf[id]||p.room;
         if(rm2.key!=="lounge"){ var pp=loungePoint(parkIdx++); tx=pp.x; ty=pp.y; }
         // se já mora no lounge (type parked), fica na própria vaga (home)
+      } else if(st.state==="idle" && p.agent.type!=="boss" && p.agent.type!=="assistant"){
+        // OPÇÃO A: ocioso vai descansar na Zona de Descanso (andando pela porta).
+        var rs=loungeRestSpot(idleIdx++); tx=rs.x; ty=rs.y;
       }
-      // working / idle / assistant / unknown → home (o micro-movimento faz bob)
-      // exceção: passeio cosmético (ambient) ativo → preserva o alvo do passeio
-      // pra o refresh de dados não puxar o agente de volta no meio do caminho.
-      var mm=motion[id];
-      if(st.state==="idle" && mm && mm.amb){ tx=mm.tx; ty=mm.ty; }
+      // working / boss / assistant(sem visita) → fica na mesa (o bob faz respirar/digitar)
       targets[id]={tx:tx, ty:ty};
     });
     return targets;
@@ -1146,14 +1223,28 @@
     Object.keys(motion).forEach(function(id){ if(!live[id]) delete motion[id]; });
   }
 
-  // ease cada agente rumo ao alvo (lerp; snap quando perto)
+  // caminha cada agente ATÉ o alvo seguindo o caminho (porta/corredor). Recalcula o
+  // caminho só quando o alvo muda; segue por waypoints; saída escalonada (não todos
+  // de uma vez). Sem alvo distante, fica parado (o micro-movimento faz o bob).
   function stepMotion(){
+    var SPEED=0.95; // px-fonte por frame (~57px/s ≈ 3,6 tiles/s) — ritmo de caminhada
     Object.keys(motion).forEach(function(id){
       var m=motion[id];
-      var dx=m.tx-m.x, dy=m.ty-m.y, d=Math.sqrt(dx*dx+dy*dy);
-      m.dist=d;
-      if(d>0.35){ m.x+=dx*0.08; m.y+=dy*0.08; }
-      else { m.x=m.tx; m.y=m.ty; m.dist=0; }
+      var gdx=m.tx-m.x, gdy=m.ty-m.y, gd=Math.sqrt(gdx*gdx+gdy*gdy);
+      m.dist=gd;
+      if(gd<=0.5){ m.x=m.tx; m.y=m.ty; m.dist=0; m.path=null; m.startDelay=0; return; }
+      if(m.pathGoalX!==m.tx || m.pathGoalY!==m.ty){   // alvo mudou → (re)planeja
+        buildPath(m, m.tx, m.ty);
+        m.startDelay=(hashId(id)%9)*7;                // atraso curto e determinístico
+      }
+      if(m.startDelay>0){ m.startDelay--; return; }
+      if(m.path && m.wp<m.path.length){
+        var w=m.path[m.wp], wdx=w.x-m.x, wdy=w.y-m.y, wd=Math.sqrt(wdx*wdx+wdy*wdy);
+        if(wd<=SPEED){ m.x=w.x; m.y=w.y; m.wp++; }
+        else { m.x+=wdx/wd*SPEED; m.y+=wdy/wd*SPEED; }
+      } else {                                        // terminou waypoints → encaixe reto
+        if(gd>SPEED){ m.x+=gdx/gd*SPEED; m.y+=gdy/gd*SPEED; } else { m.x=m.tx; m.y=m.ty; }
+      }
     });
   }
 
