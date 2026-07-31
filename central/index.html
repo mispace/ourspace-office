@@ -131,7 +131,7 @@ window.addEventListener("error",e=>{const el=$("#err");el.textContent="Erro na p
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const DIAS=["segunda","terça","quarta","quinta","sexta","sábado","domingo"];
-const LIMITES={posts:4,stories:2,learning:9,tiktok:9,linkedin:9,trello:2,crm:2,blog:9,events:9999};
+const LIMITES={posts:4,stories:2,learning:9,tiktok:9,linkedin:9,trello:2,crm:2,blog:9,events:9999,ourspacelab:40};
 
 function fmtAge(iso){
   if(!iso) return null;
@@ -274,7 +274,13 @@ function render(D){
   h+='<div class="card"><span class="k">Blog (Wix) '+ageChip(S,"blog")+"</span>"
     +(bl.ok?'<div class="linha"><span>'+lk(bl.url,esc(bl.title||"último post"))+'</span><span class="sm">'+esc(bl.date?bl.date.slice(8,10)+"/"+bl.date.slice(5,7):"")+"</span></div>"
            :'<div class="sm">sem leitura do feed nesta rodada</div>')
-    +'<div class="sm" style="margin-top:4px">o Wix não fornece número de leitura · métrica = cadência</div></div></section>';
+    +'<div class="sm" style="margin-top:4px">o Wix não fornece número de leitura · métrica = cadência</div></div>';
+  const ol=C.ourspacelab;
+  if(ol) h+='<div class="card"><span class="k">@ourspacelab '+ageChip(S,"ourspacelab")+'</span>'
+    +'<div class="linha"><span>seguidores</span><span class="n">'+esc(ol.followers)+'</span></div>'
+    +'<div class="linha"><span>posts</span><span class="n">'+esc(ol.posts??"—")+'</span></div>'
+    +'<div class="sm" style="margin-top:4px">contagem mensal (1ª sexta) · '+lk(ol.url,"abrir ↗")+"</div></div>";
+  h+="</section>";
 
   // S6 FILA & AGENDA
   const F=D.fila;
