@@ -179,6 +179,10 @@ tr.dim{opacity:.25}
 /* fila */
 .grp .hd{display:flex;justify-content:space-between;align-items:baseline}
 .grp .hd .n{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:27px}
+.chartbox{position:relative}
+.ctip{position:absolute;z-index:5;pointer-events:none;background:var(--ink);color:#fff;font-size:11.5px;font-weight:600;padding:6px 9px;border-radius:8px;transform:translate(-50%,-115%);white-space:nowrap;display:none;box-shadow:var(--sh-sm)}
+.ctip .neg{color:#FCA5A5}.ctip .pos{color:#6EE7B7}
+.cdot{position:absolute;z-index:4;width:9px;height:9px;border-radius:50%;background:var(--brand);border:2px solid #fff;transform:translate(-50%,-50%);pointer-events:none;display:none}
 footer{padding:20px 2px 10px;color:var(--sub);font-size:12px}
 footer a{margin-right:12px;font-weight:600;color:var(--gold-deep)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -366,8 +370,10 @@ function render(data){
     +"</div>";
   const fs=D.followers||{}, ser=fs.series||[];
   if(ser.length>1){
-    h+='<div class="card"><span class="k">Estou crescendo? · seguidores por coleta</span>'
+    h+='<div class="card"><span class="k">Estou crescendo? · seguidores por coleta</span><span class="sm" style="float:right">passe o dedo/mouse na linha</span>'
+      +'<div class="chartbox" id="folbox">'
       +sparkSvg(ser.map(p=>p.v),30).replace('class="spark"','class="spark" style="width:100%;height:46px;margin:8px 0 4px"')
+      +'<div class="ctip" id="foltip"></div><div class="cdot" id="foldot"></div></div>'
       +'<div class="sm num" style="display:flex;justify-content:space-between"><span>'+ser[0].d.slice(8,10)+"/"+ser[0].d.slice(5,7)
       +' · '+String(ser[0].v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+'</span><span>hoje: <b>'
       +String(ser[ser.length-1].v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+"</b></span></div>"
@@ -488,6 +494,32 @@ function render(data){
     const msg='pedido de atualização enviado · a página nova fica pronta em ~2 minutos · depois é só recarregar';
     if(av){ av.textContent=msg; } else { const d=document.createElement("div"); d.id="banner"; d.textContent=msg; $("#v-hoje").prepend(d); }
   });
+  const folbox=$("#folbox");
+  if(folbox){
+    const serie=(D.followers||{}).series||[];
+    const vals=serie.map(p=>p.v), lo=Math.min(...vals), hi=Math.max(...vals), rng=(hi-lo)||1;
+    const mostra=ev=>{
+      const r=folbox.getBoundingClientRect();
+      const cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
+      const i=Math.max(0,Math.min(serie.length-1,Math.round(cx/r.width*(serie.length-1))));
+      const p=serie[i], ant=i>0?serie[i-1]:null;
+      const dd=p.d.slice(8,10)+"/"+p.d.slice(5,7);
+      const delta=ant?p.v-ant.v:null;
+      const dtx=delta===null?"":(delta>0?' · <span class="pos">+'+delta+" no dia</span>":delta<0?' · <span class="neg">'+delta+" no dia</span>":" · = igual");
+      const x=i/(serie.length-1)*r.width;
+      const svgTop=folbox.querySelector("svg").offsetTop, svgH=folbox.querySelector("svg").offsetHeight;
+      const y=svgTop+( (26-(p.v-lo)/rng*20)/30 )*svgH;
+      const tip=$("#foltip"), dot=$("#foldot");
+      tip.innerHTML="<b>"+dd+"</b> · "+String(p.v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+" seguidores"+dtx;
+      tip.style.left=Math.max(70,Math.min(r.width-70,x))+"px"; tip.style.top=y+"px"; tip.style.display="block";
+      dot.style.left=x+"px"; dot.style.top=y+"px"; dot.style.display="block";
+    };
+    const some=()=>{ $("#foltip").style.display="none"; $("#foldot").style.display="none"; };
+    folbox.addEventListener("pointermove",mostra);
+    folbox.addEventListener("touchmove",ev=>{ev.preventDefault();mostra(ev);},{passive:false});
+    folbox.addEventListener("pointerleave",some);
+    folbox.addEventListener("touchend",some);
+  }
   $("#cprev").addEventListener("click",()=>moveCal(-1));
   $("#cnext").addEventListener("click",()=>moveCal(1));
   const now=new Date(); calY=now.getFullYear(); calM=now.getMonth();
