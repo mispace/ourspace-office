@@ -465,6 +465,7 @@ function render(data){
     +Object.keys(NOMES).filter(k=>S[k]).map(k=>{
       const st=S[k]; const dias=st.at?(Date.now()-new Date(String(st.at).slice(0,10)+"T12:00:00").getTime())/864e5:99;
       const ok=st.ok&&dias<=(LIMITES[k]??9);
+      if(!st.at) return '<div class="linha"><span>'+esc(NOMES[k])+'</span><span class="sm num">'+(st.ok?"conferido nesta rodada":"sem dado")+"</span></div>";
       return '<div class="linha"><span>'+esc(NOMES[k])+'</span><span class="sm num" style="font-weight:600;color:'+(ok?"var(--sub)":"var(--age)")+'">'+fmtAbs(st.at)+(ok?"":" · parado")+"</span></div>";
     }).join("")+"</div>";
   h+="<footer>"+D.links.map(l=>lk(l.url,esc(l.t)+" ↗")).join("")
