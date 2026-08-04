@@ -362,34 +362,68 @@ function render(data){
     +'<button data-s="pilares" aria-selected="false">🍕 Pilares</button><button data-s="formatos" aria-selected="false">🎬 Formatos</button>'
     +'<button data-s="canais" aria-selected="false">📡 Canais</button></div>';
 
-  h+='<div class="subv" id="s-saude">'
-    +(D.saude_frase?'<div class="card" style="background:linear-gradient(135deg,#7C3AED,#6366F1)"><span class="k" style="color:rgba(255,255,255,.85)">🎯 Sua semana em 1 frase</span><p style="font:700 14.5px/1.5 Inter,sans-serif;color:#fff;margin-top:5px">'+esc(D.saude_frase)+"</p></div>":"")
-    +'<div class="kgrid">'
-    +D.kpis.map((k,i)=>{
-      const inf=k.info||{};
-      return '<div class="kpi" id="kpi'+i+'"><button class="iBtn" data-i="'+i+'" aria-label="o que é">i</button>'
-      +'<span class="k">'+esc(k.label)+"</span>"
-      +'<span class="v num">'+esc(k.v)+"</span>"
-      +'<span class="d num">'+(k.delta?esc(k.delta)+" ":"")+(k.ref?esc(k.ref):"")+"</span>"
-      +'<span style="margin-top:6px">'+pillHtml(k.pill)+"</span>"
-      +'<div class="iBox"><b>O que é:</b> '+esc(inf.oque||k.sub)+"<br><b>Como mede:</b> "+esc(inf.como||"")
-      +"<br><b>Por que importa:</b> "+esc(inf.pq||"")+"<br><b>Como melhorar:</b> "+esc(inf.melhorar||"")+"</div>"
-      +(k.serie&&k.serie.length>1?sparkSvg(k.serie,32)+'<span class="d num" style="margin-top:2px">'+esc(D.meta.serie_periodo||"")+"</span>":"")
-      +"</div>";}).join("")
-    +"</div>";
+  const SA=D.saude||{};
+  h+='<div class="subv" id="s-saude">';
+  if(SA.hero&&SA.hero.acao){
+    h+='<div class="card" style="background:linear-gradient(135deg,#7C3AED,#6366F1)">'
+      +'<span class="k" style="color:rgba(255,255,255,.85)">🎯 O que fazer hoje</span>'
+      +'<p style="font:800 15.5px/1.4 Inter,sans-serif;color:#fff;margin-top:5px">'+esc(SA.hero.acao)+"</p>"
+      +'<p style="font:600 12.5px/1.5 Inter,sans-serif;color:rgba(255,255,255,.85);margin-top:4px">🗣️ '+esc(SA.hero.frase||"")+"</p>"
+      +'<details style="margin-top:6px"><summary style="color:#fff;font:700 12px Inter,sans-serif;cursor:pointer">por quê?</summary><div style="color:rgba(255,255,255,.92);font:400 12.5px/1.5 Inter,sans-serif;margin-top:4px">'+esc(SA.hero.why||"")+(SA.hero.url?' · <a href="'+esc(SA.hero.url)+'" target="_blank" rel="noopener" style="color:#fff;font-weight:700">abrir ↗</a>':"")+"</div></details>"
+      +"</div>";
+  }
+  const RP=SA.report||{};
+  if(RP.vitoria)
+    h+='<div class="card"><span class="k">🗞 Sua semana em 4 linhas</span>'
+      +'<div class="sm" style="margin-top:6px;line-height:1.75">'+esc(RP.vitoria)+"<br>"+esc(RP.queda)+"<br>"+esc(RP.pq)+"<br>"+esc(RP.acao)+"</div>"
+      +((RP.fecho&&(RP.fecho.continuar||RP.fecho.testar))?'<details style="margin-top:5px"><summary>Continuar · Mudar · Testar</summary><div class="body">'
+        +(RP.fecho.continuar?"<b>Continuar:</b> "+esc(RP.fecho.continuar)+"<br>":"")
+        +(RP.fecho.mudar?"<b>Mudar:</b> "+esc(RP.fecho.mudar)+"<br>":"")
+        +(RP.fecho.testar?"<b>Testar:</b> "+esc(RP.fecho.testar):"")+"</div></details>":"")
+      +"</div>";
+  const NU=SA.numero||{};
+  if(NU.v){
+    h+='<div class="card"><span class="k">⭐ O número da semana · ER por alcance</span>'
+      +'<div style="display:flex;align-items:center;gap:12px;margin-top:4px"><span class="num" style="font-size:34px;font-weight:800">'+esc(NU.v)+"</span>"
+      +(NU.serie&&NU.serie.length>1?sparkSvg(NU.serie,30):"")+"</div>"
+      +'<div class="sm">'+esc(NU.traducao||"")+"</div>"
+      +'<div class="sm num" style="margin-top:3px">'+esc(NU.regua||"")+" "+pillHtml(NU.pill)+"</div>"
+      +(NU.info?'<details style="margin-top:5px"><summary>o que é isso?</summary><div class="body"><b>O que é:</b> '+esc(NU.info.oque||"")+"<br><b>Como mede:</b> "+esc(NU.info.como||"")+"<br><b>Por que importa:</b> "+esc(NU.info.pq||"")+"<br><b>Como melhorar:</b> "+esc(NU.info.melhorar||"")+"</div></details>":"")
+      +"</div>";
+  }
+  const RT=SA.ritmo||{};
+  if(RT.dots)
+    h+='<div class="card"><span class="k">📆 '+esc(RT.frase||"Ritmo")+"</span>"
+      +'<div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap">'+RT.dots.map(x=>'<span title="'+esc(x.d)+'" style="width:14px;height:14px;border-radius:50%;'+(x.p?"background:#7C3AED":"background:var(--mid-bg);border:1.5px "+(x.fds?"dotted":"solid")+" var(--line)")+'"></span>').join("")+"</div>"
+      +'<div class="sm num" style="margin-top:5px">14 dias · cheia = dia com post · pontilhada = fim de semana (publicação pode, tarefa sua não) '+pillHtml(RT.pill)+"</div></div>";
   const fs=D.followers||{}, ser=fs.series||[];
+  const SG=SA.seg||{};
   if(ser.length>1){
-    h+='<div class="card"><span class="k">Estou crescendo? · seguidores por coleta</span><span class="sm" style="float:right">passe o dedo/mouse na linha</span>'
+    h+='<div class="card"><span class="k">📈 '+esc(SG.frase||"Estou crescendo? · seguidores")+'</span>'
       +'<div class="chartbox" id="folbox">'
       +sparkSvg(ser.map(p=>p.v),30).replace('class="spark"','class="spark" style="width:100%;height:46px;margin:8px 0 4px"')
       +'<div class="ctip" id="foltip"></div><div class="cdot" id="foldot"></div></div>'
       +'<div class="sm num" style="display:flex;justify-content:space-between"><span>'+ser[0].d.slice(8,10)+"/"+ser[0].d.slice(5,7)
       +' · '+String(ser[0].v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+'</span><span>hoje: <b>'
       +String(ser[ser.length-1].v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+"</b></span></div>"
+      +(SG.delta7?'<div class="sm num" style="margin-top:3px">'+esc(SG.delta7)+"</div>":"")
       +'<details><summary>ver dia a dia</summary><div class="body num">'
       +ser.map(p=>p.d.slice(8,10)+"/"+p.d.slice(5,7)+": "+String(p.v).replace(/\B(?=(\d{3})+(?!\d))/g,".")).join("<br>")
       +"</div></details></div>";
   }
+  const PS=SA.post;
+  if(PS)
+    h+='<div class="card"><span class="k">🏆 Post da semana</span>'
+      +'<div style="display:flex;gap:12px;margin-top:8px;align-items:flex-start">'
+      +(PS.img?'<a href="'+esc(PS.url)+'" target="_blank" rel="noopener" style="flex:0 0 96px"><img src="'+PS.img+'" style="width:96px;height:96px;object-fit:cover;border-radius:12px" alt=""></a>':"")
+      +'<div style="flex:1;min-width:0">'+d7pill(PS)+' <span class="num" style="font-weight:800">'+esc(PS.er)+'% ER</span>'
+      +'<div class="sm" style="margin-top:4px">'+esc(PS.frase||"")+"</div>"
+      +'<div class="sm" style="margin-top:4px">'+lk(PS.url,"abrir o post ↗","golink")+' · <a class="golink" href="#" onclick="showView(\'posts\');return false">ver os posts da janela ↗</a></div>'
+      +"</div></div>"
+      +'<div class="sm" style="margin-top:5px">D+7 = como o post envelheceu uma semana depois de publicado</div></div>';
+  h+='<details class="card"><summary style="font:700 13px Inter,sans-serif;cursor:pointer">🔎 Outros sinais</summary>'
+    +(SA.outros||[]).map(o=>'<div class="linha" style="margin-top:6px"><span>'+o.ico+" "+esc(o.nome)+'<br><span class="sm">'+esc(o.trad)+'</span></span><span class="n num">'+esc(o.v)+" "+(o.pill?pillHtml(o.pill):"")+"</span></div>").join("")
+    +"</details>";
   h+='<p class="sm" style="margin:8px 2px">'+esc(D.meta.limiar_nota||"")+"</p></div>";
 
   const L=D.learning||{};
