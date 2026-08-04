@@ -105,6 +105,8 @@ details .body{font-size:12.5px;color:var(--sub);padding:6px 0 2px;line-height:1.
 .seca .tx{font-size:12.5px;color:var(--sub)}.seca .tx b{font-weight:600;color:var(--ink)}
 .seca .golink{margin-left:auto}
 /* segmented */
+.cabblk{margin-bottom:6px}
+.cd .best{position:absolute;top:1px;right:3px;font-size:9px;color:#7C3AED;line-height:1}
 .seg{position:sticky;top:59px;z-index:30;display:flex;background:var(--mid-bg);border-radius:10px;padding:3px;margin:12px 0 4px}
 .seg button{flex:1;height:32px;border:0;border-radius:8px;background:none;font:600 12px 'Inter',sans-serif;color:var(--sub);cursor:pointer}
 .seg button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:var(--sh-sm)}
@@ -276,6 +278,12 @@ function render(data){
   const m=D.meta.marcha||{};
   const ava=(D.posts.top3[0]&&D.posts.top3[0].img)||"";
 
+  // cabeçalho padrão de bloco: título-conclusão · janela do dado · carimbo de frescor
+  const cab=(titulo,janela,fonte)=>'<div class="cabblk"><span class="k">'+titulo+"</span>"
+    +'<div class="sm num" style="opacity:.8;margin-top:2px">'+(janela?esc(janela):"")
+    +(fonte&&S[fonte]?" · "+ageChip(S,fonte):"")+"</div></div>";
+  // frase em verbo no topo da aba (o que faço com isto)
+  const fraseAba=k=>{const f=(D.frases_aba||{})[k];return f?'<p style="font:700 14px/1.45 Inter,sans-serif;margin:2px 2px 10px">💡 '+esc(f)+"</p>":"";};
   let h='<div id="top"><div class="wrap"><div class="row">'
     +(ava?'<img class="ava" src="'+ava+'" alt="">':'<span class="ava"></span>')
     +'<div><div class="oi">Oi, Michelle</div><div class="dt" id="carimbo" style="cursor:pointer" title="toque para ver quando cada dado chegou">'+DIAS[(hoje.getDay()+6)%7]+", "
@@ -304,11 +312,12 @@ function render(data){
     +"</div></section>";
 
   // ---------- AGENDA ----------
-  h+='<section class="view wrap" id="v-agenda" hidden>'
+  h+='<section class="view wrap" id="v-agenda" hidden>'+fraseAba("agenda")
     +'<div class="calnav"><button id="cprev" aria-label="mês anterior">‹</button><b id="cmes"></b><button id="cnext" aria-label="próximo mês">›</button></div>'
     +'<div class="wdays">'+["s","t","q","q","s","s","d"].map(x=>"<span>"+x+"</span>").join("")+"</div>"
     +'<div class="cal" id="cal"></div>'
     +'<div class="leg"><span><i class="d-post"></i>post</span><span><i class="d-story"></i>story</span><span><i class="d-due"></i>prazo</span><span><i class="d-ev"></i>evento</span></div>'
+    +'<p class="sm" id="callegenda" style="margin:2px 2px 8px"></p>'
     +'<div class="card" id="daypanel"><span class="sm">toque num dia para ver o que tem nele</span></div>'
     +((D.fila&&D.fila.vencidos&&D.fila.vencidos.n)?'<div class="card sm" style="line-height:1.55"><b style="color:var(--age)">'+D.fila.vencidos.n+" cards passaram do prazo no board.</b> Nada muda sozinho: são tarefas antigas com data vencida. "+lk(D.fila.vencidos.link,"Abrir no board ↗","golink")+" e escolher: nova data ou concluir. Se quiser, eu reagendo em lote (me pede).</div>":"")
     +"</section>";
@@ -316,7 +325,23 @@ function render(data){
   // ---------- POSTS ----------
   const P=D.posts, st=D.stories||{};
   const d7pill=p=>{const d=p.d7;if(!d)return "";if(d.pend)return '<span class="sm num" style="opacity:.65">D+7 '+esc(d.pend)+"</span>";const c=d.nota==="alta"?"#059669":d.nota==="baixa"?"#DC2626":"var(--sub)";const y=d.nota==="alta"?"▲":d.nota==="baixa"?"▼":"▬";return '<span class="sm num" title="'+esc(d.txt||"")+'" style="color:'+c+';font-weight:800">'+y+" D+7</span>";};
-  h+='<section class="view wrap" id="v-posts" hidden>'
+  h+='<section class="view wrap" id="v-posts" hidden>'+fraseAba("posts")
+    +(function(){const U=(D.saude||{}).ultimo;if(!U)return "";
+      const P=D.posts||{};const f=[].concat(P.top3||[],P.recentes||[],P.all||[]).find(x=>x.url===U.url&&x.img);
+      const cor=U.pos==="acima"?"#059669":U.pos==="abaixo"?"#DC2626":"var(--sub)";
+      const sim=U.pos==="acima"?"▲":U.pos==="abaixo"?"▼":"▬";
+      return '<div class="card">'+cab("🖼 Seu último post "+esc(U.veredito),"publicado "+esc(U.quando)+" · "+esc(U.d),"posts")
+        +'<div style="display:flex;gap:12px;align-items:flex-start;margin-top:4px">'
+        +(f?'<a href="'+esc(U.url)+'" target="_blank" rel="noopener" aria-label="abrir o último post" style="flex:0 0 104px"><img src="'+f.img+'" style="width:104px;height:104px;object-fit:cover;border-radius:12px" alt=""></a>':"")
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="display:flex;align-items:baseline;gap:8px"><span class="num" style="font-size:26px;font-weight:800">'+esc(U.er)+'%</span><span class="sm num" style="color:'+cor+';font-weight:800">'+sim+" "+esc(U.pos)+" do normal</span></div>"
+        +'<div style="position:relative;height:12px;border-radius:6px;background:var(--mid-bg);margin:9px 0 4px">'
+        +'<div style="position:absolute;left:'+U.faixa_ini+'%;width:'+Math.max(2,U.faixa_fim-U.faixa_ini)+'%;top:0;bottom:0;background:#CBD5E1;border-radius:6px"></div>'
+        +'<div style="position:absolute;left:'+U.rel+'%;top:-3px;width:4px;height:18px;border-radius:2px;background:'+cor+';transform:translateX(-2px)"></div></div>'
+        +'<div class="sm num">cinza = seu normal ('+esc(U.lo)+"% a "+esc(U.hi)+"%, sobre "+U.n+" posts) · barra = este post</div>"
+        +(U.rank?'<div class="sm" style="margin-top:3px">'+esc(U.rank)+"</div>":"")
+        +'<div class="sm" style="margin-top:4px">'+tag(U.pilar)+" "+lk(U.url,"abrir ↗","golink")+"</div>"
+        +"</div></div></div>";})()
     +"<h2>"+LOGOS.ig+"Top 3 por engajamento "+ageChip(S,"posts")+"</h2>"
     +'<div class="hscroll">'+P.top3.map(p=>'<a class="post" data-pilar="'+esc(p.pilar)+'" href="'+esc(p.url)+'" target="_blank" rel="noopener">'
       +(p.img?'<img src="'+p.img+'" alt="">':"")
@@ -386,7 +411,7 @@ function render(data){
     h+='<div class="card"><span class="k">⭐ O número da semana · ER por alcance</span>'
       +'<div style="display:flex;align-items:center;gap:12px;margin-top:4px"><span class="num" style="font-size:34px;font-weight:800">'+esc(NU.v)+"</span>"
       +(NU.serie&&NU.serie.length>1?sparkSvg(NU.serie,30):"")+"</div>"
-      +'<div class="sm">'+esc(NU.traducao||"")+"</div>"
+      +'<div class="sm">'+esc(NU.traducao||"")+(NU.n?" · sobre "+NU.n+" posts na janela ("+esc(D.janela||"")+")":"")+"</div>"
       +'<div class="sm num" style="margin-top:3px">'+esc(NU.regua||"")+" "+pillHtml(NU.pill)+"</div>"
       +(NU.info?'<details style="margin-top:5px"><summary>o que é isso?</summary><div class="body"><b>O que é:</b> '+esc(NU.info.oque||"")+"<br><b>Como mede:</b> "+esc(NU.info.como||"")+"<br><b>Por que importa:</b> "+esc(NU.info.pq||"")+"<br><b>Como melhorar:</b> "+esc(NU.info.melhorar||"")+"</div></details>":"")
       +"</div>";
@@ -562,7 +587,7 @@ function render(data){
 
   // ---------- NEGÓCIO (aba R$ · pedido dela 03/08) ----------
   const FF=D.fila||{}, CR=FF.pipeline||null;
-  h+='<section class="view wrap" id="v-negocio" hidden>';
+  h+='<section class="view wrap" id="v-negocio" hidden>'+fraseAba("negocio");
   if(CR&&CR.placar){
     const pl=CR.placar, fmtR=v=>"R$"+String(Math.round(v||0)).replace(/\B(?=(\d{3})+(?!\d))/g,".");
     const pct=Math.min(100,Math.round(((pl.ganho_conf||0)+(pl.ganho_est||0))/(pl.meta||25000)*100));
@@ -595,7 +620,7 @@ function render(data){
 
   // ---------- FILA ----------
   const F=D.fila;
-  h+='<section class="view wrap" id="v-fila" hidden>';
+  h+='<section class="view wrap" id="v-fila" hidden>'+fraseAba("fila");
   if(F){
     const grp=(emoji,nome,f)=>'<div class="card grp"><div class="hd"><span class="k">'+emoji+" "+nome+'</span><span class="n num">'+f.n+"</span></div>"
       +(f.antigo?'<div class="sm" style="margin-top:4px">mais antigo: '+lk(f.antigo.url,esc(f.antigo.t),"golink")+" · desde "+esc(f.antigo.desde)+"</div>":'<div class="sm" style="margin-top:4px">vazia</div>')+"</div>";
@@ -751,6 +776,12 @@ function calData(){
 }
 function renderCal(){
   const {posts,stories,dues,evs}=calData();
+  const MH=D.melhor_hora||{};
+  const DOW={"seg":0,"ter":1,"qua":2,"qui":3,"sex":4,"sáb":5,"dom":6};
+  const RENDE={por:{},max:0};
+  (MH.dias||[]).forEach(x=>{const i=DOW[x.nome];if(i===undefined)return;
+    const v=parseFloat(String(x.er).replace(",","."))||0;
+    RENDE.por[i]={er:v,n:x.n,txt:x.er};if(v>RENDE.max)RENDE.max=v;});
   if(!selDay){   // abre já no dia de hoje, ou no próximo dia que tem algo (nunca calendário mudo)
     const hj=new Date(), z=n=>String(n).padStart(2,"0");
     const hoje=hj.getFullYear()+"-"+z(hj.getMonth()+1)+"-"+z(hj.getDate());
@@ -781,9 +812,20 @@ function renderCal(){
     if(hasD) dots.push("d-due");
     if(hasE) dots.push("d-ev");
     if(dots.length) inner+='<div class="dots">'+dots.slice(0,3).map(c=>'<span class="dot '+c+'"></span>').join("")+"</div>";
-    h+='<div class="cd'+(wd>=5?" wknd":"")+(iso===tIso?" today":"")+(iso===selDay?" sel":"")+'" data-d="'+iso+'" role="button" tabindex="0">'+inner+"</div>";
+    // fundo = o que rende naquele dia da semana (camada 1 do "melhor horário", padrão Metricool)
+    let bg="";
+    if(RENDE.max>0&&RENDE.por[wd]&&RENDE.por[wd].n>0&&iso>=tIso){
+      const f=RENDE.por[wd].er/RENDE.max;
+      if(f>0) bg=';background:rgba(124,58,237,'+(0.05+f*0.17).toFixed(3)+')';
+      if(RENDE.por[wd].er===RENDE.max) inner+='<span class="best" title="seu melhor dia · ER médio '+RENDE.por[wd].txt+'% em '+RENDE.por[wd].n+' posts">★</span>';
+    }
+    h+='<div class="cd'+(wd>=5?" wknd":"")+(iso===tIso?" today":"")+(iso===selDay?" sel":"")+'" data-d="'+iso+'" style="position:relative'+bg+'" role="button" tabindex="0">'+inner+"</div>";
   }
   $("#cal").innerHTML=h;
+  const lg=document.getElementById("callegenda");
+  if(lg) lg.innerHTML=(RENDE.max>0)
+    ? "🕘 o fundo roxo mostra o que rende em cada dia da semana (ER médio dos seus posts) · ★ = seu melhor dia · só nos dias que ainda vão acontecer"
+    : "";
   document.querySelectorAll(".cd[data-d]").forEach(c=>{
     c.addEventListener("click",()=>pickDay(c.dataset.d));
     c.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); pickDay(c.dataset.d); } });
