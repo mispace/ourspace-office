@@ -416,7 +416,7 @@ function render(data){
     h+='<div class="card"><span class="k">🏆 Post da semana</span>'
       +'<div style="display:flex;gap:12px;margin-top:8px;align-items:flex-start">'
       +(function(){const P=D.posts||{};const f=[].concat(P.top3||[],P.recentes||[],P.all||[]).find(x=>x.url===PS.url&&x.img);
-        return f?'<a href="'+esc(PS.url)+'" target="_blank" rel="noopener" style="flex:0 0 96px"><img src="'+f.img+'" style="width:96px;height:96px;object-fit:cover;border-radius:12px" alt=""></a>':"";})()
+        return f?'<a href="'+esc(PS.url)+'" target="_blank" rel="noopener" aria-label="abrir o post da semana no Instagram" style="flex:0 0 96px"><img src="'+f.img+'" style="width:96px;height:96px;object-fit:cover;border-radius:12px" alt=""></a>':"";})()
       +'<div style="flex:1;min-width:0">'+d7pill(PS)+' <span class="num" style="font-weight:800">'+esc(PS.er)+'% ER</span>'
       +'<div class="sm" style="margin-top:4px">'+esc(PS.frase||"")+"</div>"
       +'<div class="sm" style="margin-top:4px">'+lk(PS.url,"abrir o post ↗","golink")+' · <a class="golink" href="#" onclick="showView(\'posts\');return false">ver os posts da janela ↗</a></div>'
@@ -494,7 +494,7 @@ function render(data){
     h+='<div class="card sm" style="line-height:1.6">🧩 pilar → 🎬 formato → 📱 conteúdo real · cada card traz um print de post SEU como referência · o texto completo (abertura, setup, 2 ideias por formato) vive na '+lk(FS.planilha,"planilha ↗","golink")+' · editou lá, a sexta traz para cá</div>';
     (FS.novos||[]).forEach(f=>{
       h+='<div class="card"><div style="display:flex;gap:12px;align-items:flex-start">'
-        +(f.refs&&f.refs.length&&f.refs[0].img?'<a href="'+esc(f.refs[0].url)+'" target="_blank" rel="noopener" style="flex:0 0 84px"><img src="'+f.refs[0].img+'" alt="" style="width:84px;height:84px;object-fit:cover;border-radius:12px"></a>'
+        +(f.refs&&f.refs.length&&f.refs[0].img?'<a href="'+esc(f.refs[0].url)+'" target="_blank" rel="noopener" aria-label="ver exemplo real deste formato" style="flex:0 0 84px"><img src="'+f.refs[0].img+'" alt="" style="width:84px;height:84px;object-fit:cover;border-radius:12px"></a>'
           :'<div style="flex:0 0 84px;height:84px;border:2px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">🎬</div>')
         +'<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="font:800 13.5px Inter,sans-serif">'+esc(f.n)+'</span><span class="sm num" style="background:#EDE9FE;color:#5B21B6;padding:2px 8px;border-radius:10px;white-space:nowrap">'+esc(f.status)+"</span></div>"
         +'<div class="sm" style="margin-top:3px">'+esc(f.como)+"</div>"
@@ -511,7 +511,7 @@ function render(data){
     });
     const FA=FS.falados||{};
     h+='<div class="card"><div style="display:flex;gap:12px;align-items:flex-start">'
-      +(FA.refs&&FA.refs.length&&FA.refs[0].img?'<a href="'+esc(FA.refs[0].url)+'" target="_blank" rel="noopener" style="flex:0 0 84px"><img src="'+FA.refs[0].img+'" alt="" style="width:84px;height:84px;object-fit:cover;border-radius:12px"></a>':"")
+      +(FA.refs&&FA.refs.length&&FA.refs[0].img?'<a href="'+esc(FA.refs[0].url)+'" target="_blank" rel="noopener" aria-label="ver exemplo real de formato falado" style="flex:0 0 84px"><img src="'+FA.refs[0].img+'" alt="" style="width:84px;height:84px;object-fit:cover;border-radius:12px"></a>':"")
       +'<div style="flex:1;min-width:0"><span style="font:800 13.5px Inter,sans-serif">Os 9 falados</span>'
       +'<div class="sm" style="margin-top:3px">'+(FA.top||[]).join(" · ")+" e mais 5 · abertura pronta, setup e 2 ideias ancoradas cada um</div>"
       +'<div class="sm" style="margin-top:5px">'+lk(FS.planilha,"ver os 9 na planilha ↗","golink")+((FA.refs||[]).length?" · "+lk(FA.refs[0].url,"exemplo real ↗","golink"):"")+"</div>"
@@ -751,6 +751,16 @@ function calData(){
 }
 function renderCal(){
   const {posts,stories,dues,evs}=calData();
+  if(!selDay){   // abre já no dia de hoje, ou no próximo dia que tem algo (nunca calendário mudo)
+    const hj=new Date(), z=n=>String(n).padStart(2,"0");
+    const hoje=hj.getFullYear()+"-"+z(hj.getMonth()+1)+"-"+z(hj.getDate());
+    const temAlgo=d=>(posts[d]||[]).length||(stories[d]||[]).length||(dues[d]||[]).length||(evs[d]||[]).length;
+    if(temAlgo(hoje)) selDay=hoje;
+    else{
+      const fut=Object.keys(Object.assign({},posts,stories,dues,evs)).filter(d=>d>=hoje).sort();
+      selDay=fut[0]||hoje;
+    }
+  }
   $("#cmes").textContent=MESES[calM]+" "+calY;
   const first=new Date(calY,calM,1);
   const off=(first.getDay()+6)%7;
