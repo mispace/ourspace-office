@@ -449,6 +449,12 @@ function render(data){
         +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">'+(f.pilares||[]).map(p=>tag(p)).join("")+"</div>"
         +(f.obs?'<div class="sm" style="margin-top:5px;opacity:.85">'+esc(f.obs)+"</div>":"")
         +((f.refs||[]).length?'<div class="sm" style="margin-top:5px">'+f.refs.map((r,i)=>lk(r.url,"abrir exemplo "+(i+1)+" ↗","golink")).join(" · ")+"</div>":"")
+        +(f.mais?'<details style="margin-top:6px"><summary>mais ideias · por quê · como fazer</summary><div class="body">'
+          +(f.mais.abre?"<b>Abre assim:</b> "+esc(f.mais.abre)+"<br>":"")
+          +"<b>Como fazer:</b> "+esc(f.como)+(f.mais.dur&&f.mais.dur!=="—"?" · "+esc(f.mais.dur):"")+"<br>"
+          +(f.mais.pq?"<b>Por quê funciona:</b> "+esc(f.mais.pq)+"<br>":"")
+          +((f.mais.ideias||[]).length?"<b>Ideias prontas:</b><br>"+f.mais.ideias.map(i=>"· "+esc(i)).join("<br>"):"")
+          +"</div></details>":"")
         +"</div></div></div>";
     });
     const FA=FS.falados||{};
@@ -457,6 +463,13 @@ function render(data){
       +'<div style="flex:1;min-width:0"><span style="font:800 13.5px Inter,sans-serif">Os 9 falados</span>'
       +'<div class="sm" style="margin-top:3px">'+(FA.top||[]).join(" · ")+" e mais 5 · abertura pronta, setup e 2 ideias ancoradas cada um</div>"
       +'<div class="sm" style="margin-top:5px">'+lk(FS.planilha,"ver os 9 na planilha ↗","golink")+((FA.refs||[]).length?" · "+lk(FA.refs[0].url,"exemplo real ↗","golink"):"")+"</div>"
+      +((FA.itens||[]).length?'<details style="margin-top:6px"><summary>abrir os 9 (abertura + ideias prontas)</summary><div class="body">'
+        +FA.itens.map(x=>"<b>"+esc(x.n)+"</b>"+(x.dur?' <span class="sm num">· '+esc(x.dur)+"</span>":"")
+          +(x.abre?"<br>"+esc(x.abre):"")
+          +(x.pq?'<br><span class="sm">por quê: '+esc(x.pq)+"</span>":"")
+          +((x.ideias||[]).length?'<br><span class="sm">ideias: '+x.ideias.map(esc).join(" · ")+"</span>":""))
+          .join('<hr style="border:0;border-top:1px solid var(--line);margin:8px 0">')
+        +"</div></details>":"")
       +"</div></div></div>";
   } else { h+='<div class="card"><span class="age stale">formatos ainda sem espelho nesta rodada</span></div>'; }
   h+="</div>";
