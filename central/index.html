@@ -421,6 +421,21 @@ function render(data){
       +'<div class="sm" style="margin-top:4px">'+lk(PS.url,"abrir o post ↗","golink")+' · <a class="golink" href="#" onclick="showView(\'posts\');return false">ver os posts da janela ↗</a></div>'
       +"</div></div>"
       +'<div class="sm" style="margin-top:5px">D+7 = como o post envelheceu uma semana depois de publicado</div></div>';
+  const MH=D.melhor_hora;
+  if(MH){
+    const maxE=Math.max(...(MH.faixas||[]).map(f=>parseFloat(String(f.er).replace(",","."))||0),1);
+    h+='<div class="card"><span class="k">🕘 '+esc(MH.frase)+"</span>"
+      +(MH.amostra?'<div class="sm num" style="color:var(--age);margin-top:3px">▬ '+esc(MH.amostra)+"</div>":"")
+      +'<div style="margin-top:8px">'+(MH.faixas||[]).map(f=>{
+        const v=parseFloat(String(f.er).replace(",","."))||0;
+        return '<div style="display:flex;align-items:center;gap:8px;margin:5px 0"><span class="sm" style="width:66px">'+esc(f.nome)+'</span>'
+          +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(v/maxE*100).toFixed(0)+'%"></div></div>'
+          +'<span class="sm num" style="width:74px;text-align:right">'+esc(f.er)+"% · "+f.n+" post"+(f.n>1?"s":"")+"</span></div>";}).join("")
+      +"</div>"
+      +((MH.dias||[]).length?'<details style="margin-top:4px"><summary>por dia da semana</summary><div class="body num">'
+        +MH.dias.map(d=>esc(d.nome)+": "+esc(d.er)+"% ("+d.n+")").join(" · ")+"</div></details>":"")
+      +'<div class="sm" style="margin-top:4px">ER médio dos seus posts por faixa do dia · só conta post com hora conhecida</div></div>';
+  }
   if(SA.crm_linha)
     h+='<div class="card"><div class="linha"><span>💰 '+esc(SA.crm_linha.t)+"</span><span>"+lk(SA.crm_linha.url,"abrir ↗","golink")+"</span></div></div>";
   h+='<details class="card"><summary style="font:700 13px Inter,sans-serif;cursor:pointer">🔎 Outros sinais</summary>'
@@ -578,6 +593,15 @@ function render(data){
       +(f.antigo?'<div class="sm" style="margin-top:4px">mais antigo: '+lk(f.antigo.url,esc(f.antigo.t),"golink")+" · desde "+esc(f.antigo.desde)+"</div>":'<div class="sm" style="margin-top:4px">vazia</div>')+"</div>";
     h+='<h2>🗂 A fila '+ageChip(S,"trello")+"</h2><p class=sub-h>o gargalo real · aprovar é sempre seu</p>"
       +grp("👀","Aprovar",F.aprovar)+grp("🎬","Gravar",F.gravar)+grp("♻️","Repurpose",F.repurpose)
+      +(D.buracos?'<h2>🗓 A semana</h2><p class=sub-h>medida por buraco, não por volume</p><div class="card">'
+        +'<div style="font:700 13px Inter,sans-serif">'+esc(D.buracos.frase)+"</div>"
+        +'<div style="display:flex;gap:5px;margin-top:9px">'+D.buracos.semana.map(x=>{
+          const cor=x.publicado?"background:#7C3AED;color:#fff":x.cards.length?"background:#EDE9FE;color:#5B21B6":(x.passou?"background:var(--mid-bg);color:var(--faint)":"background:#fff;color:var(--sub);border:1.5px "+(x.fds?"dotted":"dashed")+" var(--line)");
+          return '<div title="'+esc(x.d)+(x.cards.length?" · "+esc(x.cards[0].t):"")+'" style="flex:1;text-align:center;border-radius:10px;padding:7px 2px;'+cor+(x.hoje?";box-shadow:0 0 0 2px #6366F1":"")+'">'
+            +'<div style="font:800 10px Inter,sans-serif;text-transform:uppercase">'+esc(x.dow)+"</div>"
+            +'<div style="font:700 13px Inter,sans-serif">'+esc(x.d.slice(0,2))+"</div>"
+            +'<div style="font-size:9px">'+(x.publicado?"✓":x.cards.length?"•":"")+"</div></div>";}).join("")+"</div>"
+        +'<div class="sm" style="margin-top:7px">roxo = publicou · lilás = já tem card · tracejado = livre (pontilhado = fim de semana, publicação pode e tarefa sua não) · '+lk(D.buracos.link,"abrir o board ↗","golink")+"</div></div>":"")
       +"<h2>💡 Pautas · de onde começar</h2><div class=card>"
       +((D.pautas&&D.pautas.length)?D.pautas.map(p=>'<div class="linha"><span>'+lk(p.url,esc(p.t),"golink")+"</span><span></span></div>").join(""):'<div class="sm">lista Ideias vazia</div>')
       +((D.learning&&D.learning.action)?'<div class="sm" style="margin-top:4px"><b>por quê agora:</b> '+esc(D.learning.action)+"</div>":"")
