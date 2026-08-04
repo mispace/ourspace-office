@@ -281,6 +281,7 @@ function render(data){
     +'<div><div class="oi">Oi, Michelle</div><div class="dt" id="carimbo" style="cursor:pointer" title="toque para ver quando cada dado chegou">'+DIAS[(hoje.getDay()+6)%7]+", "
     +hoje.getDate()+" de "+MESES[hoje.getMonth()]+" · montado "+esc(fmtAge(D.meta.built_at)||"")+"</div></div>"
     +lk(m.link,"🎚 "+esc(m.value||"Normal")+(m.ok?"":" (padrão)"),"marcha")
+    +'<button id="ajuda" title="como ler esta central" aria-label="como ler" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font:700 15px Inter,sans-serif;cursor:pointer;margin-right:6px">?</button>'
     +'<button id="refresh" title="atualizar agora" aria-label="atualizar agora" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font-size:15px;cursor:pointer">↻</button>'
     +"</div></div></div>";
 
@@ -538,6 +539,29 @@ function render(data){
     n.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); stAbre(n.dataset.si); } });
   });
   $("#carimbo").addEventListener("click",()=>{showView("fila");setTimeout(()=>{const a=document.getElementById("atualizacoes");if(a)a.scrollIntoView({behavior:"smooth"});},80);});
+  $("#ajuda").addEventListener("click",()=>{
+    let ov=document.getElementById("guia");
+    if(ov){ov.remove();return;}
+    ov=document.createElement("div");ov.id="guia";
+    ov.style.cssText="position:fixed;inset:0;z-index:120;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:20px";
+    const G=[["hoje","🌞","HOJE","o que fazer agora · 1 principal, no máximo 2 extras"],
+      ["agenda","📅","AGENDA","a semana e os eventos · só os próximos 7 dias"],
+      ["posts","🖼","POSTS","o que saiu · cada post ganha nota D+7 uma semana depois"],
+      ["analise","📊","ANÁLISE","saúde, pizza do mix e canais"],
+      ["negocio","💰","R$","placar do mês, funil com nomes, quem cobrar"],
+      ["fila","📋","FILA","aprovar e gravar, pautas, e quando cada dado chegou"]];
+    ov.innerHTML='<div style="background:#fff;border-radius:16px;max-width:400px;width:100%;padding:18px 16px;box-shadow:0 20px 60px rgba(15,23,42,.3)">'
+      +'<div style="font:800 15px Inter,sans-serif;margin-bottom:10px">Como ler esta central</div>'
+      +G.map(g=>'<button data-go="'+g[0]+'" style="display:flex;gap:10px;width:100%;text-align:left;border:0;background:none;padding:8px 4px;border-radius:10px;cursor:pointer;align-items:baseline"><span>'+g[1]+'</span><span style="font:700 13px Inter,sans-serif;min-width:64px">'+g[2]+'</span><span style="font:400 12.5px Inter,sans-serif;color:var(--sub)">'+g[3]+"</span></button>").join("")
+      +'<div style="font:400 12px Inter,sans-serif;color:var(--sub);margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">toque no “montado há…” lá em cima para ver quando cada dado chegou · o ↻ pede uma rodada nova e avisa quando ela fica pronta</div>'
+      +'<button id="guiafecha" style="margin-top:12px;width:100%;height:38px;border:0;border-radius:10px;background:linear-gradient(135deg,#7C3AED,#6366F1);color:#fff;font:700 13px Inter,sans-serif;cursor:pointer">entendi</button></div>';
+    ov.addEventListener("click",e=>{
+      const b=e.target.closest("[data-go]");
+      if(b){showView(b.dataset.go);ov.remove();return;}
+      if(e.target===ov||e.target.id==="guiafecha")ov.remove();
+    });
+    document.body.appendChild(ov);
+  });
   let _lm=null;
   async function _headLM(){try{const r=await fetch((MODE==="enc"?"data.enc":"data.json")+"?v="+Date.now(),{method:"HEAD",cache:"no-store"});return r.headers.get("last-modified")||r.headers.get("etag");}catch(e){return null;}}
   async function vigiaRodada(){
