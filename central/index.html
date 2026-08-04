@@ -415,7 +415,8 @@ function render(data){
   if(PS)
     h+='<div class="card"><span class="k">🏆 Post da semana</span>'
       +'<div style="display:flex;gap:12px;margin-top:8px;align-items:flex-start">'
-      +(PS.img?'<a href="'+esc(PS.url)+'" target="_blank" rel="noopener" style="flex:0 0 96px"><img src="'+PS.img+'" style="width:96px;height:96px;object-fit:cover;border-radius:12px" alt=""></a>':"")
+      +(function(){const P=D.posts||{};const f=[].concat(P.top3||[],P.recentes||[],P.all||[]).find(x=>x.url===PS.url&&x.img);
+        return f?'<a href="'+esc(PS.url)+'" target="_blank" rel="noopener" style="flex:0 0 96px"><img src="'+f.img+'" style="width:96px;height:96px;object-fit:cover;border-radius:12px" alt=""></a>':"";})()
       +'<div style="flex:1;min-width:0">'+d7pill(PS)+' <span class="num" style="font-weight:800">'+esc(PS.er)+'% ER</span>'
       +'<div class="sm" style="margin-top:4px">'+esc(PS.frase||"")+"</div>"
       +'<div class="sm" style="margin-top:4px">'+lk(PS.url,"abrir o post ↗","golink")+' · <a class="golink" href="#" onclick="showView(\'posts\');return false">ver os posts da janela ↗</a></div>'
