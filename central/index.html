@@ -209,6 +209,7 @@ footer a{margin-right:12px;font-weight:600;color:var(--gold-deep)}
   <button data-v="agenda" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>AGENDA</button>
   <button data-v="posts" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>POSTS</button>
   <button data-v="analise" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>ANÁLISE</button>
+  <button data-v="negocio" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 2v20M16.5 6.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3 2 3 4.5 3 4.5 1.3 4.5 3-2 3-4.5 3-4.5-1.3-4.5-3"/></svg>R$</button>
   <button data-v="fila" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>FILA</button>
 </div></nav>
 
@@ -277,7 +278,7 @@ function render(data){
 
   let h='<div id="top"><div class="wrap"><div class="row">'
     +(ava?'<img class="ava" src="'+ava+'" alt="">':'<span class="ava"></span>')
-    +'<div><div class="oi">Oi, Michelle</div><div class="dt">'+DIAS[(hoje.getDay()+6)%7]+", "
+    +'<div><div class="oi">Oi, Michelle</div><div class="dt" id="carimbo" style="cursor:pointer" title="toque para ver quando cada dado chegou">'+DIAS[(hoje.getDay()+6)%7]+", "
     +hoje.getDate()+" de "+MESES[hoje.getMonth()]+" · montado "+esc(fmtAge(D.meta.built_at)||"")+"</div></div>"
     +lk(m.link,"🎚 "+esc(m.value||"Normal")+(m.ok?"":" (padrão)"),"marcha")
     +'<button id="refresh" title="atualizar agora" aria-label="atualizar agora" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font-size:15px;cursor:pointer">↻</button>'
@@ -313,6 +314,7 @@ function render(data){
 
   // ---------- POSTS ----------
   const P=D.posts, st=D.stories||{};
+  const d7pill=p=>{const d=p.d7;if(!d)return "";if(d.pend)return '<span class="sm num" style="opacity:.65">D+7 '+esc(d.pend)+"</span>";const c=d.nota==="alta"?"#059669":d.nota==="baixa"?"#DC2626":"var(--sub)";const y=d.nota==="alta"?"▲":d.nota==="baixa"?"▼":"▬";return '<span class="sm num" title="'+esc(d.txt||"")+'" style="color:'+c+';font-weight:800">'+y+" D+7</span>";};
   h+='<section class="view wrap" id="v-posts" hidden>'
     +"<h2>"+LOGOS.ig+"Top 3 por engajamento "+ageChip(S,"posts")+"</h2>"
     +'<div class="hscroll">'+P.top3.map(p=>'<a class="post" data-pilar="'+esc(p.pilar)+'" href="'+esc(p.url)+'" target="_blank" rel="noopener">'
@@ -322,12 +324,16 @@ function render(data){
     +"</div>"
     +'<div class="card"><span class="k">Mais recentes</span>'
     +P.recentes.map(p=>'<div class="linha" data-pilar="'+esc(p.pilar)+'"><span>'+lk(p.url,esc(p.t||p.d))
-      +' <span class="sm num">'+esc(p.d)+"</span> "+tag(p.pilar)+'</span><span class="n num">'+esc(p.er)+"%</span></div>").join("")
+      +' <span class="sm num">'+esc(p.d)+"</span> "+tag(p.pilar)
+      +(p.d7&&p.d7.txt?'<br><span class="sm num">'+d7pill(p)+" · "+esc(p.d7.txt)+"</span>":(p.d7&&p.d7.pend?"<br>"+d7pill(p):""))
+      +'</span><span class="n num">'+esc(p.er)+"%</span></div>").join("")
     +'<details style="margin-top:8px"><summary>ver os '+P.all.length+" posts da janela</summary>"
-    +'<table><tr><th>data</th><th>fmt</th><th>pilar</th><th>ER</th><th>envios</th><th></th></tr>'
+    +'<table><tr><th>data</th><th>fmt</th><th>pilar</th><th>ER</th><th>envios</th><th>D+7</th><th></th></tr>'
     +P.all.map(p=>'<tr data-pilar="'+esc(p.pilar)+'"><td class="num">'+esc(p.d)+"</td><td>"+esc(p.fmt)+"</td><td>"+tag(p.pilar)
-      +'</td><td class="num"><b>'+esc(p.er)+'</b></td><td class="num">'+esc(p.sends)+"</td><td>"+lk(p.url,"↗","golink")+"</td></tr>").join("")
-    +"</table></details></div>";
+      +'</td><td class="num"><b>'+esc(p.er)+'</b></td><td class="num">'+esc(p.sends)+"</td><td>"+d7pill(p)+"</td><td>"+lk(p.url,"↗","golink")+"</td></tr>").join("")
+    +"</table>"
+    +'<p class="sm" style="margin-top:6px">D+7 = a nota do post uma semana depois de publicado, contra a mediana da janela · ▲ acima ▬ na média ▼ abaixo · a leitura completa aparece nos Mais recentes</p>'
+    +"</details></div>";
   if(st.items&&st.items.length)
     h+="<h2>"+LOGOS.ig+"Stories "+ageChip(S,"stories")+"</h2>"
       +'<p class="sub-h">o motor da conta · toque num story (ou no i) para a mini-análise</p>'
@@ -390,14 +396,24 @@ function render(data){
     +D.pilares.map(p=>{const v=parseFloat(String(p.er).replace(",","."))||0;
       return '<div class="row">'+tag(p.nome)+'<div class="bar"><div class="fill" style="width:'+(v/maxEr*100).toFixed(0)+'%"></div></div><span class="val num">'+esc(p.er)+"</span></div>";}).join("")
     +"</div>"
-    +"<h2>Mix do grid</h2><p class=sub-h>quanto de cada pilar existe no seu feed · a barra de CIMA é hoje, a de BAIXO é o alvo "+esc(D.mix_alvo_status)+"</p>"
+    +"<h2>Mix do grid</h2><p class=sub-h>quanto de cada pilar existe no seu feed · a pizza da ESQUERDA é hoje, a da DIREITA é o alvo "+esc(D.mix_alvo_status)+"</p>"
     +(function(){
       const cores={"Autoridade":"#7C3AED","Educação":"#0EA5E9","Prova/bastidores":"#6366F1","Desejo/curadoria":"#EC4899","Oferta":"#94A3B8"};
-      const barra=(vals,rotulo)=>'<div style="display:flex;align-items:center;gap:8px;margin:7px 0"><span class="sm" style="width:38px;font-weight:700">'+rotulo+'</span><div style="flex:1;display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--mid-bg)">'
-        +D.pilares.map(p=>{const v=vals(p);return v>0?'<div title="'+esc(p.nome)+' '+v+'%" style="width:'+v+'%;background:'+cores[p.nome]+'"></div>':"";}).join("")+"</div></div>";
-      return '<div class="card">'+barra(p=>p.mix_real,"HOJE")+barra(p=>p.mix_alvo,"ALVO")
-        +'<div style="display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px">'
-        +D.pilares.map(p=>'<span class="sm num"><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+cores[p.nome]+';margin-right:5px"></i>'+esc(p.nome.split("/")[0])+" "+p.mix_real+"% → "+p.mix_alvo+"%</span>").join("")
+      const pizza=(vals,rotulo)=>{
+        let a0=-Math.PI/2, ps="";
+        D.pilares.forEach(p=>{const v=vals(p); if(v<=0) return;
+          if(v>=100){ps+='<circle cx="60" cy="60" r="48" fill="'+cores[p.nome]+'"/>';return;}
+          const a1=a0+v/100*2*Math.PI, lg=(a1-a0)>Math.PI?1:0;
+          const x0=60+48*Math.cos(a0), y0=60+48*Math.sin(a0), x1=60+48*Math.cos(a1), y1=60+48*Math.sin(a1);
+          ps+='<path d="M60 60L'+x0.toFixed(1)+" "+y0.toFixed(1)+"A48 48 0 "+lg+" 1 "+x1.toFixed(1)+" "+y1.toFixed(1)+'Z" fill="'+cores[p.nome]+'" stroke="#fff" stroke-width="1.5"><title>'+esc(p.nome)+" "+v+"%</title></path>";
+          const am=(a0+a1)/2, vx=60+31*Math.cos(am), vy=60+31*Math.sin(am);
+          if(v>=10) ps+='<text x="'+vx.toFixed(1)+'" y="'+vy.toFixed(1)+'" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="800" fill="#fff">'+v+"</text>";
+          a0=a1;});
+        return '<div style="text-align:center"><svg viewBox="0 0 120 120" style="width:134px;height:134px" role="img" aria-label="mix '+rotulo+'">'+ps+'</svg><div class="sm" style="font-weight:800;margin-top:2px">'+rotulo+"</div></div>";
+      };
+      return '<div class="card"><div style="display:flex;justify-content:space-evenly;flex-wrap:wrap;gap:10px">'+pizza(p=>p.mix_real,"HOJE")+pizza(p=>p.mix_alvo,"ALVO")+"</div>"
+        +'<div style="display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;justify-content:center">'
+        +D.pilares.map(p=>'<span class="sm num"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+cores[p.nome]+';margin-right:5px"></i>'+esc(p.nome.split("/")[0])+" "+p.mix_real+"% → "+p.mix_alvo+"%</span>").join("")
         +"</div></div>";
     })()
     +"<h2>Cada pilar</h2>"
@@ -443,6 +459,39 @@ function render(data){
       :'<div class="card"><span class="k">'+LOGOS.lab+'@ourspacelab</span><div class="sm" style="margin-top:6px">contagem mensal entra na 1ª sexta de agosto (rotina instalada) · '+lk("https://www.instagram.com/ourspacelab/","abrir ↗","golink")+"</div></div>")
     +"</div></section>";
 
+  // ---------- NEGÓCIO (aba R$ · pedido dela 03/08) ----------
+  const FF=D.fila||{}, CR=FF.pipeline||null;
+  h+='<section class="view wrap" id="v-negocio" hidden>';
+  if(CR&&CR.placar){
+    const pl=CR.placar, fmtR=v=>"R$"+String(Math.round(v||0)).replace(/\B(?=(\d{3})+(?!\d))/g,".");
+    const pct=Math.min(100,Math.round(((pl.ganho_conf||0)+(pl.ganho_est||0))/(pl.meta||25000)*100));
+    h+='<h2>Placar do mês · '+esc(pl.mes||"")+" "+ageChip(S,"crm")+'</h2><p class=sub-h>fechado no mês contra a meta que você declarou</p>'
+      +'<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="num" style="font-size:27px;font-weight:800">'+fmtR(pl.ganho_conf)+'</span><span class="sm num">meta '+fmtR(pl.meta)+"</span></div>"
+      +(pl.ganho_est?'<div class="sm num">+ '+fmtR(pl.ganho_est)+" em estimativa (faixa do catálogo)</div>":"")
+      +'<div style="height:10px;border-radius:5px;background:var(--mid-bg);margin:8px 0 5px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:linear-gradient(135deg,#7C3AED,#6366F1)"></div></div>'
+      +'<div class="sm num">'+(pl.n_fech_mes||0)+' negócio(s) fechado(s) que se moveram este mês</div>'
+      +(pl.fech_mes&&pl.fech_mes.length?'<details><summary>ver quais</summary><div class="body">'+pl.fech_mes.map(f=>"· "+lk(f.url,esc(f.t))+(f.valor?' <span class="sm num">'+esc(f.valor)+(f.vtipo==="estimativa"?" est.":"")+"</span>":"")).join("<br>")+"</div></details>":"")
+      +'<div class="sm num" style="margin-top:4px">no funil (se tudo fechar): '+fmtR(pl.pipe_conf)+(pl.pipe_est?" + "+fmtR(pl.pipe_est)+" est.":"")+"</div>"
+      +"</div>";
+    if(CR.cobrar&&CR.cobrar.length)
+      h+='<div class="card" style="border-left:3px solid var(--age)"><span class="k">💬 Cobrar hoje</span>'
+        +CR.cobrar.map(c=>'<div class="linha"><span>'+lk(c.url,esc(c.t),"golink")+'</span><span class="sm num" style="color:var(--age);font-weight:700">'+c.dias+"d parado</span></div>").join("")
+        +'<div class="sm" style="margin-top:4px">proposta sem resposta há 5+ dias · 1 mensagem reativa</div></div>';
+    h+="<h2>Funil · quem está onde</h2><p class=sub-h>cada nome abre o card no Trello</p>";
+    (CR.etapas||[]).forEach(et=>{
+      h+='<div class="card"><div class="hd"><span class="k">'+esc(et.nome)+'</span><span class="n num">'+et.n+"</span></div>"
+        +et.cards.map(c=>'<div class="linha"><span>'+lk(c.url,esc(c.t),"golink")+'</span><span class="sm num">'+(c.valor?esc(c.valor)+(c.vtipo==="estimativa"?' <span style="opacity:.65">est.</span>':""):"sem valor ainda")+"</span></div>").join("")
+        +(et.mais?'<div class="sm">+'+et.mais+" no board</div>":"")+"</div>";
+    });
+    if(!(CR.etapas||[]).length) h+='<div class="card"><div class="sm">nenhum negócio ativo no funil agora · '+lk(CR.link,"abrir o CRM ↗","golink")+"</div></div>";
+    h+='<p class="sm" style="margin:6px 2px">'+lk(CR.link,"abrir o CRM ↗","golink")+' · valor real: digite "R$ 12.000" no título ou na descrição do card que ele entra aqui sozinho na próxima rodada</p>'
+      +(FF.curso?'<div class="card"><div class="linha"><span>'+lk(FF.curso.url,esc(FF.curso.t))+"</span><span></span></div></div>":"")
+      +'<div class="card"><span class="k">Como isso atualiza</span><div class="sm" style="margin-top:6px">o robô lê o board CRM ao vivo em TODA rodada da Central (as horas estão no card Atualizações, aba FILA) · mexeu no Trello, o webhook republica em ~1-2 min · nada aqui é digitado à mão</div></div>';
+  } else {
+    h+='<div class="card"><span class="age stale">CRM sem dado nesta rodada</span></div>';
+  }
+  h+="</section>";
+
   // ---------- FILA ----------
   const F=D.fila;
   h+='<section class="view wrap" id="v-fila" hidden>';
@@ -451,10 +500,10 @@ function render(data){
       +(f.antigo?'<div class="sm" style="margin-top:4px">mais antigo: '+lk(f.antigo.url,esc(f.antigo.t),"golink")+" · desde "+esc(f.antigo.desde)+"</div>":'<div class="sm" style="margin-top:4px">vazia</div>')+"</div>";
     h+='<h2>A fila '+ageChip(S,"trello")+"</h2><p class=sub-h>o gargalo real · aprovar é sempre seu</p>"
       +grp("👀","Aprovar",F.aprovar)+grp("🎬","Gravar",F.gravar)+grp("♻️","Repurpose",F.repurpose)
-      +"<h2>Negócio</h2><div class=card>"
-      +(F.pipeline?'<div class="linha"><span>Pipeline CRM · '+lk(F.pipeline.link,"abrir ↗","golink")+'</span><span class="sm num">'+F.pipeline.ativos+" ativos · "+F.pipeline.fechados+" fechados</span></div>":"")
-      +(F.curso?'<div class="linha"><span>'+lk(F.curso.url,esc(F.curso.t))+"</span><span></span></div>":"")
-      +'<div class="linha"><span>Banco de ideias · '+lk(F.ideias.link,"lista Ideias ↗","golink")+'</span><span class="sm num">'+F.ideias.n+" pautas vivas</span></div>"
+      +"<h2>Pautas · de onde começar</h2><div class=card>"
+      +((D.pautas&&D.pautas.length)?D.pautas.map(p=>'<div class="linha"><span>'+lk(p.url,esc(p.t),"golink")+"</span><span></span></div>").join(""):'<div class="sm">lista Ideias vazia</div>')
+      +((D.learning&&D.learning.action)?'<div class="sm" style="margin-top:4px"><b>por quê agora:</b> '+esc(D.learning.action)+"</div>":"")
+      +'<div class="sm" style="margin-top:4px">'+lk(F.ideias.link,"lista Ideias ↗","golink")+' · '+F.ideias.n+' pautas vivas · o dinheiro mudou para a aba <a class="golink" href="#" onclick="showView(\'negocio\');return false">R$</a></div>'
       +"</div>";
   } else {
     h+='<div class="card"><span class="age stale">Trello sem dado nesta rodada</span></div>';
@@ -488,8 +537,27 @@ function render(data){
     n.addEventListener("click",()=>stAbre(n.dataset.si));
     n.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); stAbre(n.dataset.si); } });
   });
+  $("#carimbo").addEventListener("click",()=>{showView("fila");setTimeout(()=>{const a=document.getElementById("atualizacoes");if(a)a.scrollIntoView({behavior:"smooth"});},80);});
+  let _lm=null;
+  async function _headLM(){try{const r=await fetch((MODE==="enc"?"data.enc":"data.json")+"?v="+Date.now(),{method:"HEAD",cache:"no-store"});return r.headers.get("last-modified")||r.headers.get("etag");}catch(e){return null;}}
+  async function vigiaRodada(){
+    _lm=_lm||await _headLM();
+    const t0=Date.now();
+    const iv=setInterval(async()=>{
+      if(Date.now()-t0>6*60*1000){clearInterval(iv);return;}
+      const lm=await _headLM();
+      if(lm&&_lm&&lm!==_lm){clearInterval(iv);
+        let n=document.getElementById("novaRodada");
+        if(!n){n=document.createElement("button");n.id="novaRodada";
+          n.style.cssText="position:fixed;left:50%;transform:translateX(-50%);bottom:76px;z-index:99;background:#7C3AED;color:#fff;border:0;border-radius:20px;padding:10px 18px;font:700 13px Inter,sans-serif;box-shadow:0 6px 20px rgba(124,58,237,.35);cursor:pointer";
+          n.textContent="✓ Rodada nova no ar · toque para recarregar";
+          n.onclick=()=>location.reload();document.body.appendChild(n);}
+      }
+    },25000);
+  }
   $("#refresh").addEventListener("click",()=>{
     fetch("https://office-trello.contatomichelledouglas.workers.dev/",{method:"POST",mode:"no-cors",body:"{}"});
+    vigiaRodada();
     const b=$("#refresh"); b.textContent="✓"; b.disabled=true;
     const av=$("#banner");
     const msg='pedido de atualização enviado · a página nova fica pronta em ~2 minutos · depois é só recarregar';
