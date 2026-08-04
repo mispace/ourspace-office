@@ -358,11 +358,13 @@ function render(data){
   // ---------- ANÁLISE ----------
   h+='<section class="view wrap" id="v-analise" hidden>'
     +'<div class="seg" role="tablist">'
-    +'<button data-s="saude" aria-selected="true">Saúde</button>'
-    +'<button data-s="pilares" aria-selected="false">Pilares e mix</button>'
-    +'<button data-s="canais" aria-selected="false">Canais</button></div>';
+    +'<button data-s="saude" aria-selected="true">💚 Saúde</button>'
+    +'<button data-s="pilares" aria-selected="false">🍕 Pilares e mix</button>'
+    +'<button data-s="canais" aria-selected="false">📡 Canais</button></div>';
 
-  h+='<div class="subv" id="s-saude"><div class="kgrid">'
+  h+='<div class="subv" id="s-saude">'
+    +(D.saude_frase?'<div class="card" style="background:linear-gradient(135deg,#7C3AED,#6366F1)"><span class="k" style="color:rgba(255,255,255,.85)">🎯 Sua semana em 1 frase</span><p style="font:700 14.5px/1.5 Inter,sans-serif;color:#fff;margin-top:5px">'+esc(D.saude_frase)+"</p></div>":"")
+    +'<div class="kgrid">'
     +D.kpis.map((k,i)=>{
       const inf=k.info||{};
       return '<div class="kpi" id="kpi'+i+'"><button class="iBtn" data-i="'+i+'" aria-label="o que é">i</button>'
@@ -393,11 +395,12 @@ function render(data){
   const L=D.learning||{};
   const maxEr=Math.max(...D.pilares.map(p=>parseFloat(String(p.er).replace(",","."))||0),1);
   h+='<div class="subv" id="s-pilares" hidden>'
-    +"<h2>ER por pilar</h2><p class=sub-h>quanto cada pilar engaja de quem alcança</p><div class='card chart'>"
+    +'<div class="card sm" style="line-height:1.6">🧩 <b>Pilar</b> = o assunto que sustenta a marca (o porquê) · 🎬 <b>Formato</b> = o jeito de gravar (o como) · 🎪 <b>Quadro</b> = a série com nome fixo que se repete (o programa). Um quadro usa um formato e alimenta um pilar.</div>'
+    +"<h2>📈 ER por pilar</h2><p class=sub-h>quanto cada pilar engaja de quem alcança</p><div class='card chart'>"
     +D.pilares.map(p=>{const v=parseFloat(String(p.er).replace(",","."))||0;
       return '<div class="row">'+tag(p.nome)+'<div class="bar"><div class="fill" style="width:'+(v/maxEr*100).toFixed(0)+'%"></div></div><span class="val num">'+esc(p.er)+"</span></div>";}).join("")
     +"</div>"
-    +"<h2>Mix do grid</h2><p class=sub-h>quanto de cada pilar existe no seu feed · a pizza da ESQUERDA é hoje, a da DIREITA é o alvo "+esc(D.mix_alvo_status)+"</p>"
+    +"<h2>🍕 Mix do grid</h2><p class=sub-h>quanto de cada pilar existe no seu feed · a pizza da ESQUERDA é hoje, a da DIREITA é o alvo "+esc(D.mix_alvo_status)+"</p>"
     +(function(){
       const cores={"Autoridade":"#7C3AED","Educação":"#0EA5E9","Prova/bastidores":"#6366F1","Desejo/curadoria":"#EC4899","Oferta":"#94A3B8"};
       const pizza=(vals,rotulo)=>{
@@ -417,7 +420,7 @@ function render(data){
         +D.pilares.map(p=>'<span class="sm num"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+cores[p.nome]+';margin-right:5px"></i>'+esc(p.nome.split("/")[0])+" "+p.mix_real+"% → "+p.mix_alvo+"%</span>").join("")
         +"</div></div>";
     })()
-    +"<h2>Cada pilar</h2>"
+    +"<h2>🧩 Cada pilar</h2>"
     +D.pilares.map(p=>'<div class="card prow" data-pilar="'+esc(p.nome)+'" onclick="filtra(this)">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'+tag(p.nome)
       +'<span style="display:flex;gap:8px;align-items:center"><span class="sm num">n='+p.n+"</span>"+pillHtml(p.pill)
@@ -466,7 +469,7 @@ function render(data){
   if(CR&&CR.placar){
     const pl=CR.placar, fmtR=v=>"R$"+String(Math.round(v||0)).replace(/\B(?=(\d{3})+(?!\d))/g,".");
     const pct=Math.min(100,Math.round(((pl.ganho_conf||0)+(pl.ganho_est||0))/(pl.meta||25000)*100));
-    h+='<h2>Placar do mês · '+esc(pl.mes||"")+" "+ageChip(S,"crm")+'</h2><p class=sub-h>fechado no mês contra a meta que você declarou</p>'
+    h+='<h2>🏆 Placar do mês · '+esc(pl.mes||"")+" "+ageChip(S,"crm")+'</h2><p class=sub-h>fechado no mês contra a meta que você declarou</p>'
       +'<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="num" style="font-size:27px;font-weight:800">'+fmtR(pl.ganho_conf)+'</span><span class="sm num">meta '+fmtR(pl.meta)+"</span></div>"
       +(pl.ganho_est?'<div class="sm num">+ '+fmtR(pl.ganho_est)+" em estimativa (faixa do catálogo)</div>":"")
       +'<div style="height:10px;border-radius:5px;background:var(--mid-bg);margin:8px 0 5px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:linear-gradient(135deg,#7C3AED,#6366F1)"></div></div>'
@@ -478,7 +481,7 @@ function render(data){
       h+='<div class="card" style="border-left:3px solid var(--age)"><span class="k">💬 Cobrar hoje</span>'
         +CR.cobrar.map(c=>'<div class="linha"><span>'+lk(c.url,esc(c.t),"golink")+'</span><span class="sm num" style="color:var(--age);font-weight:700">'+c.dias+"d parado</span></div>").join("")
         +'<div class="sm" style="margin-top:4px">proposta sem resposta há 5+ dias · 1 mensagem reativa</div></div>';
-    h+="<h2>Funil · quem está onde</h2><p class=sub-h>cada nome abre o card no Trello</p>";
+    h+="<h2>🔻 Funil · quem está onde</h2><p class=sub-h>cada nome abre o card no Trello</p>";
     (CR.etapas||[]).forEach(et=>{
       h+='<div class="card"><div class="hd"><span class="k">'+esc(et.nome)+'</span><span class="n num">'+et.n+"</span></div>"
         +et.cards.map(c=>'<div class="linha"><span>'+lk(c.url,esc(c.t),"golink")+'</span><span class="sm num">'+(c.valor?esc(c.valor)+(c.vtipo==="estimativa"?' <span style="opacity:.65">est.</span>':""):"sem valor ainda")+"</span></div>").join("")
@@ -499,9 +502,9 @@ function render(data){
   if(F){
     const grp=(emoji,nome,f)=>'<div class="card grp"><div class="hd"><span class="k">'+emoji+" "+nome+'</span><span class="n num">'+f.n+"</span></div>"
       +(f.antigo?'<div class="sm" style="margin-top:4px">mais antigo: '+lk(f.antigo.url,esc(f.antigo.t),"golink")+" · desde "+esc(f.antigo.desde)+"</div>":'<div class="sm" style="margin-top:4px">vazia</div>')+"</div>";
-    h+='<h2>A fila '+ageChip(S,"trello")+"</h2><p class=sub-h>o gargalo real · aprovar é sempre seu</p>"
+    h+='<h2>🗂 A fila '+ageChip(S,"trello")+"</h2><p class=sub-h>o gargalo real · aprovar é sempre seu</p>"
       +grp("👀","Aprovar",F.aprovar)+grp("🎬","Gravar",F.gravar)+grp("♻️","Repurpose",F.repurpose)
-      +"<h2>Pautas · de onde começar</h2><div class=card>"
+      +"<h2>💡 Pautas · de onde começar</h2><div class=card>"
       +((D.pautas&&D.pautas.length)?D.pautas.map(p=>'<div class="linha"><span>'+lk(p.url,esc(p.t),"golink")+"</span><span></span></div>").join(""):'<div class="sm">lista Ideias vazia</div>')
       +((D.learning&&D.learning.action)?'<div class="sm" style="margin-top:4px"><b>por quê agora:</b> '+esc(D.learning.action)+"</div>":"")
       +'<div class="sm" style="margin-top:4px">'+lk(F.ideias.link,"lista Ideias ↗","golink")+' · '+F.ideias.n+' pautas vivas · o dinheiro mudou para a aba <a class="golink" href="#" onclick="showView(\'negocio\');return false">R$</a></div>'
@@ -511,7 +514,7 @@ function render(data){
   }
   const NOMES={posts:"Instagram · posts",stories:"Instagram · stories",trello:"Trello (fila/agenda)",crm:"CRM (pipeline)",learning:"Leitura da semana",tiktok:"TikTok",linkedin:"LinkedIn",events:"Eventos (agenda)",blog:"Blog (Wix)",ourspacelab:"@ourspacelab"};
   const fmtAbs=iso=>{ if(!iso) return "sem carimbo"; const t=String(iso); return t.slice(8,10)+"/"+t.slice(5,7)+(t.length>10?" "+t.slice(11,16):""); };
-  h+='<h2 id="atualizacoes">Atualizações</h2><p class=sub-h>quando cada dado chegou · o ↻ lá em cima pede uma rodada nova (fica pronta em ~2 min)</p><div class="card">'
+  h+='<h2 id="atualizacoes">🕒 Atualizações</h2><p class=sub-h>quando cada dado chegou · o ↻ lá em cima pede uma rodada nova (fica pronta em ~2 min)</p><div class="card">'
     +Object.keys(NOMES).filter(k=>S[k]).map(k=>{
       const st=S[k]; const dias=st.at?(Date.now()-new Date(String(st.at).slice(0,10)+"T12:00:00").getTime())/864e5:99;
       const ok=st.ok&&dias<=(LIMITES[k]??9);
