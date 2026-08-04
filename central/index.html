@@ -464,7 +464,7 @@ function render(data){
   const MH=D.melhor_hora;
   if(MH){
     const maxE=Math.max(...(MH.faixas||[]).map(f=>parseFloat(String(f.er).replace(",","."))||0),1);
-    h+='<div class="card"><span class="k">🕘 '+esc(MH.frase)+"</span>"
+    h+='<div class="card"><span class="k">⏰ '+esc(MH.frase)+"</span>"
       +(MH.amostra?'<div class="sm num" style="color:var(--age);margin-top:3px">▬ '+esc(MH.amostra)+"</div>":"")
       +'<div style="margin-top:8px">'+(MH.faixas||[]).map(f=>{
         const v=parseFloat(String(f.er).replace(",","."))||0;
@@ -669,7 +669,7 @@ function render(data){
   }
   const NOMES={posts:"Instagram · posts",stories:"Instagram · stories",trello:"Trello (fila/agenda)",crm:"CRM (pipeline)",learning:"Leitura da semana",tiktok:"TikTok",linkedin:"LinkedIn",events:"Eventos (agenda)",blog:"Blog (Wix)",ourspacelab:"@ourspacelab",formatos:"Formatos (espelho da planilha)"};
   const fmtAbs=iso=>{ if(!iso) return "sem carimbo"; const t=String(iso); return t.slice(8,10)+"/"+t.slice(5,7)+(t.length>10?" "+t.slice(11,16):""); };
-  h+='<h2 id="atualizacoes">🕒 Atualizações</h2><p class=sub-h>quando cada dado chegou · o ↻ lá em cima pede uma rodada nova (fica pronta em ~2 min)</p><div class="card">'
+  h+='<h2 id="atualizacoes">🕐 Atualizações</h2><p class=sub-h>quando cada dado chegou · o ↻ lá em cima pede uma rodada nova (fica pronta em ~2 min)</p><div class="card">'
     +Object.keys(NOMES).filter(k=>S[k]).map(k=>{
       const st=S[k]; const dias=st.at?(Date.now()-new Date(String(st.at).slice(0,10)+"T12:00:00").getTime())/864e5:99;
       const ok=st.ok&&dias<=(LIMITES[k]??9);
@@ -727,7 +727,7 @@ function render(data){
       +'<div style="font:800 15px Inter,sans-serif;margin-bottom:10px">Como ler esta central</div>'
       +G.map(g=>'<button data-go="'+g[0]+'" style="display:flex;gap:10px;width:100%;text-align:left;border:0;background:none;padding:8px 4px;border-radius:10px;cursor:pointer;align-items:baseline"><span>'+g[1]+'</span><span style="font:700 13px Inter,sans-serif;min-width:64px">'+g[2]+'</span><span style="font:400 12.5px Inter,sans-serif;color:var(--sub)">'+g[3]+"</span></button>").join("")
       +'<details style="margin-top:8px"><summary style="font:700 12.5px Inter,sans-serif;cursor:pointer">o que cada ícone quer dizer</summary><div style="font:400 12px/1.9 Inter,sans-serif;color:var(--sub);margin-top:4px">'
-      +[["🎯","o que fazer hoje"],["🗓","agenda e datas"],["🖼","conteúdo publicado"],["📈","análise e desempenho"],["💰","dinheiro"],["📥","fila e pendência"],["👁","alcance"],["♡","engajamento"],["✈","envios"],["👤","seguidores"],["🔍","busca e intenção"],["🕐","quando o dado chegou"],["⚠","dado velho"],["⏳","sem dado ainda"],["🔒","indisponível"],["💡","leitura e conclusão"],["★","seu melhor dia"],["▲ ▬ ▼","escalar · manter · repensar"]].map(x=>x[0]+" "+x[1]).join("<br>")
+      +[["🎯","o que fazer hoje"],["🗓","agenda e datas"],["🖼","conteúdo publicado"],["📈","análise e desempenho"],["💰","dinheiro"],["📥","fila e pendência"],["👁","alcance"],["♡","engajamento"],["✈","envios"],["👤","seguidores"],["🔍","busca e intenção"],["🕐","quando o dado chegou"],["⏰","melhor hora de postar"],["⚠","dado velho"],["⏳","sem dado ainda"],["🔒","indisponível"],["💡","leitura e conclusão"],["★","seu melhor dia"],["▲ ▬ ▼","escalar · manter · repensar"]].map(x=>x[0]+" "+x[1]).join("<br>")
       +"</div></details>"
       +'<button id="imprimir" style="margin-top:10px;width:100%;height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;font:700 12.5px Inter,sans-serif;cursor:pointer">🖨 salvar/imprimir 1 página</button>'
       +'<div style="font:400 12px Inter,sans-serif;color:var(--sub);margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">toque no “montado há…” lá em cima para ver quando cada dado chegou · o ↻ pede uma rodada nova e avisa quando ela fica pronta</div>'
@@ -872,7 +872,7 @@ function renderCal(){
   $("#cal").innerHTML=h;
   const lg=document.getElementById("callegenda");
   if(lg) lg.innerHTML=(RENDE.max>0)
-    ? "🕘 o fundo roxo mostra o que rende em cada dia da semana (ER médio dos seus posts) · ★ = seu melhor dia · só nos dias que ainda vão acontecer"
+    ? "⏰ o fundo roxo mostra o que rende em cada dia da semana (ER médio dos seus posts) · ★ = seu melhor dia · só nos dias que ainda vão acontecer"
     : "";
   document.querySelectorAll(".cd[data-d]").forEach(c=>{
     c.addEventListener("click",()=>pickDay(c.dataset.d));
