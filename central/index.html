@@ -366,7 +366,7 @@ function render(data){
   h+='<div class="subv" id="s-saude">';
   if(SA.hero&&SA.hero.acao){
     h+='<div class="card" style="background:linear-gradient(135deg,#7C3AED,#6366F1)">'
-      +'<span class="k" style="color:rgba(255,255,255,.85)">🎯 O que fazer hoje</span>'
+      +'<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="k" style="color:rgba(255,255,255,.85)">🎯 O que fazer hoje</span><span style="font:600 10.5px Inter,sans-serif;color:rgba(255,255,255,.75)">🕐 atualizado '+esc(fmtAge(D.meta.built_at)||"")+"</span></div>"
       +'<p style="font:800 15.5px/1.4 Inter,sans-serif;color:#fff;margin-top:5px">'+esc(SA.hero.acao)+"</p>"
       +'<p style="font:600 12.5px/1.5 Inter,sans-serif;color:rgba(255,255,255,.85);margin-top:4px">🗣️ '+esc(SA.hero.frase||"")+"</p>"
       +'<details style="margin-top:6px"><summary style="color:#fff;font:700 12px Inter,sans-serif;cursor:pointer">por quê?</summary><div style="color:rgba(255,255,255,.92);font:400 12.5px/1.5 Inter,sans-serif;margin-top:4px">'+esc(SA.hero.why||"")+(SA.hero.url?' · <a href="'+esc(SA.hero.url)+'" target="_blank" rel="noopener" style="color:#fff;font-weight:700">abrir ↗</a>':"")+"</div></details>"
@@ -421,6 +421,8 @@ function render(data){
       +'<div class="sm" style="margin-top:4px">'+lk(PS.url,"abrir o post ↗","golink")+' · <a class="golink" href="#" onclick="showView(\'posts\');return false">ver os posts da janela ↗</a></div>'
       +"</div></div>"
       +'<div class="sm" style="margin-top:5px">D+7 = como o post envelheceu uma semana depois de publicado</div></div>';
+  if(SA.crm_linha)
+    h+='<div class="card"><div class="linha"><span>💰 '+esc(SA.crm_linha.t)+"</span><span>"+lk(SA.crm_linha.url,"abrir ↗","golink")+"</span></div></div>";
   h+='<details class="card"><summary style="font:700 13px Inter,sans-serif;cursor:pointer">🔎 Outros sinais</summary>'
     +(SA.outros||[]).map(o=>'<div class="linha" style="margin-top:6px"><span>'+o.ico+" "+esc(o.nome)+'<br><span class="sm">'+esc(o.trad)+'</span></span><span class="n num">'+esc(o.v)+" "+(o.pill?pillHtml(o.pill):"")+"</span></div>").join("")
     +"</details>";
@@ -434,7 +436,7 @@ function render(data){
     +D.pilares.map(p=>{const v=parseFloat(String(p.er).replace(",","."))||0;
       return '<div class="row">'+tag(p.nome)+'<div class="bar"><div class="fill" style="width:'+(v/maxEr*100).toFixed(0)+'%"></div></div><span class="val num">'+esc(p.er)+"</span></div>";}).join("")
     +"</div>"
-    +"<h2>🍕 Mix do grid</h2><p class=sub-h>quanto de cada pilar existe no seu feed · a pizza da ESQUERDA é hoje, a da DIREITA é o alvo "+esc(D.mix_alvo_status)+"</p>"
+    +"<h2>🍕 Mix do grid</h2>"+(D.pilares_frase?'<p class="sub-h" style="font-weight:700;color:var(--ink)">'+esc(D.pilares_frase)+"</p>":"")+"<p class=sub-h>quanto de cada pilar existe no seu feed · a pizza da ESQUERDA é hoje, a da DIREITA é o alvo "+esc(D.mix_alvo_status)+"</p>"
     +(function(){
       const cores={"Autoridade":"#7C3AED","Educação":"#0EA5E9","Prova/bastidores":"#6366F1","Desejo/curadoria":"#EC4899","Oferta":"#94A3B8"};
       const pizza=(vals,rotulo)=>{
