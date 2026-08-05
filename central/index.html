@@ -600,7 +600,7 @@ function render(data){
           +[["👋 chegaram","+"+S.chegaram,"#7C3AED"],["👋 saíram","−"+S.sairam,"#DC2626"],["= saldo",S.liquido,S.liquido.indexOf("−")===0?"#DC2626":"#059669"]]
             .map(x=>'<div style="flex:1;text-align:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 4px"><div class="sm">'+x[0]+'</div><div class="num" style="font-size:17px;font-weight:800;color:'+x[2]+'">'+esc(x[1])+"</div></div>").join("")
           +"</div>"
-          +'<div class="sm">de '+esc(S.de)+" a "+esc(S.ate)+" · chegar não é crescer: os nomes vêm das notificações, o saldo vem da API</div>";
+          +'<div class="sm">de '+esc(S.de)+" a "+esc(S.ate)+" · são duas medidas: os nomes vêm das notificações (quem chegou), o saldo vem da API (quem ficou)</div>";
       }
       if((RD.farois||[]).length){
         t+='<div class="sm" style="font-weight:800;margin-top:12px">⭐ Vale um oi</div>'
