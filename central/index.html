@@ -62,7 +62,7 @@ details .body{font-size:13px;color:var(--sub);padding:6px 0 2px;line-height:1.55
 .lg-ig{background:#C13584}.lg-tt{background:#1A1A1A}.lg-li{background:#0A66C2}.lg-blog{background:var(--grad)}.lg-lab{background:var(--brand-dark)}
 /* ============ lock ============ */
 #lock{position:fixed;inset:0;background:var(--canvas);display:flex;align-items:center;justify-content:center;z-index:60}
-#lock[hidden],#app[hidden],#err[hidden]{display:none}
+#lock[hidden],#app[hidden],#err[hidden],#skel[hidden]{display:none}
 #lock .box{width:min(330px,88vw);text-align:center}
 #lock .dots{height:22px;margin:0 auto 16px;width:220px;background:radial-gradient(circle,var(--gold) 1.5px,transparent 1.7px) 0 0/11px 11px}
 #lock h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:30px;font-weight:700}
@@ -214,6 +214,10 @@ footer a{margin-right:12px;font-weight:600;color:var(--gold-deep)}
 </div>
 
 <div id="err" class="wrap" hidden style="padding-top:40vh;text-align:center;color:var(--sub)"></div>
+<div id="skel" class="wrap" hidden aria-hidden="true">
+  <div class="sk" style="height:104px"></div><div class="sk" style="height:64px"></div>
+  <div class="sk" style="height:132px"></div><div class="sk" style="height:88px;width:70%"></div>
+</div>
 <main id="app" hidden></main>
 
 <nav id="nav" hidden aria-label="Seções"><div class="row">
@@ -687,7 +691,8 @@ function render(data){
     +'<div style="margin-top:10px" class="num">Central @mispace v3 · montado '+esc((D.meta.built_at||"").replace("T"," "))+" (BRT)"
     +(D.qa&&D.qa.status?" · QA "+esc(D.qa.status):"")+"</div></footer></section>";
 
-  $("#app").innerHTML=h; $("#app").hidden=false; $("#nav").hidden=false;
+  $("#app").innerHTML=h; $("#skel").hidden=true; $("#app").hidden=false; $("#nav").hidden=false;
+  ligaSwipe();
 
   document.querySelectorAll("#nav button").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.v)));
   document.querySelectorAll(".seg button[data-s]").forEach(b=>b.addEventListener("click",()=>showSub(b.dataset.s)));
@@ -815,6 +820,8 @@ function showView(v){
   document.querySelectorAll("#nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));
   document.querySelectorAll(".view").forEach(s=>s.hidden=(s.id!=="v-"+v));
   scrollTo({top:0});
+  ATUAL=v;
+  if(typeof aplicaFiltro==="function") aplicaFiltro();
 }
 function showSub(s){
   document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-selected",x.dataset.s===s));
@@ -915,12 +922,39 @@ function dayPanel(iso){
 
 let FILTRO=null;
 function filtra(el){
-  const p=el.dataset.pilar;
-  FILTRO=(FILTRO===p)?null:p;
+  FILTRO=(FILTRO===el.dataset.pilar)?null:el.dataset.pilar;
+  aplicaFiltro();
+}
+function aplicaFiltro(){
   document.querySelectorAll("[data-pilar]").forEach(n=>{
     if(n.classList.contains("prow")){ n.classList.toggle("filtro-on",FILTRO===n.dataset.pilar); return; }
     n.classList.toggle("dim",!!FILTRO&&n.dataset.pilar!==FILTRO);
   });
+  let f=document.getElementById("filtrobar");
+  if(FILTRO){
+    if(!f){ f=document.createElement("button"); f.id="filtrobar";
+      f.style.cssText="position:fixed;left:50%;transform:translateX(-50%);bottom:74px;z-index:55;border:0;border-radius:20px;padding:10px 16px;background:#0F172A;color:#fff;font:700 12px Inter,sans-serif;box-shadow:0 6px 18px rgba(15,23,42,.28);cursor:pointer;min-height:40px";
+      f.onclick=()=>{FILTRO=null;aplicaFiltro();};
+      document.body.appendChild(f); }
+    f.textContent="filtrando por "+FILTRO+" · tocar para ver tudo";
+  } else if(f){ f.remove(); }
+}
+const ABAS=["hoje","agenda","posts","analise","negocio","fila"];
+let ATUAL="hoje";
+function ligaSwipe(){
+  if(window.__swipe) return; window.__swipe=true;
+  let x0=null,y0=null;
+  document.addEventListener("touchstart",e=>{ if(e.touches.length!==1)return;
+    x0=e.touches[0].clientX; y0=e.touches[0].clientY; },{passive:true});
+  document.addEventListener("touchend",e=>{
+    if(x0===null)return;
+    const t=e.changedTouches[0], dx=t.clientX-x0, dy=t.clientY-y0;
+    x0=null;
+    if(Math.abs(dx)<70||Math.abs(dy)>50)return;
+    if(e.target.closest(".hscroll,#grade,table,.chartbox"))return;
+    const i=ABAS.indexOf(ATUAL), j=i+(dx<0?1:-1);
+    if(j>=0&&j<ABAS.length) showView(ABAS[j]);
+  },{passive:true});
 }
 
 async function deriveKey(pw,saltB64,iter){
@@ -950,7 +984,7 @@ async function boot(){
     $("#err").hidden=false; return;
   }
   const cached=sessionStorage.getItem("cv3_key");
-  if(cached){ try{ render(await decryptEnv(env,b64(cached).buffer)); return; }catch(e){ sessionStorage.removeItem("cv3_key"); } }
+  if(cached){ try{ const d=await decryptEnv(env,b64(cached).buffer); $("#skel").hidden=false; setTimeout(()=>render(d),16); return; }catch(e){ sessionStorage.removeItem("cv3_key"); } }
   $("#lock").hidden=false; $("#pw").focus();
   const tenta=async()=>{
     const pw=$("#pw").value; if(!pw) return;
@@ -959,7 +993,8 @@ async function boot(){
       const bits=await deriveKey(pw,env.salt,env.iter||200000);
       const data=await decryptEnv(env,bits);
       sessionStorage.setItem("cv3_key",btoa(String.fromCharCode(...new Uint8Array(bits))));
-      $("#lock").hidden=true; render(data);
+      $("#lock").hidden=true; $("#skel").hidden=false;
+      setTimeout(()=>render(data),16);
     }catch(e){ $("#lockmsg").textContent="senha não bateu · tenta de novo"; }
   };
   $("#go").addEventListener("click",tenta);
