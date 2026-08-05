@@ -347,7 +347,10 @@ function render(data){
   const t=D.today||{}, main=t.main||{};
   // ---------- HOJE (repaginado: ação · pulso · semana · o que vem) ----------
   const SAh=D.saude||{}, NUh=SAh.numero||{}, RTh=SAh.ritmo||{}, BUh=D.buracos||{};
-  const ev1=(D.fila&&D.fila.eventos&&D.fila.eventos.length)?D.fila.eventos[0]:null;
+  const _evs=(D.fila&&D.fila.eventos)||[];
+  const _acaoTem=e=>!!(e&&t.main&&t.main.t&&t.main.t.indexOf(String(e.t).slice(0,18))>=0);
+  const ev1=_evs.length?(_acaoTem(_evs[0])?(_evs[1]||null):_evs[0]):null;
+  const _ev1repetido=_evs.length&&_acaoTem(_evs[0]);
   h+='<section class="view wrap" id="v-hoje">'
     +(D.meta.alert?'<div id="banner">'+esc(D.meta.alert)+"</div>":"")
     // 1 · a ação, com a régua embaixo (por que é ela hoje)
@@ -376,7 +379,8 @@ function render(data){
     // 4 · o que vem: evento e story do dia, com um toque cada
     +'<div class="card">'+cab("⏭ O que vem","próximo compromisso e o story de hoje","events")
     +(ev1?'<div class="linha"><span>'+lk(ev1.gcal,esc(ev1.t)+" ↗")+'</span><span class="sm num">'+esc(ev1.d)+"</span></div>"
-        :'<div class="sm">nenhum compromisso marcado nos próximos dias</div>')
+        :(_ev1repetido?'<div class="sm">depois do compromisso de amanhã, nada marcado</div>'
+          :'<div class="sm">nenhum compromisso marcado nos próximos dias</div>'))
     +'<div class="linha"><span>📱 Story de hoje · '+lk(D.fila&&D.fila.ideias?D.fila.ideias.link:null,"pautas ↗","golink")+'</span><span class="sm">'+esc((D.stories||{}).template||"")+"</span></div>"
     +'<div class="linha"><span>📱 Stories na última semana</span><span class="n num">'+((D.stories||{}).n7??"—")+"</span></div>"
     +"</div>"
@@ -681,7 +685,7 @@ function render(data){
         +'<div class="sm" style="font-weight:800;margin-top:10px">onde estão</div>'+barras(PB.cidades,somaC,"#6366F1")
         +'<div class="sm" style="font-weight:800;margin-top:10px">países</div>'+barras(PB.paises,somaP,"#0EA5E9")
         +((PB.cidades_engaja||[]).length?'<details style="margin-top:8px"><summary>quem RESPONDE, por cidade</summary><div class="body num">'
-          +PB.cidades_engaja.map(c=>esc(c.k)+": "+c.v).join(" · ")+"<br><br>seguir é uma coisa, responder é outra: esta lista é de quem interagiu no mês.</div></details>":"")
+          +PB.cidades_engaja.map(c=>esc(c.k)+": "+c.v+(c.fora?" (não aparece entre as cidades de quem te segue)":"")).join(" · ")+"<br><br>seguir é uma coisa, responder é outra: esta lista é de quem interagiu no mês, seguindo você ou não.</div></details>":"")
         +'<div class="sm" style="margin-top:8px;opacity:.85">'+esc(PB.nota)+"</div></div>";})():"")
     +(TC?'<div class="card"><span class="k">👥 '+esc(TC.frase)+"</span>"
       +'<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--mid-bg);margin:9px 0 7px">'
