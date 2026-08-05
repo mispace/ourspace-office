@@ -589,8 +589,35 @@ function render(data){
   h+="</div>";
 
   const bl=C.blog||{}, ol=C.ourspacelab;
-  const TC=D.total_canais, PB=D.publico;
+  const TC=D.total_canais, PB=D.publico, RD=D.radar;
   h+='<div class="subv" id="s-canais" hidden>'
+    +(RD?(function(){
+      const S=RD.saldo;
+      let t='<div class="card" style="border-left:3px solid #7C3AED">'
+        +cab("📡 Quem está chegando", esc(RD.janela)+" · "+RD.cobertura.total+" pessoas com data","publico");
+      if(S){
+        t+='<div style="display:flex;gap:8px;margin:8px 0">'
+          +[["👋 chegaram","+"+S.chegaram,"#7C3AED"],["👋 saíram","−"+S.sairam,"#DC2626"],["= saldo",S.liquido,S.liquido.indexOf("−")===0?"#DC2626":"#059669"]]
+            .map(x=>'<div style="flex:1;text-align:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 4px"><div class="sm">'+x[0]+'</div><div class="num" style="font-size:17px;font-weight:800;color:'+x[2]+'">'+esc(x[1])+"</div></div>").join("")
+          +"</div>"
+          +'<div class="sm">de '+esc(S.de)+" a "+esc(S.ate)+" · chegar não é crescer: os nomes vêm das notificações, o saldo vem da API</div>";
+      }
+      if((RD.farois||[]).length){
+        t+='<div class="sm" style="font-weight:800;margin-top:12px">⭐ Vale um oi</div>'
+          +RD.farois.map(f=>'<div class="linha" style="margin-top:6px"><span>'+lk(f.url,"@"+esc(f.user),"golink")
+            +(f.nome?" · <b>"+esc(f.nome)+"</b>":"")+'<br><span class="sm">'+esc(f.bio||"")+"</span></span>"
+            +'<span class="sm num">seguiu há '+(f.dias!==null&&f.dias!==undefined?f.dias+"d":esc(f.d))+"</span></div>").join("");
+      }
+      if((RD.picos||[]).length){
+        const maxp=Math.max(...RD.picos.map(p=>p.n),1);
+        t+='<div class="sm" style="font-weight:800;margin-top:12px">📈 Os dias que trouxeram gente</div>'
+          +RD.picos.map(p=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0"><span class="sm num" style="width:42px">'+esc(p.d)+'</span>'
+            +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(p.n/maxp*100).toFixed(0)+'%"></div></div>'
+            +'<span class="sm num" style="width:26px;text-align:right">'+p.n+"</span></div>"
+            +(p.ctx?'<div class="sm" style="margin:-2px 0 6px 50px;opacity:.85">'+esc(p.ctx)+"</div>":"")).join("");
+      }
+      t+='<div class="sm" style="margin-top:10px;opacity:.85">lidos '+RD.cobertura.lidos+" de "+RD.cobertura.total+" perfis ("+RD.cobertura.pct+"%) · "+esc(RD.ressalva)+"</div>";
+      return t+"</div>";})():"")
     +(PB?(function(){
       const barras=(lista,tot,cor)=>lista.map(x=>{const p=Math.round(100*x.v/(tot||1));
         return '<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span class="sm" style="width:98px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(x.k)+'</span>'
