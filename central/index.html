@@ -654,7 +654,8 @@ function render(data){
       }
       if((RD.picos||[]).length){
         const maxp=Math.max(...RD.picos.map(p=>p.n),1);
-        t+='<div class="sm" style="font-weight:800;margin-top:12px">📈 Os dias que trouxeram gente</div>'
+        t+='<div class="sm" style="font-weight:800;margin-top:14px">📈 Os dias que trouxeram gente</div>'
+          +(RD.conc?'<div class="sm" style="margin-bottom:4px">'+esc(RD.conc.frase)+"</div>":"")
           +RD.picos.map(p=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0"><span class="sm num" style="width:42px">'+esc(p.d)+'</span>'
             +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(p.n/maxp*100).toFixed(0)+'%"></div></div>'
             +'<span class="sm num" style="width:26px;text-align:right">'+p.n+"</span></div>"
