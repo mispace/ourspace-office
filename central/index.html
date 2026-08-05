@@ -271,7 +271,7 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const DIAS=["segunda","terça","quarta","quinta","sexta","sábado","domingo"];
 const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-const LIMITES={posts:4,stories:2,learning:9,tiktok:9,linkedin:9,trello:2,crm:2,blog:9,events:9999,ourspacelab:40,formatos:14};
+const LIMITES={posts:4,stories:2,learning:9,tiktok:9,linkedin:9,trello:2,crm:2,blog:9,events:14,ourspacelab:40,formatos:14};
 const TAGCLS={"Autoridade":"t-aut","Educação":"t-edu","Prova/bastidores":"t-pro","Desejo/curadoria":"t-des","Oferta":"t-ofe"};
 const tag=(p,extra)=>'<span class="tag '+(TAGCLS[p]||"t-aut")+(extra?" "+extra:"")+'">'+esc((p||"").split("/")[0])+"</span>";
 const LOGOS={
@@ -392,7 +392,7 @@ function render(data){
     +'<div class="leg"><span><i class="d-post"></i>post</span><span><i class="d-story"></i>story</span><span><i class="d-due"></i>prazo</span><span><i class="d-ev"></i>evento</span></div>'
     +'<p class="sm" id="callegenda" style="margin:2px 2px 8px"></p>'
     +'<div class="card" id="daypanel"><span class="sm">toque num dia para ver o que tem nele</span></div>'
-    +((D.fila&&D.fila.vencidos&&D.fila.vencidos.n)?'<div class="card sm" style="line-height:1.55"><b style="color:var(--age)">'+D.fila.vencidos.n+" cards passaram do prazo no board.</b> Nada muda sozinho: são tarefas antigas com data vencida. "+lk(D.fila.vencidos.link,"Abrir no board ↗","golink")+" e escolher: nova data ou concluir. Se quiser, eu reagendo em lote (me pede).</div>":"")
+    +((D.fila&&D.fila.vencidos&&D.fila.vencidos.n)?'<div class="card sm" style="line-height:1.55"><b style="color:var(--down)">'+D.fila.vencidos.n+" cards passaram do prazo no board.</b> Nada muda sozinho: são tarefas antigas com data vencida. "+lk(D.fila.vencidos.link,"Abrir no board ↗","golink")+" e escolher: nova data ou concluir. Se quiser, eu reagendo em lote (me pede).</div>":"")
     +"</section>";
 
   // ---------- POSTS ----------
@@ -414,7 +414,8 @@ function render(data){
             +'<span class="sm num" style="width:96px;text-align:right">'+esc(f.vis_post)+" por post · "+f.n+"</span></div>";}).join("")
         +'<div class="sm" style="margin-top:8px"><b>quem mais levou gente ao perfil:</b><br>'
         +T.top.map(x=>"· "+lk(x.url,esc(x.d)+" "+esc(x.fmt),"golink")+' <span class="num">'+x.vis+" visitas"+(x.seg?" · +"+x.seg+" seguidor(es)":"")+"</span>").join("<br>")+"</div>"
-        +'<div class="sm" style="margin-top:6px;opacity:.85">'+esc(T.nota)+"</div></div>";})()
+        +'<div class="sm" style="margin-top:6px;opacity:.85">'+esc(T.nota)
+        +(T.fora?"<br>"+esc(T.fora):"")+"</div></div>";})()
     +(function(){const U=(D.saude||{}).ultimo;if(!U)return "";
       const f={img:IMGMAP[U.url]};
       const cor=U.pos==="acima"?"#059669":U.pos==="abaixo"?"#DC2626":"var(--sub)";
@@ -479,7 +480,8 @@ function render(data){
   h+='<div class="subv" id="s-saude">';
   const RP=SA.report||{};
   if(RP.vitoria)
-    h+='<div class="card"><span class="k">🗞 Sua semana em 4 linhas</span>'
+    h+='<div class="card"><span class="k">🗞 Sua semana em 4 linhas '+ageChip(S,"learning")+"</span>"
+      +(S.learning&&S.learning.at?'<div class="sm">as duas linhas do meio são o retrato de '+esc(fmtAbs(S.learning.at))+"</div>":"")
       +'<div class="sm" style="margin-top:6px;line-height:1.75">'+esc(RP.vitoria)+"<br>"+esc(RP.queda)+"<br>"+esc(RP.pq)+"<br>"+esc(RP.acao)+"</div>"
       +((RP.fecho&&(RP.fecho.continuar||RP.fecho.testar))?'<details style="margin-top:5px"><summary>Continuar · Mudar · Testar</summary><div class="body">'
         +(RP.fecho.continuar?"<b>Continuar:</b> "+esc(RP.fecho.continuar)+"<br>":"")
@@ -507,7 +509,7 @@ function render(data){
   if(MH){
     const maxE=Math.max(...(MH.faixas||[]).map(f=>parseFloat(String(f.er).replace(",","."))||0),1);
     h+='<div class="card"><span class="k">⏰ '+esc(MH.frase)+"</span>"
-      +(MH.amostra?'<div class="sm num" style="color:var(--age);margin-top:3px">▬ '+esc(MH.amostra)+"</div>":"")
+      +(MH.amostra?'<div class="sm num" style="color:var(--sub);margin-top:3px">▬ '+esc(MH.amostra)+"</div>":"")
       +'<div style="margin-top:8px">'+(MH.faixas||[]).map(f=>{
         const v=parseFloat(String(f.er).replace(",","."))||0;
         return '<div style="display:flex;align-items:center;gap:8px;margin:5px 0"><span class="sm" style="width:66px">'+esc(f.nome)+'</span>'
@@ -616,7 +618,7 @@ function render(data){
     +(RD?(function(){
       const S=RD.saldo;
       let t='<div class="card" style="border-left:3px solid #7C3AED">'
-        +cab("📡 Quem está chegando", esc(RD.janela)+" · "+RD.cobertura.total+" pessoas com data","publico");
+        +cab("📡 Quem está chegando", (S?("os números grandes são de "+esc(S.de)+" a "+esc(S.ate)):esc(RD.janela))+" · "+RD.cobertura.total+" pessoas com data","publico");
       if(S){
         t+='<div style="display:flex;gap:8px;margin:8px 0">'
           +[["↘ entraram","+"+S.chegaram,"#059669",false],["↖ saíram","−"+S.sairam,"#DC2626",false],
@@ -681,7 +683,7 @@ function render(data){
       +'<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--mid-bg);margin:9px 0 7px">'
       +TC.canais.map((c,i)=>'<div title="'+esc(c.n)+" "+c.pct+'%" style="width:'+c.pct+'%;background:'+["#7C3AED","#6366F1","#0EA5E9"][i%3]+'"></div>').join("")+"</div>"
       +TC.canais.map((c,i)=>'<div class="linha"><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+["#7C3AED","#6366F1","#0EA5E9"][i%3]+';margin-right:6px"></i>'+lk(c.url,esc(c.n),"golink")+'</span><span class="n num">'+String(c.v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+' <span class="sm">'+c.pct+"%</span></span></div>").join("")
-      +((TC.faltando||[]).length?'<div class="sm" style="margin-top:6px;color:var(--age)">▬ fora da conta: '+TC.faltando.map(esc).join(" · ")+"</div>":"")
+      +((TC.faltando||[]).length?'<div class="sm" style="margin-top:6px;color:var(--sub)">▬ fora da conta: '+TC.faltando.map(esc).join(" · ")+"</div>":"")
       +"</div>":"")
     +'<div class="card"><span class="k">'+LOGOS.ig+"Instagram @mispace</span>"
     +'<div class="linha"><span>ER por alcance</span><span class="n num">'+esc((D.kpis[0]||{}).v||"—")+"</span></div>"
@@ -730,8 +732,8 @@ function render(data){
       +'<div class="sm num" style="margin-top:4px">no funil (se tudo fechar): '+fmtR(pl.pipe_conf)+(pl.pipe_est?" + "+fmtR(pl.pipe_est)+" est.":"")+"</div>"
       +"</div>";
     if(CR.cobrar&&CR.cobrar.length)
-      h+='<div class="card" style="border-left:3px solid var(--age)"><span class="k">💬 Cobrar hoje</span>'
-        +CR.cobrar.map(c=>'<div class="linha"><span>'+lk(c.url,esc(c.t),"golink")+(c.etapa?' <span class="sm">'+esc(c.etapa)+"</span>":"")+'</span><span class="sm num" style="color:var(--age);font-weight:700">'+c.dias+"d parado</span></div>").join("")
+      h+='<div class="card" style="border-left:3px solid var(--down)"><span class="k">💬 Cobrar hoje</span>'
+        +CR.cobrar.map(c=>'<div class="linha"><span>'+lk(c.url,esc(c.t),"golink")+(c.etapa?' <span class="sm">'+esc(c.etapa)+"</span>":"")+'</span><span class="sm num" style="color:var(--down);font-weight:700">'+c.dias+"d parado</span></div>").join("")
         +'<div class="sm" style="margin-top:4px">parado no funil sem resposta · 1 mensagem reativa</div></div>';
     h+="<h2>🔻 Funil · quem está onde</h2><p class=sub-h>cada nome abre o card no Trello</p>";
     (CR.etapas||[]).forEach(et=>{
@@ -871,7 +873,7 @@ function render(data){
       +G.map(g=>'<button data-go="'+g[0]+'" style="display:flex;gap:10px;width:100%;text-align:left;border:0;background:none;padding:8px 4px;border-radius:10px;cursor:pointer;align-items:baseline"><span>'+g[1]+'</span><span style="font:700 13px Inter,sans-serif;min-width:64px">'+g[2]+'</span><span style="font:400 13px Inter,sans-serif;color:var(--sub)">'+g[3]+"</span></button>").join("")
       +'<details style="margin-top:8px"><summary style="font:700 13px Inter,sans-serif;cursor:pointer">as palavras que aparecem por aí</summary><div style="font:400 12px/1.75 Inter,sans-serif;color:var(--sub);margin-top:4px">'
       +[["ER","de cada 100 pessoas alcançadas, quantas interagiram"],
-        ["envios","de cada 100 alcançadas, quantas mandaram o post para alguém"],
+        ["envios","de cada 100 alcançadas, quantas salvaram o post ou mandaram para alguém"],
         ["alcance","quantas contas diferentes viram"],
         ["D+7","a nota do post uma semana depois de publicado"],
         ["janela","o período que está sendo somado · a data aparece no bloco"],
@@ -886,7 +888,7 @@ function render(data){
         .map(x=>"<b>"+x[0]+"</b> · "+x[1]).join("<br>")
       +"</div></details>"
       +'<details style="margin-top:8px"><summary style="font:700 13px Inter,sans-serif;cursor:pointer">o que cada ícone quer dizer</summary><div style="font:400 13px/1.9 Inter,sans-serif;color:var(--sub);margin-top:4px">'
-      +[["🎯","o que fazer hoje"],["🗓","agenda e datas"],["🖼","conteúdo publicado"],["📈","análise e desempenho"],["💰","dinheiro"],["📥","fila e pendência"],["👁","alcance"],["♡","engajamento"],["✈","envios"],["👤","seguidores"],["🔍","busca e intenção"],["🕐","quando o dado chegou"],["⏰","melhor hora de postar"],["⚠","dado velho"],["⏳","sem dado ainda"],["🔒","indisponível"],["💡","leitura e conclusão"],["★","seu melhor dia"],["▲ ▬ ▼","escalar · manter · repensar"]].map(x=>x[0]+" "+x[1]).join("<br>")
+      +[["🎯","o que fazer hoje"],["🗓","agenda e datas"],["🖼","conteúdo publicado"],["📈","análise e desempenho"],["💰","dinheiro"],["📥","fila e pendência"],["👁","alcance"],["♡","engajamento"],["✈","salvos + envios"],["👤","seguidores"],["🔍","busca e intenção"],["🕐","quando o dado chegou"],["⏰","melhor hora de postar"],["⚠","dado velho"],["⏳","sem dado ainda"],["🔒","indisponível"],["💡","leitura e conclusão"],["★","seu melhor dia"],["▲ ▬ ▼","escalar · manter · repensar"]].map(x=>x[0]+" "+x[1]).join("<br>")
       +"</div></details>"
       +'<button id="imprimir" style="margin-top:10px;width:100%;height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;font:700 13px Inter,sans-serif;cursor:pointer">🖨 salvar/imprimir 1 página</button>'
       +'<div style="font:400 13px Inter,sans-serif;color:var(--sub);margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">toque no “montado há…” lá em cima para ver quando cada dado chegou · o ↻ pede uma rodada nova e avisa quando ela fica pronta</div>'
