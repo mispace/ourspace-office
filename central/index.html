@@ -589,8 +589,22 @@ function render(data){
   h+="</div>";
 
   const bl=C.blog||{}, ol=C.ourspacelab;
-  const TC=D.total_canais;
+  const TC=D.total_canais, PB=D.publico;
   h+='<div class="subv" id="s-canais" hidden>'
+    +(PB?(function(){
+      const barras=(lista,tot,cor)=>lista.map(x=>{const p=Math.round(100*x.v/(tot||1));
+        return '<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span class="sm" style="width:98px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(x.k)+'</span>'
+          +'<div class="bar" style="flex:1"><div class="fill" style="width:'+p+'%;background:'+cor+'"></div></div>'
+          +'<span class="sm num" style="width:62px;text-align:right">'+String(x.v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+"</span></div>";}).join("");
+      const somaI=PB.idades.reduce((a,b)=>a+b.v,0), maxC=Math.max(...PB.cidades.map(c=>c.v),1), maxP=Math.max(...PB.paises.map(c=>c.v),1);
+      return '<div class="card">'+cab("👥 "+esc(PB.frase||"Quem é o seu público"),"quem já te segue · "+esc(PB.at||""),"publico")
+        +(PB.prop?'<p style="font:700 13px/1.5 Inter,sans-serif;margin:6px 0 10px">💡 '+esc(PB.prop)+"</p>":"")
+        +'<div class="sm" style="font-weight:800;margin-top:6px">idade</div>'+barras(PB.idades,somaI,"#7C3AED")
+        +'<div class="sm" style="font-weight:800;margin-top:10px">onde estão</div>'+barras(PB.cidades,maxC,"#6366F1")
+        +'<div class="sm" style="font-weight:800;margin-top:10px">países</div>'+barras(PB.paises,maxP,"#0EA5E9")
+        +((PB.cidades_engaja||[]).length?'<details style="margin-top:8px"><summary>quem RESPONDE, por cidade</summary><div class="body num">'
+          +PB.cidades_engaja.map(c=>esc(c.k)+": "+c.v).join(" · ")+"<br><br>seguir é uma coisa, responder é outra: esta lista é de quem interagiu no mês.</div></details>":"")
+        +'<div class="sm" style="margin-top:8px;opacity:.85">'+esc(PB.nota)+"</div></div>";})():"")
     +(TC?'<div class="card"><span class="k">👥 '+esc(TC.frase)+"</span>"
       +'<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--mid-bg);margin:9px 0 7px">'
       +TC.canais.map((c,i)=>'<div title="'+esc(c.n)+" "+c.pct+'%" style="width:'+c.pct+'%;background:'+["#7C3AED","#6366F1","#0EA5E9"][i%3]+'"></div>').join("")+"</div>"
