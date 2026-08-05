@@ -87,7 +87,7 @@ details .body{font-size:13px;color:var(--sub);padding:6px 0 2px;line-height:1.55
 #nav{position:fixed;left:0;right:0;bottom:0;z-index:50;background:#fff;border-top:1px solid var(--line);
      padding-bottom:env(safe-area-inset-bottom)}
 #nav .row{display:flex;max-width:640px;margin:0 auto}
-#nav button{flex:1;height:var(--nav-h);border:0;background:none;cursor:pointer;display:flex;flex-direction:column;
+#nav button{flex:1;min-width:0;height:var(--nav-h);border:0;background:none;cursor:pointer;display:flex;flex-direction:column;
             align-items:center;justify-content:center;gap:3px;font:600 10px 'Inter',sans-serif;letter-spacing:.06em;color:var(--faint)}
 #nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
                 border-radius:999px;padding:3px 12px;box-sizing:content-box}
@@ -262,6 +262,7 @@ footer a{margin-right:12px;font-weight:600;color:var(--gold-deep)}
   <button data-v="analise" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>ANÁLISE</button>
   <button data-v="negocio" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 2v20M16.5 6.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3 2 3 4.5 3 4.5 1.3 4.5 3-2 3-4.5 3-4.5-1.3-4.5-3"/></svg>R$</button>
   <button data-v="fila" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>FILA</button>
+  <button data-v="radar" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 12L20 6"/><circle cx="12" cy="12" r="8"/></svg>RADAR</button>
 </div></nav>
 
 <script>
@@ -622,76 +623,6 @@ function render(data){
   const bl=C.blog||{}, ol=C.ourspacelab;
   const TC=D.total_canais, PB=D.publico, RD=D.radar;
   h+='<div class="subv" id="s-canais" hidden>'
-    +(RD?(function(){
-      const S=RD.saldo;
-      let t='<div class="card" style="border-left:3px solid #7C3AED">'
-        +cab("📡 Quem está chegando", (S?("os números grandes são de "+esc(S.de)+" a "+esc(S.ate)):esc(RD.janela))+" · "+RD.cobertura.total+" pessoas com data","publico");
-      if(S){
-        t+='<div style="display:flex;gap:8px;margin:8px 0">'
-          +[["↘ entraram","+"+S.chegaram,"#059669",false],["↖ saíram","−"+S.sairam,"#DC2626",false],
-           ["= sobrou",S.liquido,S.liquido.indexOf("−")===0?"#DC2626":"#059669",true]]
-            .map(x=>'<div style="flex:'+(x[3]?"1.25":"1")+';text-align:center;background:'+(x[3]?"var(--off)":"#fff")+';border:'+(x[3]?"1.5px solid var(--brand-pale)":"1px solid var(--line)")+';border-radius:12px;padding:'+(x[3]?"11px 4px":"9px 4px")+'"><div class="sm">'+x[0]+'</div><div class="num" style="font-size:'+(x[3]?"23px":"16px")+';font-weight:800;color:'+x[2]+'">'+esc(x[1])+"</div></div>").join("")
-          +"</div>"
-          +'<div class="sm"><b>só nesta janela ('+esc(S.de)+" a "+esc(S.ate)+"):</b> os nomes de quem entrou vêm das suas notificações · o que sobrou vem da contagem oficial do Instagram · <b>quantos saíram é conta</b> (entraram menos o que sobrou), porque o Instagram nunca mostra quem deixa de seguir</div>";
-      }
-      if((RD.tipos||[]).length){
-        const CORT={"Marca ou loja de moda":"#7C3AED","Serviço profissional":"#6366F1",
-          "Agência / comunicação":"#0284C7","Imprensa / criador de conteúdo":"#059669",
-          "Tecnologia / IA":"#8B5CF6","Moda + IA":"#DB2777","Educação":"#0891B2",
-          "Executivo / empreendedor":"#B45309","Instituição / evento do setor":"#4338CA",
-          "Comércio / revenda":"#64748B","Conta vazia ou falsa":"#CBD5E1","Sem sinal na bio":"#CBD5E1"};
-        const maxt=Math.max(...RD.tipos.map(x=>x.v),1);
-        t+='<div class="sm" style="font-weight:800;margin-top:14px">👥 Que tipo de gente chegou</div>'
-          +'<div class="sm" style="margin-bottom:6px">lido na bio pública de cada uma · quem não diz nada na bio fica como “sem sinal”</div>'
-          +RD.tipos.filter(x=>x.v>=2).map(x=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0">'
-            +'<span class="sm" style="width:112px;flex:0 0 auto">'+esc(x.k)+'</span>'
-            +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(x.v/maxt*100).toFixed(0)+'%;background:'+(CORT[x.k]||"#94A3B8")+'"></div></div>'
-            +'<span class="sm num" style="width:52px;text-align:right;flex:0 0 auto">'+x.v+" · "+String(x.pct.toFixed(1)).replace(".",",")+"%</span></div>").join("");
-      }
-      if((RD.de_cliente||[]).length){
-        t+='<div class="sm" style="font-weight:800;margin-top:14px">🎯 Gente de dentro de cliente, prospect ou evento seu</div>'
-          +'<div class="sm" style="margin-bottom:4px">'+RD.n_cliente+(RD.n_cliente===1?" pessoa":" pessoas")+' · é o elo mais curto entre conteúdo e contrato</div>'
-          +RD.de_cliente.map(f=>'<div class="linha" style="margin-top:5px"><span>'+lk(f.url,"@"+esc(f.user),"golink")
-            +(f.nome?'<br><span class="sm">'+esc(f.nome)+"</span>":"")
-            +(f.relacao?'<br><span class="sm" style="color:var(--brand);font-weight:600">'+esc(f.relacao)+"</span>":"")+'</span>'
-            +'<span class="sm num" style="white-space:nowrap;flex:0 0 auto;text-align:right"><b>'+esc(f.org)+"</b><br>"+esc(f.d)+"</span></div>").join("");
-      }
-      if((RD.farois||[]).length){
-        t+='<div class="sm" style="font-weight:800;margin-top:14px">⭐ Vale um oi</div>'
-          +RD.farois.map(f=>'<div class="linha" style="margin-top:6px"><span>'+lk(f.url,"@"+esc(f.user),"golink")
-            +(f.nome?" · <b>"+esc(f.nome)+"</b>":"")+'<br><span class="sm">'+esc(f.bio||"")+"</span></span>"
-            +'<span class="sm num" style="white-space:nowrap;flex:0 0 auto">há '+(f.dias!==null&&f.dias!==undefined?f.dias+"d":esc(f.d))+"</span></div>").join("");
-      }
-      if((RD.picos||[]).length){
-        const maxp=Math.max(...RD.picos.map(p=>p.n),1);
-        t+='<div class="sm" style="font-weight:800;margin-top:14px">📈 Os dias que trouxeram gente</div>'
-          +(RD.conc?'<div class="sm" style="margin-bottom:4px">'+esc(RD.conc.frase)+"</div>":"")
-          +RD.picos.map(p=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0"><span class="sm num" style="width:42px">'+esc(p.d)+'</span>'
-            +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(p.n/maxp*100).toFixed(0)+'%"></div></div>'
-            +'<span class="sm num" style="width:26px;text-align:right">'+p.n+"</span></div>"
-            +(p.ctx?'<div class="sm" style="margin:-2px 0 6px 50px;opacity:.85">'+esc(p.ctx)+"</div>":"")).join("");
-      }
-      t+='<div class="sm" style="margin-top:10px;opacity:.85">lidos '+RD.cobertura.lidos+" de "+RD.cobertura.total+" perfis ("+RD.cobertura.pct+"%) · "+esc(RD.ressalva)+"</div>";
-      return t+"</div>";})():"")
-    +(PB?(function(){
-      // uma régua só: a barra e o % dizem a MESMA coisa (proporção da base
-      // classificada). Antes a barra era % do maior e o texto era % da soma das
-      // 5 exibidas, então São Paulo enchia 100% ao lado de "58%".
-      const barras=(lista,tot,cor)=>lista.map(x=>{const p=100*x.v/(tot||1);
-        return '<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span class="sm" style="width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(x.k)+'</span>'
-          +'<div class="bar" style="flex:1"><div class="fill" style="width:'+Math.max(2,Math.round(p))+'%;background:'+cor+'"></div></div>'
-          +'<span class="sm num" style="width:74px;text-align:right;flex:0 0 auto">'+String(x.v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+" · "+(p<1?"<1":String(Math.round(p*10)/10).replace(".",","))+"%</span></div>";}).join("");
-      const somaI=PB.base_idade||PB.idades.reduce((a,b)=>a+b.v,0),
-            somaC=PB.base_cidade||PB.cidades.reduce((a,b)=>a+b.v,0),
-            somaP=PB.base_pais||PB.paises.reduce((a,b)=>a+b.v,0);
-      return '<div class="card">'+cab("👥 "+esc(PB.frase||"Quem é o seu público"),"quem já te segue · "+esc(PB.at||""),"publico")
-        +(PB.prop?'<p style="font:700 13px/1.5 Inter,sans-serif;margin:6px 0 10px">💡 '+esc(PB.prop)+"</p>":"")
-        +'<div class="sm" style="font-weight:800;margin-top:6px">idade</div>'+barras(PB.idades,somaI,"#7C3AED")
-        +'<div class="sm" style="font-weight:800;margin-top:10px">onde estão</div>'+barras(PB.cidades,somaC,"#6366F1")
-        +'<div class="sm" style="font-weight:800;margin-top:10px">países</div>'+barras(PB.paises,somaP,"#0EA5E9")
-        +((PB.cidades_engaja||[]).length?'<details style="margin-top:8px"><summary>quem RESPONDE, por cidade</summary><div class="body num">'
-          +PB.cidades_engaja.map(c=>esc(c.k)+": "+c.v+(c.fora?" (não aparece entre as cidades de quem te segue)":"")).join(" · ")+"<br><br>seguir é uma coisa, responder é outra: esta lista é de quem interagiu no mês, seguindo você ou não.</div></details>":"")
-        +'<div class="sm" style="margin-top:8px;opacity:.85">'+esc(PB.nota)+"</div></div>";})():"")
     +(TC?'<div class="card"><span class="k">👥 '+esc(TC.frase)+"</span>"
       +'<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--mid-bg);margin:9px 0 7px">'
       +TC.canais.map((c,i)=>'<div title="'+esc(c.n)+" "+c.pct+'%" style="width:'+c.pct+'%;background:'+["#7C3AED","#6366F1","#0EA5E9"][i%3]+'"></div>').join("")+"</div>"
@@ -766,6 +697,80 @@ function render(data){
 
   // ---------- FILA ----------
   const F=D.fila;
+
+  // ===== RADAR · quem está chegando (aba própria, pedido dela 05/08) =====
+  h+='<section class="view wrap" id="v-radar" hidden>'+fraseAba("radar")
+    +(RD?(function(){
+      const S=RD.saldo;
+      let t='<div class="card" style="border-left:3px solid #7C3AED">'
+        +cab("📡 Quem está chegando", (S?("os números grandes são de "+esc(S.de)+" a "+esc(S.ate)):esc(RD.janela))+" · "+RD.cobertura.total+" pessoas com data","publico");
+      if(S){
+        t+='<div style="display:flex;gap:8px;margin:8px 0">'
+          +[["↘ entraram","+"+S.chegaram,"#059669",false],["↖ saíram","−"+S.sairam,"#DC2626",false],
+           ["= sobrou",S.liquido,S.liquido.indexOf("−")===0?"#DC2626":"#059669",true]]
+            .map(x=>'<div style="flex:'+(x[3]?"1.25":"1")+';text-align:center;background:'+(x[3]?"var(--off)":"#fff")+';border:'+(x[3]?"1.5px solid var(--brand-pale)":"1px solid var(--line)")+';border-radius:12px;padding:'+(x[3]?"11px 4px":"9px 4px")+'"><div class="sm">'+x[0]+'</div><div class="num" style="font-size:'+(x[3]?"23px":"16px")+';font-weight:800;color:'+x[2]+'">'+esc(x[1])+"</div></div>").join("")
+          +"</div>"
+          +'<div class="sm"><b>só nesta janela ('+esc(S.de)+" a "+esc(S.ate)+"):</b> os nomes de quem entrou vêm das suas notificações · o que sobrou vem da contagem oficial do Instagram · <b>quantos saíram é conta</b> (entraram menos o que sobrou), porque o Instagram nunca mostra quem deixa de seguir</div>";
+      }
+      if((RD.tipos||[]).length){
+        const CORT={"Marca ou loja":"#7C3AED","Serviço":"#6366F1","Agência":"#0284C7",
+          "Imprensa e criador":"#059669","Tecnologia / IA":"#8B5CF6","Moda + IA":"#DB2777",
+          "Educação":"#0891B2","Executivo":"#B45309","Instituição do setor":"#4338CA",
+          "Revenda":"#64748B","Amizade ou pessoal":"#EC4899","Conta vazia":"#CBD5E1",
+          "Sem sinal na bio":"#CBD5E1"};
+        const maxt=Math.max(...RD.tipos.map(x=>x.v),1);
+        t+='<div class="sm" style="font-weight:800;margin-top:14px">👥 Que tipo de gente chegou</div>'
+          +'<div class="sm" style="margin-bottom:6px">lido na bio pública de cada uma · quem não diz nada na bio fica como “sem sinal”</div>'
+          +RD.tipos.filter(x=>x.v>=2).map(x=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0">'
+            +'<span class="sm" style="width:104px;flex:0 0 auto;line-height:1.25">'+esc(x.k)+'</span>'
+            +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(x.v/maxt*100).toFixed(0)+'%;background:'+(CORT[x.k]||"#94A3B8")+'"></div></div>'
+            +'<span class="sm num" style="width:52px;text-align:right;flex:0 0 auto">'+x.v+" · "+String(x.pct.toFixed(1)).replace(".",",")+"%</span></div>").join("");
+      }
+      if((RD.de_cliente||[]).length){
+        t+='<div class="sm" style="font-weight:800;margin-top:14px">🎯 Gente de dentro de cliente, prospect ou evento seu</div>'
+          +'<div class="sm" style="margin-bottom:4px">'+RD.n_cliente+(RD.n_cliente===1?" pessoa":" pessoas")+' · é o elo mais curto entre conteúdo e contrato</div>'
+          +RD.de_cliente.map(f=>'<div class="linha" style="margin-top:5px"><span>'+lk(f.url,"@"+esc(f.user),"golink")
+            +(f.nome?'<br><span class="sm">'+esc(f.nome)+"</span>":"")
+            +(f.relacao?'<br><span class="sm" style="color:var(--brand);font-weight:600">'+esc(f.relacao)+"</span>":"")+'</span>'
+            +'<span class="sm num" style="white-space:nowrap;flex:0 0 auto;text-align:right"><b>'+esc(f.org)+"</b><br>"+esc(f.d)+"</span></div>").join("");
+      }
+      if((RD.farois||[]).length){
+        t+='<div class="sm" style="font-weight:800;margin-top:14px">⭐ Vale um oi</div>'
+          +RD.farois.map(f=>'<div class="linha" style="margin-top:6px"><span>'+lk(f.url,"@"+esc(f.user),"golink")
+            +(f.nome?" · <b>"+esc(f.nome)+"</b>":"")+'<br><span class="sm">'+esc(f.bio||"")+"</span></span>"
+            +'<span class="sm num" style="white-space:nowrap;flex:0 0 auto">há '+(f.dias!==null&&f.dias!==undefined?f.dias+"d":esc(f.d))+"</span></div>").join("");
+      }
+      if((RD.picos||[]).length){
+        const maxp=Math.max(...RD.picos.map(p=>p.n),1);
+        t+='<div class="sm" style="font-weight:800;margin-top:14px">📈 Os dias que trouxeram gente</div>'
+          +(RD.conc?'<div class="sm" style="margin-bottom:4px">'+esc(RD.conc.frase)+"</div>":"")
+          +RD.picos.map(p=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0"><span class="sm num" style="width:42px">'+esc(p.d)+'</span>'
+            +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(p.n/maxp*100).toFixed(0)+'%"></div></div>'
+            +'<span class="sm num" style="width:26px;text-align:right">'+p.n+"</span></div>"
+            +(p.ctx?'<div class="sm" style="margin:-2px 0 6px 50px;opacity:.85">'+esc(p.ctx)+"</div>":"")).join("");
+      }
+      t+='<div class="sm" style="margin-top:10px;opacity:.85">lidos '+RD.cobertura.lidos+" de "+RD.cobertura.total+" perfis ("+RD.cobertura.pct+"%) · "+esc(RD.ressalva)+"</div>";
+      return t+"</div>";})():"")
+    +(PB?(function(){
+      // uma régua só: a barra e o % dizem a MESMA coisa (proporção da base
+      // classificada). Antes a barra era % do maior e o texto era % da soma das
+      // 5 exibidas, então São Paulo enchia 100% ao lado de "58%".
+      const barras=(lista,tot,cor)=>lista.map(x=>{const p=100*x.v/(tot||1);
+        return '<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span class="sm" style="width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(x.k)+'</span>'
+          +'<div class="bar" style="flex:1"><div class="fill" style="width:'+Math.max(2,Math.round(p))+'%;background:'+cor+'"></div></div>'
+          +'<span class="sm num" style="width:74px;text-align:right;flex:0 0 auto">'+String(x.v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+" · "+(p<1?"<1":String(Math.round(p*10)/10).replace(".",","))+"%</span></div>";}).join("");
+      const somaI=PB.base_idade||PB.idades.reduce((a,b)=>a+b.v,0),
+            somaC=PB.base_cidade||PB.cidades.reduce((a,b)=>a+b.v,0),
+            somaP=PB.base_pais||PB.paises.reduce((a,b)=>a+b.v,0);
+      return '<div class="card">'+cab("👥 "+esc(PB.frase||"Quem é o seu público"),"quem já te segue · "+esc(PB.at||""),"publico")
+        +(PB.prop?'<p style="font:700 13px/1.5 Inter,sans-serif;margin:6px 0 10px">💡 '+esc(PB.prop)+"</p>":"")
+        +'<div class="sm" style="font-weight:800;margin-top:6px">idade</div>'+barras(PB.idades,somaI,"#7C3AED")
+        +'<div class="sm" style="font-weight:800;margin-top:10px">onde estão</div>'+barras(PB.cidades,somaC,"#6366F1")
+        +'<div class="sm" style="font-weight:800;margin-top:10px">países</div>'+barras(PB.paises,somaP,"#0EA5E9")
+        +((PB.cidades_engaja||[]).length?'<details style="margin-top:8px"><summary>quem RESPONDE, por cidade</summary><div class="body num">'
+          +PB.cidades_engaja.map(c=>esc(c.k)+": "+c.v+(c.fora?" (não aparece entre as cidades de quem te segue)":"")).join(" · ")+"<br><br>seguir é uma coisa, responder é outra: esta lista é de quem interagiu no mês, seguindo você ou não.</div></details>":"")
+        +'<div class="sm" style="margin-top:8px;opacity:.85">'+esc(PB.nota)+"</div></div>";})():"")
+    +"</section>";
   h+='<section class="view wrap" id="v-fila" hidden>'+fraseAba("fila");
   if(F){
     const grp=(emoji,nome,f)=>'<div class="card grp"><div class="hd"><span class="k">'+emoji+" "+nome+'</span><span class="n num">'+f.n+"</span></div>"
