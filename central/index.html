@@ -9,16 +9,17 @@
 <style>
 /* ============ tokens · studio.ourspace.com.br (produto vivo · 31/07) ============ */
 :root{
-  --canvas:#F8FAFC; --card:#FFFFFF; --off:#F5F3FF; --line:#E2E8F0; --line2:#F1F5F9;
+  --canvas:#F4F6FB; --card:#FFFFFF; --off:#F7F5FF; --line:#EDF1F7; --line2:#F5F8FC;
   --ink:#0F172A; --sub:#64748B; --faint:#64748B;
   --brand:#7C3AED; --brand-dark:#6D28D9; --sec:#6366F1;
   --grad:linear-gradient(135deg,#7C3AED 0%,#6366F1 100%);
   --brand-pale:#EDE9FE; --gold:#7C3AED; --gold-warm:#6366F1; --gold-pale:#F5F3FF; --gold-deep:#6D28D9; --nude:#C7D2FE;
   --up:#059669; --up-bg:#D1FAE5; --mid:#64748B; --mid-bg:#F1F5F9;
   --down:#DC2626; --down-bg:#FEE2E2; --age:#B45309; --age-bg:#FEF3C7; --slate:#0284C7;
-  --sh-sm:0 10px 30px -15px rgba(124,58,237,.15); --sh-md:0 20px 40px -15px rgba(124,58,237,.16);
+  --sh-sm:0 1px 2px rgba(16,24,40,.04), 0 8px 24px -12px rgba(16,24,40,.10);
+  --sh-md:0 2px 4px rgba(16,24,40,.05), 0 18px 40px -16px rgba(16,24,40,.16);
   --nav-h:60px;
-  --r-lg:16px; --r-md:12px; --r-sm:8px;   /* 3 degraus de raio · antes eram 12 valores soltos */
+  --r-lg:18px; --r-md:13px; --r-sm:9px;   /* 3 degraus de raio · antes eram 12 valores soltos */
 }
 *{box-sizing:border-box;margin:0}
 html{scroll-behavior:auto}
@@ -27,8 +28,8 @@ body{font:14px/1.5 'Inter',system-ui,sans-serif;font-weight:400;color:var(--ink)
 a{color:var(--ink)}
 .disp{font-family:'Plus Jakarta Sans','Inter',sans-serif}
 .num{font-variant-numeric:tabular-nums}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-sm);padding:14px 15px;margin:10px 0}
-.k{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-sm);padding:17px 18px;margin:14px 0}
+.k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--sub);font-weight:700}
 .wrap{max-width:640px;margin:0 auto;padding:0 14px}
 .pill{display:inline-flex;gap:4px;align-items:center;font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
 .p-up{color:var(--up);background:var(--up-bg)} .p-mid{color:var(--mid);background:var(--mid-bg)}
@@ -132,9 +133,10 @@ body::before{content:"";position:fixed;inset:0 0 auto 0;height:230px;z-index:-1;
 .linha{gap:10px}
 .tfix{max-width:100%}
 .pulso{display:flex;gap:8px;margin:10px 0}
-.pulso .pz{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 6px;text-align:center;box-shadow:var(--sh-sm)}
-.pulso .pi{font-size:15px;line-height:1}
-.pulso .pv{font:800 13px Inter,sans-serif;margin-top:3px;color:var(--ink)}
+.pulso .pz{flex:1;background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:13px 8px;text-align:center;box-shadow:var(--sh-sm)}
+.pulso .pi{font-size:13px;line-height:1;opacity:.75}
+.pulso .pv{font:800 22px/1.1 'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-.02em;margin:5px 0 2px;color:var(--ink)}
+.pulso .pv.txt{font-size:14px;line-height:1.25;letter-spacing:0}
 .pulso .pl{font-size:10px;color:var(--sub);margin-top:1px}
 /* auditoria mobile 04/08: alvo de toque mínimo (link de 19px era metade do recomendado) */
 /* alvo de toque sem quebrar a quebra de linha: padding vertical em elemento inline
@@ -484,7 +486,7 @@ function render(data){
     +[[(RTh.frase||"").replace(/^Ritmo: /,""),"📆","ritmo"],
       [esc(NUh.v||"—"),"♡","de cada 100 alcançadas, tantas interagem"],
       [((D.followers&&D.followers.delta)?esc(D.followers.delta):"—")+" seguidores","👤","na semana"]]
-      .map(x=>'<div class="pz"><div class="pi">'+x[1]+'</div><div class="pv">'+x[0]+'</div><div class="pl">'+x[2]+"</div></div>").join("")
+      .map(x=>'<div class="pz"><div class="pi">'+x[1]+'</div><div class="pv'+(/^[−+]?[\d]/.test(String(x[0]).trim())?"":" txt")+'">'+x[0]+'</div><div class="pl">'+x[2]+"</div></div>").join("")
     +"</div>"
     // 3 · a semana em 7 quadradinhos (veio da FILA: é visão de hoje, não de fila)
     +(BUh.semana?'<div class="card">'+cab("🗓 "+esc(BUh.frase),"a semana toda numa olhada","trello")
