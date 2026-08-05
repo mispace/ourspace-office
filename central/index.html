@@ -429,10 +429,20 @@ function pillHtml(p){
   return '<span class="pill '+cls+'">'+esc(p.sym)+" "+esc(p.word)+"</span>";
 }
 const lk=(url,txt,cls)=>url?('<a '+(cls?'class="'+cls+'" ':'')+'href="'+esc(url)+'" target="_blank" rel="noopener">'+txt+"</a>"):txt;
-function sparkSvg(vals,h){
+function sparkSvg(vals,h,datas){
   if(!vals||vals.length<2) return "";
   const lo=Math.min(...vals), hi=Math.max(...vals), rng=(hi-lo)||1, n=vals.length;
-  const pts=vals.map((v,i)=>(i/(n-1)*100).toFixed(1)+","+((h-4)-(v-lo)/rng*(h-10)).toFixed(1));
+  // espaça por DATA quando ela existe: por índice, um dia sem coleta sumia e a
+  // linha mentia sobre o ritmo (achado 05/08)
+  let x = i => i/(n-1)*100;
+  if(datas && datas.length===n){
+    const t = datas.map(d=>Date.parse(d+"T12:00:00"));
+    if(t.every(v=>!isNaN(v))){
+      const t0=t[0], span=(t[n-1]-t0)||1;
+      x = i => (t[i]-t0)/span*100;
+    }
+  }
+  const pts=vals.map((v,i)=>x(i).toFixed(1)+","+((h-4)-(v-lo)/rng*(h-10)).toFixed(1));
   return '<svg class="spark" viewBox="0 0 100 '+h+'" preserveAspectRatio="none">'
     +'<polyline points="'+pts.join(" ")+' 100,'+h+' 0,'+h+'" fill="rgba(124,58,237,.16)" stroke="none"/>'
     +'<polyline points="'+pts.join(" ")+'" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -658,8 +668,8 @@ function render(data){
     h+='<div class="card"><div class="linha"><span>💰 '+esc(SA.crm_linha.t)+"</span><span>"+lk(SA.crm_linha.url,"abrir ↗","golink")+"</span></div></div>";
   const _os=(SA.outros||[]).map(o=>esc(o.nome.split(" (")[0])+" "+esc(o.v)).slice(0,3).join(" · ");
   h+='<details class="card"><summary style="font:700 13px Inter,sans-serif;cursor:pointer">🔎 Outros sinais <span class="sm" style="font-weight:400">· '+_os+"</span></summary>"
-    +(SA.outros||[]).map(o=>'<div class="linha" style="margin-top:6px"><span>'+o.ico+" "+esc(o.nome)+'<br><span class="sm">'+esc(o.trad)+'</span></span><span class="n num">'+esc(o.v)+" "+(o.pill?pillHtml(o.pill):"")+"</span></div>").join("")
-    +(D.lacunas||[]).map(l=>'<div class="linha" style="margin-top:6px;opacity:.8"><span>'+l.ico+" "+esc(l.t)+'<br><span class="sm">'+esc(l.falta)+" · vem de "+esc(l.onde)+"</span></span><span class=\"sm num\">sem dado</span></div>").join("")
+    +(SA.outros||[]).map(o=>'<div class="linha" style="margin-top:6px"><span>'+o.ico+" "+esc(o.nome)+'<br><span class="sm">'+esc(o.trad)+'</span></span><span class="n num">'+esc(o.v)+" "+((o.pill||o.pill2)?pillHtml(o.pill||o.pill2):"")+"</span></div>").join("")
+    +(D.lacunas||[]).map(l=>'<div class="linha" style="margin-top:6px;opacity:.8"><span>'+l.ico+" "+esc(l.t)+'<br><span class="sm">'+esc(l.falta)+" · vem de "+esc(l.onde)+(l.quando?" · "+esc(l.quando):"")+"</span></span><span class=\"sm num\">sem dado</span></div>").join("")
     +"</details>";
   h+='<p class="sm" style="margin:8px 2px">'+esc(D.meta.limiar_nota||"")+"</p></div>";
 
@@ -797,6 +807,7 @@ function render(data){
       +'<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="num" style="font-size:27px;font-weight:800">'+fmtR(pl.ganho_conf)+'</span><span class="sm num">meta '+fmtR(pl.meta)+"</span></div>"
       +(pl.ganho_est?'<div class="sm num">+ '+fmtR(pl.ganho_est)+" em estimativa (faixa do catálogo)</div>":"")
       +'<div style="height:10px;border-radius:5px;background:var(--mid-bg);margin:8px 0 5px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--grad)"></div></div>'
+      +(pl.ritmo?'<div class="sm" style="margin-top:2px">'+esc(pl.ritmo)+"</div>":"")
       +'<div class="sm num">'+(pl.n_fech_mes||0)+' negócio(s) fechado(s) que se moveram este mês</div>'
       +(pl.fech_mes&&pl.fech_mes.length?'<details><summary>ver quais</summary><div class="body">'+pl.fech_mes.map(f=>"· "+lk(f.url,esc(f.t))+(f.valor?' <span class="sm num">'+esc(f.valor)+(f.vtipo==="estimativa"?" est.":"")+"</span>":"")).join("<br>")+"</div></details>":"")
       +'<div class="sm num" style="margin-top:4px">no funil (se tudo fechar): '+fmtR(pl.pipe_conf)+(pl.pipe_est?" + "+fmtR(pl.pipe_est)+" est.":"")+"</div>"
@@ -876,7 +887,8 @@ function render(data){
             +'<span class="sm num" style="width:26px;text-align:right">'+p.n+"</span></div>"
             +(p.ctx?'<div class="sm" style="margin:-2px 0 6px 50px;opacity:.85">'+esc(p.ctx)+"</div>":"")).join("");
       }
-      t+='<div class="sm" style="margin-top:10px;opacity:.85">lidos '+RD.cobertura.lidos+" de "+RD.cobertura.total+" perfis ("+RD.cobertura.pct+"%) · "+esc(RD.ressalva)+"</div>";
+      t+='<div class="sm" style="margin-top:10px;opacity:.85">lidos '+RD.cobertura.lidos+" de "+RD.cobertura.total+" perfis ("+RD.cobertura.pct+"%)"
+        +(RD.cobertura.nota?" · "+esc(RD.cobertura.nota):"")+" · "+esc(RD.ressalva)+"</div>";
       return t+"</div>";})():"")
     +(PB?(function(){
       // uma régua só: a barra e o % dizem a MESMA coisa (proporção da base
@@ -953,7 +965,7 @@ function render(data){
       t='<div style="font:700 14px Inter,sans-serif">'+esc(SG.frase||"Seguidores")+"</div>";
       if(ser.length>1){
         t+='<div class="chartbox" id="folbox">'
-          +sparkSvg(ser.map(p=>p.v),30).replace('class="spark"','class="spark" style="width:100%;height:52px;margin:8px 0 4px"')
+          +sparkSvg(ser.map(p=>p.v),30,ser.map(p=>p.d)).replace('class="spark"','class="spark" style="width:100%;height:52px;margin:8px 0 4px"')
           +'<div class="ctip" id="foltip"></div><div class="cdot" id="foldot"></div></div>'
           +(function(){const M=D.fol_marcas||[];return M.length?'<div style="display:flex;gap:2px">'+M.map(m=>'<div title="'+esc(m.d)+(m.p?" · "+m.n+" post(s)":" · sem post")+'" style="flex:1;height:9px;border-radius:2px;background:'+(m.p?"#7C3AED":"var(--mid-bg)")+'"></div>').join("")+"</div>":"";})()
           +'<div class="sm num" style="display:flex;justify-content:space-between;margin-top:4px"><span>'+ser[0].d.slice(8,10)+"/"+ser[0].d.slice(5,7)+" · "+fmtN(ser[0].v)+'</span><span>'+ser[ser.length-1].d.slice(8,10)+"/"+ser[ser.length-1].d.slice(5,7)+": <b>"+fmtN(ser[ser.length-1].v)+"</b></span></div>"
@@ -1020,6 +1032,7 @@ function render(data){
       +'<details style="margin-top:8px"><summary style="font:700 13px Inter,sans-serif;cursor:pointer">as palavras que aparecem por aí</summary><div style="font:400 12px/1.75 Inter,sans-serif;color:var(--sub);margin-top:4px">'
       +[["ER","de cada 100 pessoas alcançadas, quantas interagiram"],
         ["envios","de cada 100 alcançadas, quantas salvaram o post ou mandaram para alguém"],
+        ["Q6 · Q10","os quadros fixos do Content System · Q6 é a série de repertório de moda, Q10 é a dica curta e salvável"],
         ["alcance","quantas contas diferentes viram"],
         ["D+7","a nota do post uma semana depois de publicado"],
         ["janela","o período que está sendo somado · a data aparece no bloco"],
