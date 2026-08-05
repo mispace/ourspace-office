@@ -28,12 +28,12 @@ a{color:var(--ink)}
 .disp{font-family:'Plus Jakarta Sans','Inter',sans-serif}
 .num{font-variant-numeric:tabular-nums}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh-sm);padding:14px 15px;margin:10px 0}
-.k{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);font-weight:600}
+.k{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);font-weight:600}
 .wrap{max-width:640px;margin:0 auto;padding:0 14px}
 .pill{display:inline-flex;gap:4px;align-items:center;font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
 .p-up{color:var(--up);background:var(--up-bg)} .p-mid{color:var(--mid);background:var(--mid-bg)}
 .p-down{color:var(--down);background:var(--down-bg)} .p-none{color:var(--sub);background:var(--mid-bg)}
-.age{display:inline-block;font-size:10.5px;color:var(--faint);margin-left:6px;font-weight:500}
+.age{display:inline-block;font-size:10px;color:var(--faint);margin-left:6px;font-weight:500}
 .age.stale{color:var(--age);background:var(--age-bg);border-radius:6px;padding:0 6px;font-weight:600}
 /* tags de pilar · pastéis quentes que casam com o dourado */
 .tag{display:inline-flex;align-items:center;gap:6px;height:23px;padding:0 10px;border-radius:8px;
@@ -43,22 +43,22 @@ a{color:var(--ink)}
 .t-pro{background:#E0E7FF;color:#3730A3}.t-ofe{background:#F1F5F9;color:#475569}
 .t-des{background:#FCE7F3;color:#9D174D}
 .btn{display:inline-block;background:var(--grad);color:#fff;text-decoration:none;font-weight:600;
-     border-radius:10px;padding:12px 22px;font-size:13.5px;border:0;cursor:pointer;letter-spacing:.01em}
+     border-radius:10px;padding:12px 22px;font-size:13px;border:0;cursor:pointer;letter-spacing:.01em}
 h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:21px;font-weight:700;color:var(--ink);margin:20px 2px 4px;line-height:1.15}
 h2 .age{vertical-align:3px}
-.sub-h{font-size:12px;color:var(--sub);margin:0 2px 6px}
-details summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--gold-deep)}
+.sub-h{font-size:13px;color:var(--sub);margin:0 2px 6px}
+details summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--gold-deep)}
 details[open] summary{color:var(--ink)}
-details .body{font-size:12.5px;color:var(--sub);padding:6px 0 2px;line-height:1.55}
+details .body{font-size:13px;color:var(--sub);padding:6px 0 2px;line-height:1.55}
 .linha{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line2);font-size:13px;align-items:baseline}
 .linha:first-of-type{border-top:0}
 .linha .n{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:21px}
 .sm{font-size:11.5px;color:var(--sub)}
-.golink{font-weight:600;color:var(--gold-deep);text-decoration:none;font-size:12.5px;white-space:nowrap}
+.golink{font-weight:600;color:var(--gold-deep);text-decoration:none;font-size:13px;white-space:nowrap}
 /* logos dos canais */
 .logo{flex:0 0 auto;width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#fff;vertical-align:-8px;margin-right:8px}
 .logo svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.logo b{font:700 12px 'Inter',sans-serif;color:#fff}
+.logo b{font:700 13px 'Inter',sans-serif;color:#fff}
 .lg-ig{background:#C13584}.lg-tt{background:#1A1A1A}.lg-li{background:#0A66C2}.lg-blog{background:var(--grad)}.lg-lab{background:var(--brand-dark)}
 /* ============ lock ============ */
 #lock{position:fixed;inset:0;background:var(--canvas);display:flex;align-items:center;justify-content:center;z-index:60}
@@ -73,14 +73,14 @@ details .body{font-size:12.5px;color:var(--sub);padding:6px 0 2px;line-height:1.
 #top .row{display:flex;align-items:center;gap:10px}
 #top .ava{width:40px;height:40px;border-radius:50%;object-fit:cover;background:var(--gold-pale);border:2px solid transparent;background-image:linear-gradient(#fff,#fff),var(--grad);background-origin:border-box;background-clip:content-box,border-box}
 #top .oi{font-family:'Plus Jakarta Sans',sans-serif;font-size:19px;font-weight:700;line-height:1.05}
-#top .dt{font-size:11px;color:var(--sub)}
-.marcha{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--gold-deep);background:var(--gold-pale);
+#top .dt{font-size:11.5px;color:var(--sub)}
+.marcha{min-height:40px;display:inline-flex;align-items:center;margin-left:auto;font-size:11.5px;font-weight:600;color:var(--gold-deep);background:var(--gold-pale);
         border:1px solid var(--brand-pale);border-radius:999px;padding:5px 12px;text-decoration:none;white-space:nowrap}
 #nav{position:fixed;left:0;right:0;bottom:0;z-index:50;background:#fff;border-top:1px solid var(--line);
      padding-bottom:env(safe-area-inset-bottom)}
 #nav .row{display:flex;max-width:640px;margin:0 auto}
 #nav button{flex:1;height:var(--nav-h);border:0;background:none;cursor:pointer;display:flex;flex-direction:column;
-            align-items:center;justify-content:center;gap:3px;font:600 9.5px 'Inter',sans-serif;letter-spacing:.06em;color:var(--faint)}
+            align-items:center;justify-content:center;gap:3px;font:600 10px 'Inter',sans-serif;letter-spacing:.06em;color:var(--faint)}
 #nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
                 border-radius:999px;padding:3px 12px;box-sizing:content-box}
 #nav button[aria-selected="true"]{color:var(--ink)}
@@ -91,27 +91,34 @@ details .body{font-size:12.5px;color:var(--sub);padding:6px 0 2px;line-height:1.
   body{padding-bottom:20px;padding-left:220px}
   #nav{left:0;right:auto;top:0;bottom:0;width:220px;border-top:0;border-right:1px solid var(--line)}
   #nav .row{flex-direction:column;padding-top:76px;gap:2px}
-  #nav button{flex:0 0 auto;height:46px;flex-direction:row;justify-content:flex-start;gap:10px;padding:0 18px;font-size:12px}
+  #nav button{flex:0 0 auto;height:46px;flex-direction:row;justify-content:flex-start;gap:10px;padding:0 18px;font-size:13px}
   #nav button svg{padding:3px 8px}
   .wrap{max-width:780px}
 }
 /* ============ HOJE ============ */
-#banner{border-radius:10px;background:var(--age-bg);color:var(--age);font-weight:500;font-size:12.5px;padding:10px 13px;margin:10px 0 0;line-height:1.5}
+#banner{border-radius:10px;background:var(--age-bg);color:var(--age);font-weight:500;font-size:13px;padding:10px 13px;margin:10px 0 0;line-height:1.5}
 .acao{border:1.5px solid var(--brand-pale);border-radius:20px;background:linear-gradient(180deg,#fff,var(--off));box-shadow:var(--sh-md);padding:16px;margin:12px 0 8px}
 .acao .verb{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(23px,6vw,30px);line-height:1.12}
 .acao .why{color:var(--sub);font-size:13px;margin-top:7px}
 .acao .btn{margin-top:13px}
 .seca{display:flex;gap:10px;align-items:baseline;padding:11px 13px}
-.seca .tx{font-size:12.5px;color:var(--sub)}.seca .tx b{font-weight:600;color:var(--ink)}
+.seca .tx{font-size:13px;color:var(--sub)}.seca .tx b{font-weight:600;color:var(--ink)}
 .seca .golink{margin-left:auto}
 /* segmented */
 .cabblk{margin-bottom:6px}
+/* auditoria mobile 04/08: alvo de toque mínimo (link de 19px era metade do recomendado) */
+.golink,a.golink{display:inline-flex;align-items:center;min-height:40px;padding:2px 0}
+.linha .golink{min-height:38px}
+summary{min-height:40px;display:flex;align-items:center;gap:6px}
+/* escala tipográfica: 4 degraus com contraste real, no lugar de 7 quase iguais */
+.sm{font-size:11.5px}
+.k{font-size:11.5px;letter-spacing:.04em}
 .tfix td:first-child,.tfix th:first-child{position:sticky;left:0;background:#fff;z-index:1}
 @media print{#nav,#top,.seg,#refresh,#ajuda,details:not([open]){display:none!important}
   .view{display:block!important}.card{break-inside:avoid;box-shadow:none;border:1px solid #E2E8F0}}
 .cd .best{position:absolute;top:1px;right:3px;font-size:9px;color:#7C3AED;line-height:1}
 .seg{position:sticky;top:59px;z-index:30;display:flex;background:var(--mid-bg);border-radius:10px;padding:3px;margin:12px 0 4px}
-.seg button{flex:1;height:32px;border:0;border-radius:8px;background:none;font:600 12px 'Inter',sans-serif;color:var(--sub);cursor:pointer}
+.seg button{flex:1;height:32px;border:0;border-radius:8px;background:none;font:600 13px 'Inter',sans-serif;color:var(--sub);cursor:pointer}
 .seg button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:var(--sh-sm)}
 .subv[hidden]{display:none}
 /* KPI cards */
@@ -121,8 +128,8 @@ details .body{font-size:12.5px;color:var(--sub);padding:6px 0 2px;line-height:1.
 .kpi .d{font-size:11.5px;color:var(--sub)}
 .kpi .spark{width:calc(100% + 24px);margin:8px -12px -8px;height:32px;display:block}
 .iBtn{position:absolute;top:9px;right:9px;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);
-      background:var(--off);color:var(--gold-deep);font:600 11px 'Inter',sans-serif;cursor:pointer}
-.iBox{display:none;font-size:12px;color:var(--sub);line-height:1.55;margin-top:8px;border-top:1px solid var(--line2);padding-top:8px}
+      background:var(--off);color:var(--gold-deep);font:600 11.5px 'Inter',sans-serif;cursor:pointer}
+.iBox{display:none;font-size:13px;color:var(--sub);line-height:1.55;margin-top:8px;border-top:1px solid var(--line2);padding-top:8px}
 .kpi.aberto .iBox{display:block}
 .iBox b{color:var(--ink)}
 /* pilares / gráficos */
@@ -133,7 +140,7 @@ details .body{font-size:12.5px;color:var(--sub);padding:6px 0 2px;line-height:1.
 .prow .bar2{height:9px;border-radius:6px;background:var(--mid-bg);position:relative;overflow:hidden;margin:9px 0 6px}
 .prow .real{position:absolute;inset:0 auto 0 0;background:var(--gold);border-radius:6px}
 .prow .alvo{position:absolute;top:-2px;bottom:-2px;width:2.5px;background:var(--ink);opacity:.55}
-.prow .meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--sub)}
+.prow .meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--sub)}
 .prow .er{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:19px;color:var(--ink)}
 .filtro-on{outline:2px solid var(--gold);outline-offset:1px}
 /* posts */
@@ -150,10 +157,10 @@ details .body{font-size:12.5px;color:var(--sub);padding:6px 0 2px;line-height:1.
 .stt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .stt .ov{position:absolute;inset:auto 0 0 0;padding:22px 8px 7px;color:#fff;background:linear-gradient(180deg,transparent,rgba(15,23,42,.85))}
 .stt .g{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:20px;line-height:1}
-.stt .d{font-size:9.5px;opacity:.92}
+.stt .d{font-size:10px;opacity:.92}
 .stt .iBtn{position:absolute;top:6px;right:6px;background:rgba(255,255,255,.94)}
 .stt.sel{outline:2.5px solid var(--brand);outline-offset:-2px}
-table{width:100%;border-collapse:collapse;font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;color:var(--faint);font-size:10px;text-transform:uppercase;letter-spacing:.05em;padding:6px 5px 4px}
 td{padding:5px;border-top:1px solid var(--line2)}
 tr.dim{opacity:.25}
@@ -167,7 +174,7 @@ tr.dim{opacity:.25}
 .cd{min-height:58px;border-radius:8px;background:var(--card);border:1px solid var(--line);padding:3px 4px;cursor:pointer;position:relative}
 .cd.out{opacity:0;pointer-events:none;border:0;background:none}
 .cd.wknd{background:var(--off)}
-.cd .dn{font-size:10.5px;font-weight:600;color:var(--sub)}
+.cd .dn{font-size:10px;font-weight:600;color:var(--sub)}
 .cd.today{outline:2px solid var(--gold);outline-offset:-2px}
 .cd.today .dn{color:var(--gold-deep)}
 .cd.sel{background:var(--gold-pale)}
@@ -175,12 +182,12 @@ tr.dim{opacity:.25}
 .cd .dots{display:flex;gap:3px;justify-content:center;margin-top:4px}
 .cd .dot{width:6px;height:6px;border-radius:50%}
 .d-post{background:var(--gold)} .d-story{background:var(--nude)} .d-due{background:var(--age)} .d-ev{background:var(--slate)}
-.leg{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--sub);margin:8px 2px}
+.leg{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--sub);margin:8px 2px}
 .leg i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;font-style:normal}
 #daypanel .dp{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line2)}
 #daypanel .dp:first-of-type{border-top:0}
 #daypanel img{width:40px;height:40px;border-radius:8px;object-fit:cover}
-#daypanel .tt{font-size:12.5px;font-weight:600;line-height:1.3}
+#daypanel .tt{font-size:13px;font-weight:600;line-height:1.3}
 /* fila */
 .grp .hd{display:flex;justify-content:space-between;align-items:baseline}
 .grp .hd .n{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:27px}
@@ -188,7 +195,7 @@ tr.dim{opacity:.25}
 .ctip{position:absolute;z-index:5;pointer-events:none;background:var(--ink);color:#fff;font-size:11.5px;font-weight:600;padding:6px 9px;border-radius:8px;transform:translate(-50%,-115%);white-space:nowrap;display:none;box-shadow:var(--sh-sm)}
 .ctip .neg{color:#FCA5A5}.ctip .pos{color:#6EE7B7}
 .cdot{position:absolute;z-index:4;width:9px;height:9px;border-radius:50%;background:var(--brand);border:2px solid #fff;transform:translate(-50%,-50%);pointer-events:none;display:none}
-footer{padding:20px 2px 10px;color:var(--sub);font-size:12px}
+footer{padding:20px 2px 10px;color:var(--sub);font-size:13px}
 footer a{margin-right:12px;font-weight:600;color:var(--gold-deep)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -292,8 +299,8 @@ function render(data){
     +'<div><div class="oi">Oi, Michelle</div><div class="dt" id="carimbo" style="cursor:pointer" title="toque para ver quando cada dado chegou">'+DIAS[(hoje.getDay()+6)%7]+", "
     +hoje.getDate()+" de "+MESES[hoje.getMonth()]+" · montado "+esc(fmtAge(D.meta.built_at)||"")+"</div></div>"
     +lk(m.link,"🎚 "+esc(m.value||"Normal")+(m.ok?"":" (padrão)"),"marcha")
-    +'<button id="ajuda" title="como ler esta central" aria-label="como ler" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font:700 15px Inter,sans-serif;cursor:pointer;margin-right:6px">?</button>'
-    +'<button id="refresh" title="atualizar agora" aria-label="atualizar agora" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font-size:15px;cursor:pointer">↻</button>'
+    +'<button id="ajuda" title="como ler esta central" aria-label="como ler" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font:700 15px Inter,sans-serif;cursor:pointer;margin-right:6px">?</button>'
+    +'<button id="refresh" title="atualizar agora" aria-label="atualizar agora" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font-size:15px;cursor:pointer">↻</button>'
     +"</div></div></div>";
 
   // ---------- HOJE ----------
@@ -402,10 +409,10 @@ function render(data){
   h+='<div class="subv" id="s-saude">';
   if(SA.hero&&SA.hero.acao){
     h+='<div class="card" style="background:linear-gradient(135deg,#7C3AED,#6366F1)">'
-      +'<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="k" style="color:rgba(255,255,255,.85)">🎯 O que fazer hoje</span><span style="font:600 10.5px Inter,sans-serif;color:rgba(255,255,255,.75)">🕐 atualizado '+esc(fmtAge(D.meta.built_at)||"")+"</span></div>"
+      +'<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="k" style="color:rgba(255,255,255,.85)">🎯 O que fazer hoje</span><span style="font:600 10px Inter,sans-serif;color:rgba(255,255,255,.75)">🕐 atualizado '+esc(fmtAge(D.meta.built_at)||"")+"</span></div>"
       +'<p style="font:800 15.5px/1.4 Inter,sans-serif;color:#fff;margin-top:5px">'+esc(SA.hero.acao)+"</p>"
-      +'<p style="font:600 12.5px/1.5 Inter,sans-serif;color:rgba(255,255,255,.85);margin-top:4px">🗣️ '+esc(SA.hero.frase||"")+"</p>"
-      +'<details style="margin-top:6px"><summary style="color:#fff;font:700 12px Inter,sans-serif;cursor:pointer">por quê?</summary><div style="color:rgba(255,255,255,.92);font:400 12.5px/1.5 Inter,sans-serif;margin-top:4px">'+esc(SA.hero.why||"")+(SA.hero.url?' · <a href="'+esc(SA.hero.url)+'" target="_blank" rel="noopener" style="color:#fff;font-weight:700">abrir ↗</a>':"")+"</div></details>"
+      +'<p style="font:600 13px/1.5 Inter,sans-serif;color:rgba(255,255,255,.85);margin-top:4px">🗣️ '+esc(SA.hero.frase||"")+"</p>"
+      +'<details style="margin-top:6px"><summary style="color:#fff;font:700 13px Inter,sans-serif;cursor:pointer">por quê?</summary><div style="color:rgba(255,255,255,.92);font:400 13px/1.5 Inter,sans-serif;margin-top:4px">'+esc(SA.hero.why||"")+(SA.hero.url?' · <a href="'+esc(SA.hero.url)+'" target="_blank" rel="noopener" style="color:#fff;font-weight:700">abrir ↗</a>':"")+"</div></details>"
       +"</div>";
   }
   const RP=SA.report||{};
@@ -522,7 +529,7 @@ function render(data){
       +'<div class="body"><b>Entra:</b> '+esc(p.oque)+'<br><b>Serve:</b> '+esc(p.paraque)+"</div></details></div>").join("")
     +'<p class="sm" style="margin:6px 2px">toque num pilar para filtrar os posts · <a class="golink" href="#" onclick="showView(\'posts\');return false">ver os posts ↗</a></p>'
     +'<div class="card"><span class="k">Leitura da semana '+ageChip(S,"learning")+"</span>"
-    +'<p style="font-weight:600;margin:6px 0 4px;font-size:13.5px">'+esc(L.headline||"sem leitura ainda")+"</p>"
+    +'<p style="font-weight:600;margin:6px 0 4px;font-size:13px">'+esc(L.headline||"sem leitura ainda")+"</p>"
     +(L.action?'<p style="font-size:13px">→ '+esc(L.action)+' <a class="golink" href="#" onclick="showView(\'posts\');return false">ver posts ↗</a></p>':"")
     +'<details><summary>funcionou · aposentar · testar</summary><div class="body">'
     +(L.won?"<b>Funcionou:</b> "+esc(L.won)+"<br><br>":"")
@@ -537,7 +544,7 @@ function render(data){
       h+='<div class="card"><div style="display:flex;gap:12px;align-items:flex-start">'
         +(f.refs&&f.refs.length&&f.refs[0].img?'<a href="'+esc(f.refs[0].url)+'" target="_blank" rel="noopener" aria-label="ver exemplo real deste formato" style="flex:0 0 84px"><img src="'+f.refs[0].img+'" alt="" style="width:84px;height:84px;object-fit:cover;border-radius:12px"></a>'
           :'<div style="flex:0 0 84px;height:84px;border:2px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">🎬</div>')
-        +'<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="font:800 13.5px Inter,sans-serif">'+esc(f.n)+'</span><span class="sm num" style="background:#EDE9FE;color:#5B21B6;padding:2px 8px;border-radius:10px;white-space:nowrap">'+esc(f.status)+"</span></div>"
+        +'<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="font:800 13px Inter,sans-serif">'+esc(f.n)+'</span><span class="sm num" style="background:#EDE9FE;color:#5B21B6;padding:2px 8px;border-radius:10px;white-space:nowrap">'+esc(f.status)+"</span></div>"
         +'<div class="sm" style="margin-top:3px">'+esc(f.como)+"</div>"
         +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">'+(f.pilares||[]).map(p=>tag(p)).join("")+"</div>"
         +(f.obs?'<div class="sm" style="margin-top:5px;opacity:.85">'+esc(f.obs)+"</div>":"")
@@ -553,7 +560,7 @@ function render(data){
     const FA=FS.falados||{};
     h+='<div class="card"><div style="display:flex;gap:12px;align-items:flex-start">'
       +(FA.refs&&FA.refs.length&&FA.refs[0].img?'<a href="'+esc(FA.refs[0].url)+'" target="_blank" rel="noopener" aria-label="ver exemplo real de formato falado" style="flex:0 0 84px"><img src="'+FA.refs[0].img+'" alt="" style="width:84px;height:84px;object-fit:cover;border-radius:12px"></a>':"")
-      +'<div style="flex:1;min-width:0"><span style="font:800 13.5px Inter,sans-serif">Os 9 falados</span>'
+      +'<div style="flex:1;min-width:0"><span style="font:800 13px Inter,sans-serif">Os 9 falados</span>'
       +'<div class="sm" style="margin-top:3px">'+(FA.top||[]).join(" · ")+" e mais 5 · abertura pronta, setup e 2 ideias ancoradas cada um</div>"
       +'<div class="sm" style="margin-top:5px">'+lk(FS.planilha,"ver os 9 na planilha ↗","golink")+((FA.refs||[]).length?" · "+lk(FA.refs[0].url,"exemplo real ↗","golink"):"")+"</div>"
       +((FA.itens||[]).length?'<details style="margin-top:6px"><summary>abrir os 9 (abertura + ideias prontas)</summary><div class="body">'
@@ -692,7 +699,7 @@ function render(data){
       const val=ord==="d"?esc(p.d):(ord==="sends"?esc(p.sends):esc(p.er)+"%");
       return '<a href="'+esc(p.url)+'" target="_blank" rel="noopener" aria-label="abrir post de '+esc(p.d)+'" style="position:relative;display:block;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--mid-bg)">'
         +(im?'<img src="'+im+'" alt="" style="width:100%;height:100%;object-fit:cover">':'<span class="sm" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">'+esc(p.fmt||"")+"</span>")
-        +'<span class="num" style="position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(15,23,42,.78));color:#fff;font:800 11px Inter,sans-serif;padding:12px 5px 4px;text-align:right">'+val+"</span></a>";}).join("");
+        +'<span class="num" style="position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(15,23,42,.78));color:#fff;font:800 11.5px Inter,sans-serif;padding:12px 5px 4px;text-align:right">'+val+"</span></a>";}).join("");
   }
   document.querySelectorAll("#ordseg button[data-ord]").forEach(b=>b.addEventListener("click",()=>{
     document.querySelectorAll("#ordseg button").forEach(x=>x.setAttribute("aria-selected",x===b));
@@ -725,12 +732,12 @@ function render(data){
       ["fila","📋","FILA","aprovar e gravar, pautas, e quando cada dado chegou"]];
     ov.innerHTML='<div style="background:#fff;border-radius:16px;max-width:400px;width:100%;padding:18px 16px;box-shadow:0 20px 60px rgba(15,23,42,.3)">'
       +'<div style="font:800 15px Inter,sans-serif;margin-bottom:10px">Como ler esta central</div>'
-      +G.map(g=>'<button data-go="'+g[0]+'" style="display:flex;gap:10px;width:100%;text-align:left;border:0;background:none;padding:8px 4px;border-radius:10px;cursor:pointer;align-items:baseline"><span>'+g[1]+'</span><span style="font:700 13px Inter,sans-serif;min-width:64px">'+g[2]+'</span><span style="font:400 12.5px Inter,sans-serif;color:var(--sub)">'+g[3]+"</span></button>").join("")
-      +'<details style="margin-top:8px"><summary style="font:700 12.5px Inter,sans-serif;cursor:pointer">o que cada ícone quer dizer</summary><div style="font:400 12px/1.9 Inter,sans-serif;color:var(--sub);margin-top:4px">'
+      +G.map(g=>'<button data-go="'+g[0]+'" style="display:flex;gap:10px;width:100%;text-align:left;border:0;background:none;padding:8px 4px;border-radius:10px;cursor:pointer;align-items:baseline"><span>'+g[1]+'</span><span style="font:700 13px Inter,sans-serif;min-width:64px">'+g[2]+'</span><span style="font:400 13px Inter,sans-serif;color:var(--sub)">'+g[3]+"</span></button>").join("")
+      +'<details style="margin-top:8px"><summary style="font:700 13px Inter,sans-serif;cursor:pointer">o que cada ícone quer dizer</summary><div style="font:400 13px/1.9 Inter,sans-serif;color:var(--sub);margin-top:4px">'
       +[["🎯","o que fazer hoje"],["🗓","agenda e datas"],["🖼","conteúdo publicado"],["📈","análise e desempenho"],["💰","dinheiro"],["📥","fila e pendência"],["👁","alcance"],["♡","engajamento"],["✈","envios"],["👤","seguidores"],["🔍","busca e intenção"],["🕐","quando o dado chegou"],["⏰","melhor hora de postar"],["⚠","dado velho"],["⏳","sem dado ainda"],["🔒","indisponível"],["💡","leitura e conclusão"],["★","seu melhor dia"],["▲ ▬ ▼","escalar · manter · repensar"]].map(x=>x[0]+" "+x[1]).join("<br>")
       +"</div></details>"
-      +'<button id="imprimir" style="margin-top:10px;width:100%;height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;font:700 12.5px Inter,sans-serif;cursor:pointer">🖨 salvar/imprimir 1 página</button>'
-      +'<div style="font:400 12px Inter,sans-serif;color:var(--sub);margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">toque no “montado há…” lá em cima para ver quando cada dado chegou · o ↻ pede uma rodada nova e avisa quando ela fica pronta</div>'
+      +'<button id="imprimir" style="margin-top:10px;width:100%;height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;font:700 13px Inter,sans-serif;cursor:pointer">🖨 salvar/imprimir 1 página</button>'
+      +'<div style="font:400 13px Inter,sans-serif;color:var(--sub);margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">toque no “montado há…” lá em cima para ver quando cada dado chegou · o ↻ pede uma rodada nova e avisa quando ela fica pronta</div>'
       +'<button id="guiafecha" style="margin-top:12px;width:100%;height:38px;border:0;border-radius:10px;background:linear-gradient(135deg,#7C3AED,#6366F1);color:#fff;font:700 13px Inter,sans-serif;cursor:pointer">entendi</button></div>';
     ov.addEventListener("click",e=>{
       if(e.target.id==="imprimir"){
