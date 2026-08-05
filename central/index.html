@@ -383,6 +383,18 @@ function render(data){
     +"<b>falta:</b> "+esc(falta)+"<br><b>de onde vem:</b> "+esc(onde)+"<br><b>quando chega:</b> "+esc(quando)+"</div></div>";
   const d7pill=p=>{const d=p.d7;if(!d)return "";if(d.pend)return '<span class="sm num" style="opacity:.65">D+7 '+esc(d.pend)+"</span>";const c=d.nota==="alta"?"#059669":d.nota==="baixa"?"#DC2626":"var(--sub)";const y=d.nota==="alta"?"▲":d.nota==="baixa"?"▼":"▬";return '<span class="sm num" title="'+esc(d.txt||"")+'" style="color:'+c+';font-weight:800">'+y+" D+7</span>";};
   h+='<section class="view wrap" id="v-posts" hidden>'+fraseAba("posts")
+    +(function(){const T=D.trouxe;if(!T)return "";
+      const maxv=Math.max(...T.formatos.map(f=>parseFloat(String(f.vis_post).replace(",","."))||0),1);
+      return '<div class="card" style="border-left:3px solid #7C3AED">'
+        +cab("👋 "+esc(T.frase),esc(T.janela)+" · "+T.n+" posts","posts")
+        +(T.leitura?'<p style="font:700 13px/1.5 Inter,sans-serif;margin:6px 0 8px">💡 '+esc(T.leitura)+"</p>":"")
+        +T.formatos.map(f=>{const v=parseFloat(String(f.vis_post).replace(",","."))||0;
+          return '<div style="display:flex;align-items:center;gap:8px;margin:5px 0"><span class="sm" style="width:52px;font-weight:700">'+esc(f.f)+'</span>'
+            +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(v/maxv*100).toFixed(0)+'%"></div></div>'
+            +'<span class="sm num" style="width:96px;text-align:right">'+esc(f.vis_post)+" por post · "+f.n+"</span></div>";}).join("")
+        +'<div class="sm" style="margin-top:8px"><b>quem mais levou gente ao perfil:</b><br>'
+        +T.top.map(x=>"· "+lk(x.url,esc(x.d)+" "+esc(x.fmt),"golink")+' <span class="num">'+x.vis+" visitas"+(x.seg?" · +"+x.seg+" seguidor(es)":"")+"</span>").join("<br>")+"</div>"
+        +'<div class="sm" style="margin-top:6px;opacity:.85">'+esc(T.nota)+"</div></div>";})()
     +(function(){const U=(D.saude||{}).ultimo;if(!U)return "";
       const f={img:IMGMAP[U.url]};
       const cor=U.pos==="acima"?"#059669":U.pos==="abaixo"?"#DC2626":"var(--sub)";
