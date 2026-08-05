@@ -10,12 +10,12 @@
 /* ============ tokens · studio.ourspace.com.br (produto vivo · 31/07) ============ */
 :root{
   --canvas:#F4F6FB; --card:#FFFFFF; --off:#F7F5FF; --line:#EDF1F7; --line2:#F5F8FC;
-  --ink:#0F172A; --sub:#64748B; --faint:#64748B;
+  --ink:#0F172A; --sub:#556070; --faint:#556070;
   --brand:#7C3AED; --brand-dark:#6D28D9; --sec:#6366F1;
   --grad:linear-gradient(135deg,#7C3AED 0%,#6366F1 100%);
   --brand-pale:#EDE9FE; --gold:#7C3AED; --gold-warm:#6366F1; --gold-pale:#F5F3FF; --gold-deep:#6D28D9; --nude:#C7D2FE;
-  --up:#059669; --up-bg:#D1FAE5; --mid:#64748B; --mid-bg:#F1F5F9;
-  --down:#DC2626; --down-bg:#FEE2E2; --age:#B45309; --age-bg:#FEF3C7; --slate:#0284C7;
+  --up:#047857; --up-bg:#D1FAE5; --mid:#556070; --mid-bg:#F1F5F9;
+  --down:#B91C1C; --down-bg:#FEE2E2; --age:#92400E; --age-bg:#FEF3C7; --slate:#0284C7;
   --sh-sm:0 1px 2px rgba(16,24,40,.04), 0 8px 24px -12px rgba(16,24,40,.10);
   --sh-md:0 2px 4px rgba(16,24,40,.05), 0 18px 40px -16px rgba(16,24,40,.16);
   --nav-h:60px;
@@ -34,7 +34,7 @@ a{color:var(--ink)}
 .pill{display:inline-flex;gap:4px;align-items:center;font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
 .p-up{color:var(--up);background:var(--up-bg)} .p-mid{color:var(--mid);background:var(--mid-bg)}
 .p-down{color:var(--down);background:var(--down-bg)} .p-none{color:var(--sub);background:var(--mid-bg)}
-.age{display:inline-block;font-size:10px;color:var(--faint);margin-left:6px;font-weight:500}
+.age{display:inline-block;font-size:11px;color:var(--faint);margin-left:6px;font-weight:500}
 .age.stale{color:var(--age);background:var(--age-bg);border-radius:6px;padding:0 6px;font-weight:600}
 /* tags de pilar · pastéis quentes que casam com o dourado */
 .tag{display:inline-flex;align-items:center;gap:6px;height:23px;padding:0 10px;border-radius:8px;
@@ -55,7 +55,7 @@ details .body{font-size:13px;color:var(--sub);padding:6px 0 2px;line-height:1.55
 .linha:first-of-type{border-top:0}
 .linha .n{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.01em;line-height:1.05}
 .sm{font-size:11.5px;color:var(--sub)}
-.golink{font-weight:600;color:var(--gold-deep);text-decoration:none;font-size:13px;}
+.golink{font-weight:600;color:var(--gold-deep);text-decoration:none;font-size:13px;;padding:3px 0;display:inline-block}
 /* logos dos canais */
 .logo{flex:0 0 auto;width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#fff;vertical-align:-8px;margin-right:8px}
 .logo svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
@@ -89,7 +89,7 @@ details .body{font-size:13px;color:var(--sub);padding:6px 0 2px;line-height:1.55
      padding-bottom:env(safe-area-inset-bottom)}
 #nav .row{display:flex;max-width:640px;margin:0 auto}
 #nav button{flex:1;min-width:0;height:var(--nav-h);border:0;background:none;cursor:pointer;display:flex;flex-direction:column;
-            align-items:center;justify-content:center;gap:3px;font:600 10px 'Inter',sans-serif;letter-spacing:.06em;color:var(--faint)}
+            align-items:center;justify-content:center;gap:3px;font:600 11px 'Inter',sans-serif;letter-spacing:.04em;color:var(--faint)}
 #nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
                 border-radius:999px;padding:3px 12px;box-sizing:content-box}
 #nav button[aria-selected="true"]{color:var(--ink)}
@@ -137,7 +137,7 @@ body::before{content:"";position:fixed;inset:0 0 auto 0;height:230px;z-index:-1;
 .pulso .pi{font-size:13px;line-height:1;opacity:.75}
 .pulso .pv{font:800 22px/1.1 'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-.02em;margin:5px 0 2px;color:var(--ink)}
 .pulso .pv.txt{font-size:14px;line-height:1.25;letter-spacing:0}
-.pulso .pl{font-size:10px;color:var(--sub);margin-top:1px}
+.pulso .pl{font-size:11px;color:var(--sub);margin-top:1px}
 /* auditoria mobile 04/08: alvo de toque mínimo (link de 19px era metade do recomendado) */
 /* alvo de toque sem quebrar a quebra de linha: padding vertical em elemento inline
    aumenta a área clicável e deixa o texto continuar quebrando (inline-flex não deixava) */
@@ -152,20 +152,20 @@ summary{min-height:40px;display:flex;align-items:center;gap:6px}
 .tfix td:first-child,.tfix th:first-child{position:sticky;left:0;background:#fff;z-index:1}
 @media print{#nav,#top,.seg,#refresh,#ajuda,details:not([open]){display:none!important}
   .view{display:block!important}.card{break-inside:avoid;box-shadow:none;border:1px solid #E2E8F0}}
-.cd .best{position:absolute;top:1px;right:3px;font-size:9px;color:#7C3AED;line-height:1}
+.cd .best{position:absolute;top:1px;right:3px;font-size:11px;color:#5B21B6;line-height:1}
 .jan{display:flex;gap:5px;overflow-x:auto;padding:8px 0 2px;-webkit-overflow-scrolling:touch}
-.jan button{flex:0 0 auto;min-height:34px;padding:0 13px;border:1px solid var(--line);border-radius:17px;background:#fff;
+.jan button{flex:0 0 auto;min-height:38px;padding:0 14px;border:1px solid var(--line);border-radius:17px;background:#fff;
   font:700 12.5px 'Inter',sans-serif;color:var(--sub);cursor:pointer;white-space:nowrap}
 .jan button[aria-selected="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
 .jan .datas{flex:0 0 auto;display:flex;gap:4px;align-items:center}
-.jan input[type=date]{font:600 12px 'Inter',sans-serif;border:1px solid var(--line);border-radius:9px;padding:6px 7px;min-height:34px;color:var(--ink);background:#fff}
+.jan input[type=date]{font:600 12.5px 'Inter',sans-serif;border:1px solid var(--line);border-radius:var(--r-sm);padding:7px 8px;min-height:38px;color:var(--ink);background:#fff}
 #janaviso{font:600 12.5px/1.5 'Inter',sans-serif;color:var(--age);background:var(--age-bg);border-radius:9px;padding:8px 11px;margin:6px 0 2px}
 #janaviso[hidden]{display:none}
 .jrow{display:flex;gap:8px}
 .jtile{flex:1;text-align:center;background:var(--off);border-radius:12px;padding:10px 4px}
 .jtile .num{font-size:20px;font-weight:800}
 .seg{position:sticky;top:var(--hdr,92px);z-index:30;display:flex;background:var(--mid-bg);border-radius:10px;padding:3px;margin:12px 0 4px}
-.seg button{flex:1;height:32px;border:0;border-radius:8px;background:none;font:600 13px 'Inter',sans-serif;color:var(--sub);cursor:pointer}
+.seg button{flex:1;height:38px;border:0;border-radius:8px;background:none;font:600 13px 'Inter',sans-serif;color:var(--sub);cursor:pointer}
 .seg button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:var(--sh-sm)}
 .subv[hidden]{display:none}
 /* KPI cards */
@@ -198,17 +198,17 @@ summary{min-height:40px;display:flex;align-items:center;gap:6px}
 .post .ov{position:absolute;inset:auto 0 0 0;padding:28px 10px 9px;color:#fff;
           background:linear-gradient(180deg,transparent,rgba(15,23,42,.82))}
 .post .er{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.01em;line-height:1.05}
-.post .m{font-size:10px;opacity:.92}
+.post .m{font-size:11px;opacity:.92}
 .post .tg{position:absolute;top:7px;left:7px;transform:scale(.9);transform-origin:left top}
 .stt{position:relative;flex:0 0 100px;aspect-ratio:9/16;max-height:182px;background:linear-gradient(160deg,var(--off),var(--mid-bg));border:1px solid var(--line);border-radius:14px;overflow:hidden;scroll-snap-align:start;cursor:pointer}
 .stt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .stt .ov{position:absolute;inset:auto 0 0 0;padding:22px 8px 7px;color:#fff;background:linear-gradient(180deg,transparent,rgba(15,23,42,.85))}
 .stt .g{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.01em;line-height:1.05}
-.stt .d{font-size:10px;opacity:.92}
+.stt .d{font-size:11px;opacity:.92}
 .stt .iBtn{min-width:34px;min-height:34px;position:absolute;top:6px;right:6px;background:rgba(255,255,255,.94)}
 .stt.sel{outline:2.5px solid var(--brand);outline-offset:-2px}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;color:var(--faint);font-size:10px;text-transform:uppercase;letter-spacing:.05em;padding:6px 5px 4px}
+th{text-align:left;color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:6px 5px 4px}
 td{padding:5px;border-top:1px solid var(--line2)}
 tr.dim{opacity:.25}
 /* calendário */
@@ -216,12 +216,12 @@ tr.dim{opacity:.25}
 .calnav b{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:700;text-transform:capitalize}
 .calnav button{width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:10px;font-size:17px;cursor:pointer;color:var(--gold-deep)}
 .wdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px}
-.wdays span{font-size:10px;text-transform:uppercase;color:var(--faint);text-align:center;font-weight:600}
+.wdays span{font-size:11px;text-transform:uppercase;color:var(--faint);text-align:center;font-weight:600}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
 .cd{min-height:58px;border-radius:8px;background:var(--card);border:1px solid var(--line);padding:3px 4px;cursor:pointer;position:relative}
 .cd.out{opacity:0;pointer-events:none;border:0;background:none}
 .cd.wknd{background:var(--off)}
-.cd .dn{font-size:10px;font-weight:600;color:var(--sub)}
+.cd .dn{font-size:11px;font-weight:700;color:var(--ink)}
 .cd.today{outline:2px solid var(--gold);outline-offset:-2px}
 .cd.today .dn{color:var(--gold-deep)}
 .cd.sel{box-shadow:inset 0 0 0 2.5px var(--brand);border-radius:9px;z-index:1}
@@ -503,9 +503,9 @@ function render(data){
       +'<div style="display:flex;gap:5px;margin-top:8px">'+BUh.semana.map(x=>{
         const cor=x.publicado?"background:#7C3AED;color:#fff":x.cards.length?"background:#EDE9FE;color:#5B21B6":(x.passou?"background:var(--mid-bg);color:var(--faint)":"background:#fff;color:var(--sub);border:1.5px "+(x.fds?"dotted":"dashed")+" var(--line)");
         return '<div title="'+esc(x.d)+(x.cards.length?" · "+esc(x.cards[0].t):"")+'" style="flex:1;text-align:center;border-radius:10px;padding:7px 2px;'+cor+(x.hoje?";box-shadow:0 0 0 2px #6366F1":"")+'">'
-          +'<div style="font:800 10px Inter,sans-serif;text-transform:uppercase">'+esc(x.dow)+"</div>"
+          +'<div style="font:800 11px Inter,sans-serif;text-transform:uppercase">'+esc(x.dow)+"</div>"
           +'<div style="font:700 13px Inter,sans-serif">'+esc(x.d.slice(0,2))+"</div>"
-          +'<div style="font-size:9px">'+(x.publicado?"✓":x.cards.length?"•":"")+"</div></div>";}).join("")+"</div>"
+          +'<div style="font-size:12px;line-height:1">'+(x.publicado?"✓":x.cards.length?"•":"")+"</div></div>";}).join("")+"</div>"
       +'<div class="sm" style="margin-top:7px">roxo = publicou · lilás = já tem card · tracejado = dia livre · cinza = passou sem post</div></div>':"")
     // 4 · o que vem: evento e story do dia, com um toque cada
     +'<div class="card">'+cab("⏭ O que vem","próximo compromisso e o story de hoje","events")
@@ -538,7 +538,7 @@ function render(data){
   const semDado=(titulo,falta,onde,quando,ico)=>'<div class="card" style="border:1.5px dashed var(--line)">'
     +'<span class="k">'+(ico||"⏳")+" "+esc(titulo)+'</span><div class="sm" style="margin-top:5px;line-height:1.6">'
     +"<b>falta:</b> "+esc(falta)+"<br><b>de onde vem:</b> "+esc(onde)+"<br><b>quando chega:</b> "+esc(quando)+"</div></div>";
-  const d7pill=(p,tocavel)=>{const d=p.d7;if(tocavel===undefined)tocavel=true;if(!d)return "";if(d.pend)return '<span class="sm num" style="opacity:.65">D+7 '+esc(d.pend)+"</span>";const c=d.nota==="alta"?"#059669":d.nota==="baixa"?"#DC2626":"var(--sub)";const y=d.nota==="alta"?"▲":d.nota==="baixa"?"▼":"▬";if(!tocavel) return '<span class="sm num" style="color:'+c+';font-weight:800">'+y+" D+7</span>";
+  const d7pill=(p,tocavel)=>{const d=p.d7;if(tocavel===undefined)tocavel=true;if(!d)return "";if(d.pend)return '<span class="sm num" style="opacity:.65">D+7 '+esc(d.pend)+"</span>";const c=d.nota==="alta"?"#047857":d.nota==="baixa"?"#B91C1C":"var(--sub)";const y=d.nota==="alta"?"▲":d.nota==="baixa"?"▼":"▬";if(!tocavel) return '<span class="sm num" style="color:'+c+';font-weight:800">'+y+" D+7</span>";
     return '<span class="sm num d7p" role="button" tabindex="0" title="'+esc(d.txt||"")+'" data-d7="'+esc(d.txt||"")+'" style="color:'+c+';font-weight:800;cursor:pointer;border-bottom:1px dotted currentColor">'+y+" D+7</span>";};
   h+='<section class="view wrap" id="v-posts" hidden>'+fraseAba("posts")+barraJanela()
     +'<div class="card"><span class="k">📅 O período que você escolheu</span>'
@@ -562,7 +562,7 @@ function render(data){
         +(T.fora?"<br>"+esc(T.fora):"")+"</div></div>";})()
     +(function(){const U=(D.saude||{}).ultimo;if(!U)return "";
       const f={img:IMGMAP[U.url]};
-      const cor=U.pos==="acima"?"#059669":U.pos==="abaixo"?"#DC2626":"var(--sub)";
+      const cor=U.pos==="acima"?"#047857":U.pos==="abaixo"?"#B91C1C":"var(--sub)";
       const sim=U.pos==="acima"?"▲":U.pos==="abaixo"?"▼":"▬";
       return '<div class="card">'+cab("🖼 Seu último post "+esc(U.veredito),"publicado "+esc(U.quando)+" · "+esc(U.d),"posts")
         +'<div style="display:flex;gap:12px;align-items:flex-start;margin-top:4px">'
@@ -844,16 +844,16 @@ function render(data){
         +(RD.lembrete?'<div style="background:var(--age-bg);color:var(--age);border-radius:10px;padding:9px 12px;margin:6px 0 2px;font:600 12.5px/1.5 Inter,sans-serif">⏰ '+esc(RD.lembrete)+"</div>":"");
       if(S){
         t+='<div style="display:flex;gap:8px;margin:8px 0">'
-          +[["↘ entraram","+"+S.chegaram,"#059669",false],["↖ saíram","−"+S.sairam,"#DC2626",false],
-           ["= sobrou",S.liquido,S.liquido.indexOf("−")===0?"#DC2626":"#059669",true]]
+          +[["↘ entraram","+"+S.chegaram,"#047857",false],["↖ saíram","−"+S.sairam,"#B91C1C",false],
+           ["= sobrou",S.liquido,S.liquido.indexOf("−")===0?"#B91C1C":"#047857",true]]
             .map(x=>'<div style="flex:'+(x[3]?"1.25":"1")+';text-align:center;background:'+(x[3]?"var(--off)":"#fff")+';border:'+(x[3]?"1.5px solid var(--brand-pale)":"1px solid var(--line)")+';border-radius:12px;padding:'+(x[3]?"11px 4px":"9px 4px")+'"><div class="sm">'+x[0]+'</div><div class="num" style="font-size:'+(x[3]?"23px":"16px")+';font-weight:800;color:'+x[2]+'">'+esc(x[1])+"</div></div>").join("")
           +"</div>"
           +'<div class="sm"><b>só nesta janela ('+esc(S.de)+" a "+esc(S.ate)+"):</b> os nomes de quem entrou vêm das suas notificações · o que sobrou vem da contagem oficial do Instagram · <b>quantos saíram é conta</b> (entraram menos o que sobrou), porque o Instagram nunca mostra quem deixa de seguir</div>";
       }
       if((RD.tipos||[]).length){
         const CORT={"Marca ou loja":"#7C3AED","Serviço":"#6366F1","Agência":"#0284C7",
-          "Imprensa e criador":"#059669","Tecnologia / IA":"#8B5CF6","Moda + IA":"#DB2777",
-          "Educação":"#0891B2","Executivo":"#B45309","Instituição do setor":"#4338CA",
+          "Imprensa e criador":"#047857","Tecnologia / IA":"#8B5CF6","Moda + IA":"#DB2777",
+          "Educação":"#0891B2","Executivo":"#7E22CE","Instituição do setor":"#4338CA",
           "Revenda":"#64748B","Amizade ou pessoal":"#EC4899","Conta vazia":"#CBD5E1",
           "Sem sinal na bio":"#CBD5E1"};
         const maxt=Math.max(...RD.tipos.map(x=>x.v),1);
@@ -862,7 +862,7 @@ function render(data){
           +RD.tipos.filter(x=>x.v>=2).map(x=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0">'
             +'<span class="sm" style="width:104px;flex:0 0 auto;line-height:1.25">'+esc(x.k)+'</span>'
             +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(x.v/maxt*100).toFixed(0)+'%;background:'+(CORT[x.k]||"#94A3B8")+'"></div></div>'
-            +'<span class="sm num" style="width:52px;text-align:right;flex:0 0 auto">'+x.v+" · "+String(x.pct.toFixed(1)).replace(".",",")+"%</span></div>").join("");
+            +'<span class="sm num" style="width:78px;text-align:right;flex:0 0 auto;white-space:nowrap">'+x.v+" · "+String(x.pct.toFixed(1)).replace(".",",")+"%</span></div>").join("");
       }
       if((RD.de_cliente||[]).length){
         t+='<div class="sm" style="font-weight:800;margin-top:14px">🎯 Gente de dentro de cliente, prospect ou evento seu</div>'
@@ -897,7 +897,7 @@ function render(data){
       const barras=(lista,tot,cor)=>lista.map(x=>{const p=100*x.v/(tot||1);
         return '<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span class="sm" style="width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(x.k)+'</span>'
           +'<div class="bar" style="flex:1"><div class="fill" style="width:'+Math.max(2,Math.round(p))+'%;background:'+cor+'"></div></div>'
-          +'<span class="sm num" style="width:74px;text-align:right;flex:0 0 auto">'+String(x.v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+" · "+(p<1?"<1":String(Math.round(p*10)/10).replace(".",","))+"%</span></div>";}).join("");
+          +'<span class="sm num" style="width:84px;text-align:right;flex:0 0 auto;white-space:nowrap">'+String(x.v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+" · "+(p<1?"<1":String(Math.round(p*10)/10).replace(".",","))+"%</span></div>";}).join("");
       const somaI=PB.base_idade||PB.idades.reduce((a,b)=>a+b.v,0),
             somaC=PB.base_cidade||PB.cidades.reduce((a,b)=>a+b.v,0),
             somaP=PB.base_pais||PB.paises.reduce((a,b)=>a+b.v,0);
@@ -1394,11 +1394,11 @@ async function pedeToken(){
     await guardaToken(v);
     try{
       const me = await trello("GET", "/members/me", {fields:"username"});
-      sh.querySelector("#tokmsg").innerHTML = '<span style="color:#059669;font-weight:700">✓ conectado como @' + esc(me.username) + "</span>";
+      sh.querySelector("#tokmsg").innerHTML = '<span style="color:#047857;font-weight:700">✓ conectado como @' + esc(me.username) + "</span>";
       setTimeout(fechaSheet, 1200);
     }catch(e){
       localStorage.removeItem("cv3_tok"); localStorage.removeItem("cv3_tok_claro");
-      sh.querySelector("#tokmsg").innerHTML = '<span style="color:#DC2626;font-weight:700">o token não funcionou · confira e cole de novo</span>';
+      sh.querySelector("#tokmsg").innerHTML = '<span style="color:#B91C1C;font-weight:700">o token não funcionou · confira e cole de novo</span>';
     }
   };
 }
@@ -1456,7 +1456,7 @@ async function agir(cardId, titulo, contexto){
         }
       }catch(e){
         carregando.remove();
-        aviso("⚠ " + e.message + " · o card não mudou", "#B45309");
+        aviso("⚠ " + e.message + " · o card não mudou", "#B91C1C");
       }
     };
   });
