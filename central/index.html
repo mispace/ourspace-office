@@ -829,7 +829,8 @@ function render(data){
     +(RD?(function(){
       const S=RD.saldo;
       let t='<div class="card" style="border-left:3px solid #7C3AED">'
-        +cab("📡 Quem está chegando", (S?("os números grandes são de "+esc(S.de)+" a "+esc(S.ate)):esc(RD.janela))+" · "+RD.cobertura.total+" pessoas com data","publico");
+        +cab("📡 Quem está chegando", (S?("os números grandes são de "+esc(S.de)+" a "+esc(S.ate)):esc(RD.janela))+" · "+RD.cobertura.total+" pessoas com data","radar")
+        +(RD.lembrete?'<div style="background:var(--age-bg);color:var(--age);border-radius:10px;padding:9px 12px;margin:6px 0 2px;font:600 12.5px/1.5 Inter,sans-serif">⏰ '+esc(RD.lembrete)+"</div>":"");
       if(S){
         t+='<div style="display:flex;gap:8px;margin:8px 0">'
           +[["↘ entraram","+"+S.chegaram,"#059669",false],["↖ saíram","−"+S.sairam,"#DC2626",false],
