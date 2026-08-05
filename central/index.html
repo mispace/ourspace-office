@@ -625,8 +625,29 @@ function render(data){
           +"</div>"
           +'<div class="sm"><b>só nesta janela ('+esc(S.de)+" a "+esc(S.ate)+"):</b> os nomes de quem entrou vêm das suas notificações · o que sobrou vem da contagem oficial do Instagram · <b>quantos saíram é conta</b> (entraram menos o que sobrou), porque o Instagram nunca mostra quem deixa de seguir</div>";
       }
+      if((RD.tipos||[]).length){
+        const CORT={"Marca ou loja de moda":"#7C3AED","Serviço profissional":"#6366F1",
+          "Agência / comunicação":"#0284C7","Imprensa / criador de conteúdo":"#059669",
+          "Tecnologia / IA":"#8B5CF6","Moda + IA":"#DB2777","Educação":"#0891B2",
+          "Executivo / empreendedor":"#B45309","Instituição / evento do setor":"#4338CA",
+          "Comércio / revenda":"#64748B","Conta vazia ou falsa":"#CBD5E1","Sem sinal na bio":"#CBD5E1"};
+        const maxt=Math.max(...RD.tipos.map(x=>x.v),1);
+        t+='<div class="sm" style="font-weight:800;margin-top:14px">👥 Que tipo de gente chegou</div>'
+          +'<div class="sm" style="margin-bottom:6px">lido na bio pública de cada uma · quem não diz nada na bio fica como “sem sinal”</div>'
+          +RD.tipos.filter(x=>x.v>=2).map(x=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0">'
+            +'<span class="sm" style="width:112px;flex:0 0 auto">'+esc(x.k)+'</span>'
+            +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(x.v/maxt*100).toFixed(0)+'%;background:'+(CORT[x.k]||"#94A3B8")+'"></div></div>'
+            +'<span class="sm num" style="width:52px;text-align:right;flex:0 0 auto">'+x.v+" · "+String(x.pct.toFixed(1)).replace(".",",")+"%</span></div>").join("");
+      }
+      if((RD.de_cliente||[]).length){
+        t+='<div class="sm" style="font-weight:800;margin-top:14px">🎯 Gente de dentro de cliente, prospect ou evento seu</div>'
+          +'<div class="sm" style="margin-bottom:4px">'+RD.n_cliente+' pessoa(s) · é o elo mais curto entre conteúdo e contrato</div>'
+          +RD.de_cliente.map(f=>'<div class="linha" style="margin-top:5px"><span>'+lk(f.url,"@"+esc(f.user),"golink")
+            +(f.nome?'<br><span class="sm">'+esc(f.nome)+"</span>":"")+'</span>'
+            +'<span class="sm num" style="white-space:nowrap;flex:0 0 auto;text-align:right"><b>'+esc(f.org)+"</b><br>"+esc(f.d)+"</span></div>").join("");
+      }
       if((RD.farois||[]).length){
-        t+='<div class="sm" style="font-weight:800;margin-top:12px">⭐ Vale um oi</div>'
+        t+='<div class="sm" style="font-weight:800;margin-top:14px">⭐ Vale um oi</div>'
           +RD.farois.map(f=>'<div class="linha" style="margin-top:6px"><span>'+lk(f.url,"@"+esc(f.user),"golink")
             +(f.nome?" · <b>"+esc(f.nome)+"</b>":"")+'<br><span class="sm">'+esc(f.bio||"")+"</span></span>"
             +'<span class="sm num" style="white-space:nowrap;flex:0 0 auto">há '+(f.dias!==null&&f.dias!==undefined?f.dias+"d":esc(f.d))+"</span></div>").join("");
