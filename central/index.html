@@ -106,6 +106,8 @@ details .body{font-size:13px;color:var(--sub);padding:6px 0 2px;line-height:1.55
 .seca .golink{margin-left:auto}
 /* segmented */
 .cabblk{margin-bottom:6px}
+.agirb{border:1px solid var(--brand-pale);background:var(--off);color:var(--brand-dark);border-radius:14px;padding:7px 11px;font:700 11.5px Inter,sans-serif;cursor:pointer;min-height:36px;margin-left:6px}
+.agirb:active{transform:scale(.97)}
 /* corte na borda direita (medido em 375px: links da FILA saíam 79px para fora):
    filho de flex/grid não encolhe sozinho, precisa de min-width:0 */
 .linha,.linha>span,.dp,.dp>div,.grp,.card>div{min-width:0}
@@ -331,6 +333,7 @@ function render(data){
     +'<div class="verb">'+esc(main.t||"…")+"</div>"
     +'<div class="why">'+esc(main.why||"")+"</div>"
     +(main.url?lk(main.url,esc(main.label||"abrir")+" ↗","btn"):"")
+    +((D.acao&&main.url)?' <button class="agirb" data-card="'+esc(main.url.split("/").pop())+'" data-tit="'+esc(main.t||"")+'" data-ctx="hoje">⚡ agir daqui</button>':"")
     +"</div>"
     // 2 · pulso: 3 números que explicam a escolha, sem virar painel
     +'<div class="pulso">'
@@ -653,7 +656,9 @@ function render(data){
   h+='<section class="view wrap" id="v-fila" hidden>'+fraseAba("fila");
   if(F){
     const grp=(emoji,nome,f)=>'<div class="card grp"><div class="hd"><span class="k">'+emoji+" "+nome+'</span><span class="n num">'+f.n+"</span></div>"
-      +(f.antigo?'<div class="sm" style="margin-top:4px">mais antigo: '+lk(f.antigo.url,esc(f.antigo.t),"golink")+" · desde "+esc(f.antigo.desde)+"</div>":'<div class="sm" style="margin-top:4px">vazia</div>')+"</div>";
+      +(f.antigo?'<div class="sm" style="margin-top:4px">mais antigo: '+lk(f.antigo.url,esc(f.antigo.t),"golink")+" · desde "+esc(f.antigo.desde)
+        +(D.acao?' <button class="agirb" data-card="'+esc((f.antigo.url||"").split("/").pop())+'" data-tit="'+esc(f.antigo.t)+'" data-ctx="'+esc(nome.toLowerCase())+'">⚡ agir</button>':"")
+        +"</div>":'<div class="sm" style="margin-top:4px">vazia</div>')+"</div>";
     h+='<h2>🗂 A fila '+ageChip(S,"trello")+"</h2><p class=sub-h>o gargalo real · aprovar é sempre seu</p>"
       +grp("👀","Aprovar",F.aprovar)+grp("🎬","Gravar",F.gravar)+grp("♻️","Repurpose",F.repurpose)
       +(D.buracos?'<h2>🗓 A semana</h2><p class=sub-h>medida por buraco, não por volume</p><div class="card">'
@@ -818,6 +823,10 @@ function render(data){
   renderCal();
   const hash=(location.hash||"").slice(1);
   if(hash){ const [hv,hs]=hash.split("/"); if(document.getElementById("v-"+hv)){ showView(hv); if(hs) showSub(hs); } }
+  document.addEventListener("click", ev => {
+    const b = ev.target.closest(".agirb");
+    if(b) agir(b.dataset.card, b.dataset.tit, b.dataset.ctx);
+  });
   ligaTooltipSeguidores();
 }
 
@@ -944,7 +953,8 @@ function dayPanel(iso){
     rows+='<div class="dp"><div><div class="tt">'+x.type+' story</div><div class="sm num">gancho '+(x.gancho??"—")+" · alcance "+(x.reach??"—")+"</div></div></div>";
   });
   (dues[iso]||[]).forEach(a=>{
-    rows+='<div class="dp"><div><div class="tt">⏰ '+esc(a.t)+'</div><div class="sm">prazo no board'+(a.ef?" · data comemorativa":"")+"</div></div>"
+    rows+='<div class="dp"><div><div class="tt">⏰ '+esc(a.t)+'</div><div class="sm">prazo no board'+(a.ef?" · data comemorativa":"")
+      +(D.acao?' <button class="agirb" data-card="'+esc((a.url||"").split("/").pop())+'" data-tit="'+esc(a.t)+'" data-ctx="agenda">⚡ agir</button>':"")+"</div></div>"
       +'<span style="margin-left:auto">'+lk(a.url,"↗","golink")+"</span></div>";
   });
   (evs[iso]||[]).forEach(e=>{
@@ -990,6 +1000,188 @@ function ligaSwipe(){
     if(j>=0&&j<ABAS.length) showView(ABAS[j]);
   },{passive:true});
 }
+
+
+// ====================== AGIR DE DENTRO ======================
+// A página escreve no Trello direto do navegador (a API responde com CORS liberado,
+// verificado em 04/08). A chave do app vem no data.json, que é publicado CIFRADO.
+// O token é DELA: digitado uma vez e guardado cifrado no aparelho com a mesma chave
+// PBKDF2 que abre a Central. Nada destrutivo: arquivar e apagar não existem aqui.
+let UNDO = null;
+
+function chaveSessao(){
+  const b = sessionStorage.getItem("cv3_key");
+  if(!b) return null;
+  const bin = atob(b), arr = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  return arr.buffer;
+}
+async function aesKey(){
+  const bits = chaveSessao();
+  if(!bits) return null;
+  return crypto.subtle.importKey("raw", bits, {name:"AES-GCM"}, false, ["encrypt","decrypt"]);
+}
+async function guardaToken(tok){
+  const k = await aesKey();
+  if(!k){ localStorage.setItem("cv3_tok_claro", tok); return; }   // modo claro local
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name:"AES-GCM", iv}, k, new TextEncoder().encode(tok));
+  localStorage.setItem("cv3_tok", JSON.stringify({
+    iv: btoa(String.fromCharCode(...iv)),
+    ct: btoa(String.fromCharCode(...new Uint8Array(ct)))
+  }));
+}
+async function leToken(){
+  const claro = localStorage.getItem("cv3_tok_claro");
+  if(claro) return claro;
+  const raw = localStorage.getItem("cv3_tok");
+  if(!raw) return null;
+  const k = await aesKey();
+  if(!k) return null;
+  try{
+    const o = JSON.parse(raw);
+    const b = s => { const bin=atob(s), a=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i); return a; };
+    const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv:b(o.iv)}, k, b(o.ct));
+    return new TextDecoder().decode(pt);
+  }catch(e){ return null; }
+}
+
+async function trello(metodo, caminho, params){
+  const A = (D.acao||{});
+  const tok = await leToken();
+  if(!A.key || !tok) throw new Error("sem credencial");
+  const u = new URL("https://api.trello.com/1" + caminho);
+  u.searchParams.set("key", A.key); u.searchParams.set("token", tok);
+  Object.entries(params||{}).forEach(([k,v]) => u.searchParams.set(k, v));
+  const r = await fetch(u, {method: metodo});
+  if(!r.ok) throw new Error("Trello respondeu " + r.status);
+  return r.json();
+}
+
+function sheet(html){
+  fechaSheet();
+  const scrim = document.createElement("div");
+  scrim.id = "scrim";
+  scrim.style.cssText = "position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:100";
+  const sh = document.createElement("div");
+  sh.id = "sheet";
+  sh.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:101;background:#fff;border-radius:20px 20px 0 0;padding:16px 16px 24px;max-width:640px;margin:0 auto;box-shadow:0 -8px 32px rgba(15,23,42,.2);max-height:88svh;overflow:auto";
+  sh.innerHTML = '<div style="width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px"></div>' + html;
+  scrim.onclick = fechaSheet;
+  document.body.appendChild(scrim); document.body.appendChild(sh);
+  return sh;
+}
+function fechaSheet(){
+  ["scrim","sheet"].forEach(id => { const e = document.getElementById(id); if(e) e.remove(); });
+}
+function aviso(txt, cor){
+  const a = document.createElement("div");
+  a.style.cssText = "position:fixed;left:50%;transform:translateX(-50%);bottom:78px;z-index:110;background:"+(cor||"#0F172A")+";color:#fff;border-radius:20px;padding:11px 16px;font:700 12.5px Inter,sans-serif;box-shadow:0 6px 20px rgba(15,23,42,.3);display:flex;gap:12px;align-items:center";
+  a.innerHTML = '<span>'+esc(txt)+"</span>";
+  document.body.appendChild(a);
+  return a;
+}
+function avisoComUndo(txt, desfazer){
+  const a = aviso(txt);
+  const b = document.createElement("button");
+  b.textContent = "desfazer";
+  b.style.cssText = "border:0;background:rgba(255,255,255,.22);color:#fff;border-radius:14px;padding:7px 12px;font:700 12px Inter,sans-serif;cursor:pointer;min-height:34px";
+  b.onclick = async () => { b.disabled = true; b.textContent = "desfazendo…"; try{ await desfazer(); a.remove(); aviso("desfeito ✓").remove?.(); setTimeout(()=>{},0); pedeRodada(); }catch(e){ b.textContent = "não deu"; } };
+  a.appendChild(b);
+  setTimeout(() => a.remove(), 12000);
+}
+function pedeRodada(){
+  // a Central republica sozinha; este toque só adianta a próxima rodada
+  fetch("https://office-trello.contatomichelledouglas.workers.dev/", {method:"POST", mode:"no-cors", body:"{}"}).catch(()=>{});
+}
+
+async function pedeToken(){
+  const A = D.acao || {};
+  const sh = sheet(
+    '<div style="font:800 16px Inter,sans-serif">Para agir daqui, preciso do seu token</div>'
+    + '<div class="sm" style="margin-top:8px;line-height:1.65">Ele é seu, fica <b>cifrado neste aparelho</b> pela mesma senha que abre a Central, e nunca sai daqui. Serve para a página mexer nos seus cards sem passar por ninguém.<br><br>'
+    + '1 · abra <a class="golink" href="' + (A.comoToken||"https://trello.com/app-key") + '" target="_blank" rel="noopener">trello.com/app-key ↗</a><br>'
+    + '2 · clique em <b>Token</b> (link no meio da página)<br>'
+    + '3 · autorize e copie o código<br>'
+    + '4 · cole aqui embaixo</div>'
+    + '<input id="tokin" type="password" autocomplete="off" placeholder="cole o token aqui" style="width:100%;font-size:16px;padding:12px;border:1.5px solid var(--line);border-radius:10px;margin:14px 0 8px">'
+    + '<button id="toksave" style="width:100%;height:44px;border:0;border-radius:12px;background:linear-gradient(135deg,#7C3AED,#6366F1);color:#fff;font:700 13px Inter,sans-serif;cursor:pointer">guardar e testar</button>'
+    + '<div id="tokmsg" class="sm" style="margin-top:8px"></div>');
+  sh.querySelector("#toksave").onclick = async () => {
+    const v = sh.querySelector("#tokin").value.trim();
+    if(!v) return;
+    sh.querySelector("#tokmsg").textContent = "testando…";
+    await guardaToken(v);
+    try{
+      const me = await trello("GET", "/members/me", {fields:"username"});
+      sh.querySelector("#tokmsg").innerHTML = '<span style="color:#059669;font-weight:700">✓ conectado como @' + esc(me.username) + "</span>";
+      setTimeout(fechaSheet, 1200);
+    }catch(e){
+      localStorage.removeItem("cv3_tok"); localStorage.removeItem("cv3_tok_claro");
+      sh.querySelector("#tokmsg").innerHTML = '<span style="color:#DC2626;font-weight:700">o token não funcionou · confira e cole de novo</span>';
+    }
+  };
+}
+
+// as ações possíveis para um card, sempre com a frase inteira antes de acontecer
+async function agir(cardId, titulo, contexto){
+  const A = D.acao || {};
+  if(!A.key){ aviso("esta rodada saiu sem credencial · tente depois"); return; }
+  if(!(await leToken())){ return pedeToken(); }
+  const L = A.listas || {};
+  const acoes = [];
+  if(L.publicar && contexto !== "publicar")
+    acoes.push({id:"aprovar", ico:"✅", rot:"Aprovar", frase:"mover para a lista Publicar",
+      faz: () => trello("PUT", "/cards/" + cardId, {idList: L.publicar})});
+  acoes.push({id:"concluir", ico:"✓", rot:"Concluir o prazo", frase:"marcar o prazo como concluído",
+    faz: () => trello("PUT", "/cards/" + cardId, {dueComplete: "true"})});
+  acoes.push({id:"adiar", ico:"📅", rot:"Adiar", frase:"jogar o prazo para o próximo dia útil",
+    faz: () => {
+      const d = new Date(); d.setDate(d.getDate() + 1);
+      while(d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);  // fim de semana é dela
+      d.setHours(12,0,0,0);
+      return trello("PUT", "/cards/" + cardId, {due: d.toISOString()});
+    }});
+  acoes.push({id:"comentar", ico:"💬", rot:"Comentar", frase:"escrever um comentário no card", pedeTexto:true,
+    faz: (txt) => trello("POST", "/cards/" + cardId + "/actions/comments", {text: txt})});
+
+  const sh = sheet(
+    '<div class="sm">agir neste card</div>'
+    + '<div style="font:800 15px/1.35 Inter,sans-serif;margin:4px 0 12px">' + esc(titulo) + "</div>"
+    + acoes.map(a => '<button data-a="' + a.id + '" style="display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px;margin-bottom:8px;font:600 13.5px Inter,sans-serif;cursor:pointer;min-height:48px"><span style="font-size:17px">' + a.ico + '</span><span>' + a.rot + '<br><span class="sm" style="font-weight:400">' + a.frase + "</span></span></button>").join("")
+    + '<div class="sm" style="margin-top:6px">arquivar e apagar não existem aqui · isso é sempre no board</div>');
+
+  acoes.forEach(a => {
+    sh.querySelector('[data-a="' + a.id + '"]').onclick = async () => {
+      let txt = null;
+      if(a.pedeTexto){
+        txt = prompt("o que escrever no card?");
+        if(!txt) return;
+      }
+      fechaSheet();
+      const carregando = aviso("⏳ " + a.rot.toLowerCase() + "…");
+      try{
+        const antes = await trello("GET", "/cards/" + cardId, {fields:"idList,due,dueComplete"});
+        await a.faz(txt);
+        carregando.remove();
+        if(a.id === "comentar"){
+          aviso("✓ comentário publicado no card");
+          setTimeout(pedeRodada, 500);
+        } else {
+          avisoComUndo("✓ " + a.rot.toLowerCase() + " feito", () =>
+            trello("PUT", "/cards/" + cardId, {
+              idList: antes.idList, due: antes.due || "", dueComplete: String(!!antes.dueComplete)
+            }));
+          setTimeout(pedeRodada, 800);
+        }
+      }catch(e){
+        carregando.remove();
+        aviso("⚠ não deu: " + e.message + " · o card não mudou", "#B45309");
+      }
+    };
+  });
+}
+
 
 async function deriveKey(pw,saltB64,iter){
   const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveBits"]);
