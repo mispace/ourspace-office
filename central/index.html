@@ -360,12 +360,6 @@ function render(data){
         +(U.rank?'<div class="sm" style="margin-top:3px">'+esc(U.rank)+"</div>":"")
         +'<div class="sm" style="margin-top:4px">'+tag(U.pilar)+" "+lk(U.url,"abrir ↗","golink")+"</div>"
         +"</div></div></div>";})()
-    +"<h2>"+LOGOS.ig+"Top 3 por engajamento "+ageChip(S,"posts")+"</h2>"
-    +'<div class="hscroll">'+P.top3.map(p=>'<a class="post" data-pilar="'+esc(p.pilar)+'" href="'+esc(p.url)+'" target="_blank" rel="noopener">'
-      +(p.img?'<img src="'+p.img+'" alt="">':"")
-      +'<span class="tg">'+tag(p.pilar)+"</span>"
-      +'<span class="ov"><span class="er num">'+esc(p.er)+'%</span><br><span class="m">'+esc(p.fmt)+" · "+esc(p.d)+"</span></span></a>").join("")
-    +"</div>"
     +'<div class="card"><span class="k">Mais recentes</span>'
     +P.recentes.map(p=>'<div class="linha" data-pilar="'+esc(p.pilar)+'"><span>'+lk(p.url,esc(p.t||p.d))
       +' <span class="sm num">'+esc(p.d)+"</span> "+tag(p.pilar)
