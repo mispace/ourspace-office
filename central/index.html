@@ -358,7 +358,7 @@ function render(data){
     +'<div class="verb">'+esc(main.t||"…")+"</div>"
     +'<div class="why">'+esc(main.why||"")+"</div>"
     +(main.url?lk(main.url,esc(main.label||"abrir")+" ↗","btn"):"")
-    +((D.acao&&main.url)?' <button class="agirb" data-card="'+esc(main.url.split("/").pop())+'" data-tit="'+esc(main.t||"")+'" data-ctx="hoje">⚡ agir daqui</button>':"")
+    +((D.acao&&main.url&&/^https:\/\/trello\.com\/c\//.test(main.url))?' <button class="agirb" data-card="'+esc(main.url.split("/").filter(Boolean).pop())+'" data-tit="'+esc(main.t||"")+'" data-ctx="hoje">⚡ agir daqui</button>':"")
     +"</div>"
     // 2 · pulso: 3 números que explicam a escolha, sem virar painel
     +'<div class="pulso">'
@@ -420,7 +420,7 @@ function render(data){
             +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(v/maxv*100).toFixed(0)+'%"></div></div>'
             +'<span class="sm num" style="width:96px;text-align:right">'+esc(f.vis_post)+" por post · "+f.n+"</span></div>";}).join("")
         +'<div class="sm" style="margin-top:8px"><b>quem mais levou gente ao perfil:</b><br>'
-        +T.top.map(x=>"· "+lk(x.url,esc(x.d)+" "+esc(x.fmt),"golink")+' <span class="num">'+x.vis+" visitas"+(x.seg?" · +"+x.seg+" seguidor(es)":"")+"</span>").join("<br>")+"</div>"
+        +T.top.map(x=>"· "+lk(x.url,esc(x.d)+" "+esc(x.fmt),"golink")+' <span class="num">'+x.vis+" visitas"+(x.seg?" · +"+x.seg+(x.seg===1?" seguidor":" seguidores"):"")+"</span>").join("<br>")+"</div>"
         +'<div class="sm" style="margin-top:6px;opacity:.85">'+esc(T.nota)
         +(T.fora?"<br>"+esc(T.fora):"")+"</div></div>";})()
     +(function(){const U=(D.saude||{}).ultimo;if(!U)return "";
@@ -444,7 +444,7 @@ function render(data){
     +P.recentes.map(p=>'<div class="linha" data-pilar="'+esc(p.pilar)+'"><span>'+lk(p.url,esc(p.t||p.d))
       +' <span class="sm num">'+esc(p.d)+"</span> "+tag(p.pilar)
       +(p.d7&&p.d7.txt?'<br><span class="sm num">'+d7pill(p,false)+" · "+esc(p.d7.txt)+"</span>":(p.d7&&p.d7.pend?"<br>"+d7pill(p):""))
-      +'</span><span class="n num">'+esc(p.er)+"%</span></div>").join("")
+      +'</span><span class="n num">'+(p.er===null?'<span class="sm">sem medida</span>':esc(p.er)+"%")+"</span></div>").join("")
     +'<div style="margin-top:10px">'+cab("🖼 Todos os "+P.all.length+" posts da janela","ordene do seu jeito · toque para abrir","posts")
     +'<div class="seg" style="position:static;margin:6px 0 8px" id="ordseg" role="tablist">'
     +[["er","♡ ER"],["sends","✈ envios"],["d","🗓 data"]].map((o,i)=>'<button data-ord="'+o[0]+'" aria-selected="'+(i===0)+'">'+o[1]+"</button>").join("")+"</div>"
@@ -650,9 +650,10 @@ function render(data){
       }
       if((RD.de_cliente||[]).length){
         t+='<div class="sm" style="font-weight:800;margin-top:14px">🎯 Gente de dentro de cliente, prospect ou evento seu</div>'
-          +'<div class="sm" style="margin-bottom:4px">'+RD.n_cliente+' pessoa(s) · é o elo mais curto entre conteúdo e contrato</div>'
+          +'<div class="sm" style="margin-bottom:4px">'+RD.n_cliente+(RD.n_cliente===1?" pessoa":" pessoas")+' · é o elo mais curto entre conteúdo e contrato</div>'
           +RD.de_cliente.map(f=>'<div class="linha" style="margin-top:5px"><span>'+lk(f.url,"@"+esc(f.user),"golink")
-            +(f.nome?'<br><span class="sm">'+esc(f.nome)+"</span>":"")+'</span>'
+            +(f.nome?'<br><span class="sm">'+esc(f.nome)+"</span>":"")
+            +(f.relacao?'<br><span class="sm" style="color:var(--brand);font-weight:600">'+esc(f.relacao)+"</span>":"")+'</span>'
             +'<span class="sm num" style="white-space:nowrap;flex:0 0 auto;text-align:right"><b>'+esc(f.org)+"</b><br>"+esc(f.d)+"</span></div>").join("");
       }
       if((RD.farois||[]).length){
@@ -673,12 +674,16 @@ function render(data){
       t+='<div class="sm" style="margin-top:10px;opacity:.85">lidos '+RD.cobertura.lidos+" de "+RD.cobertura.total+" perfis ("+RD.cobertura.pct+"%) · "+esc(RD.ressalva)+"</div>";
       return t+"</div>";})():"")
     +(PB?(function(){
-      const barras=(lista,tot,cor)=>{const mx=Math.max(...lista.map(c=>c.v),1);
-        return lista.map(x=>{const p=Math.round(100*x.v/(tot||1));
+      // uma régua só: a barra e o % dizem a MESMA coisa (proporção da base
+      // classificada). Antes a barra era % do maior e o texto era % da soma das
+      // 5 exibidas, então São Paulo enchia 100% ao lado de "58%".
+      const barras=(lista,tot,cor)=>lista.map(x=>{const p=100*x.v/(tot||1);
         return '<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span class="sm" style="width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(x.k)+'</span>'
-          +'<div class="bar" style="flex:1"><div class="fill" style="width:'+Math.round(100*x.v/mx)+'%;background:'+cor+'"></div></div>'
-          +'<span class="sm num" style="width:74px;text-align:right;flex:0 0 auto">'+String(x.v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+" · "+p+"%</span></div>";}).join("");};
-      const somaI=PB.idades.reduce((a,b)=>a+b.v,0), somaC=PB.cidades.reduce((a,b)=>a+b.v,0), somaP=PB.paises.reduce((a,b)=>a+b.v,0);
+          +'<div class="bar" style="flex:1"><div class="fill" style="width:'+Math.max(2,Math.round(p))+'%;background:'+cor+'"></div></div>'
+          +'<span class="sm num" style="width:74px;text-align:right;flex:0 0 auto">'+String(x.v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+" · "+(p<1?"<1":String(Math.round(p*10)/10).replace(".",","))+"%</span></div>";}).join("");
+      const somaI=PB.base_idade||PB.idades.reduce((a,b)=>a+b.v,0),
+            somaC=PB.base_cidade||PB.cidades.reduce((a,b)=>a+b.v,0),
+            somaP=PB.base_pais||PB.paises.reduce((a,b)=>a+b.v,0);
       return '<div class="card">'+cab("👥 "+esc(PB.frase||"Quem é o seu público"),"quem já te segue · "+esc(PB.at||""),"publico")
         +(PB.prop?'<p style="font:700 13px/1.5 Inter,sans-serif;margin:6px 0 10px">💡 '+esc(PB.prop)+"</p>":"")
         +'<div class="sm" style="font-weight:800;margin-top:6px">idade</div>'+barras(PB.idades,somaI,"#7C3AED")
@@ -765,7 +770,7 @@ function render(data){
   if(F){
     const grp=(emoji,nome,f)=>'<div class="card grp"><div class="hd"><span class="k">'+emoji+" "+nome+'</span><span class="n num">'+f.n+"</span></div>"
       +(f.antigo?'<div class="sm" style="margin-top:4px">mais antigo: '+lk(f.antigo.url,esc(f.antigo.t),"golink")+" · desde "+esc(f.antigo.desde)
-        +(D.acao?' <button class="agirb" data-card="'+esc((f.antigo.url||"").split("/").pop())+'" data-tit="'+esc(f.antigo.t)+'" data-ctx="'+esc(nome.toLowerCase())+'">⚡ agir</button>':"")
+        +((D.acao&&/^https:\/\/trello\.com\/c\//.test(f.antigo.url||""))?' <button class="agirb" data-card="'+esc((f.antigo.url||"").split("/").filter(Boolean).pop())+'" data-tit="'+esc(f.antigo.t)+'" data-ctx="'+esc(nome.toLowerCase())+'">⚡ agir</button>':"")
         +"</div>":'<div class="sm" style="margin-top:4px">vazia</div>')+"</div>";
     h+='<h2>🗂 A fila '+ageChip(S,"trello")+"</h2><p class=sub-h>o que está te travando · aprovar é sempre seu</p>"
       +grp("👀","Aprovar",F.aprovar)+grp("🎬","Gravar",F.gravar)+grp("♻️","Reaproveitar",F.repurpose)
@@ -1074,7 +1079,7 @@ function dayPanel(iso){
   (posts[iso]||[]).forEach(p=>{
     const img=IMGMAP[p.url];
     rows+='<div class="dp">'+(img?'<img src="'+img+'" alt="">':"")
-      +'<div><div class="tt">'+esc(p.t||"post")+'</div><div class="sm">'+tag(p.pilar)+' <span class="num">ER '+esc(p.er)+"% · envios "+esc(p.sends)+"%</span></div></div>"
+      +'<div><div class="tt">'+esc(p.t||"post")+'</div><div class="sm">'+tag(p.pilar)+' <span class="num">'+(p.er===null?"sem medida":"ER "+esc(p.er)+"% · envios "+esc(p.sends)+"%")+"</span></div></div>"
       +'<span style="margin-left:auto">'+lk(p.url,"↗","golink")+"</span></div>";
   });
   (stories[iso]||[]).forEach(x=>{
@@ -1082,7 +1087,7 @@ function dayPanel(iso){
   });
   (dues[iso]||[]).forEach(a=>{
     rows+='<div class="dp"><div><div class="tt">⏰ '+esc(a.t)+'</div><div class="sm">prazo no board'+(a.ef?" · data comemorativa":"")
-      +(D.acao?' <button class="agirb" data-card="'+esc((a.url||"").split("/").pop())+'" data-tit="'+esc(a.t)+'" data-ctx="agenda">⚡ agir</button>':"")+"</div></div>"
+      +((D.acao&&/^https:\/\/trello\.com\/c\//.test(a.url||""))?' <button class="agirb" data-card="'+esc((a.url||"").split("/").filter(Boolean).pop())+'" data-tit="'+esc(a.t)+'" data-ctx="agenda">⚡ agir</button>':"")+"</div></div>"
       +'<span style="margin-left:auto">'+lk(a.url,"↗","golink")+"</span></div>";
   });
   (evs[iso]||[]).forEach(e=>{
