@@ -666,22 +666,32 @@ function render(data){
     +'<div class="card sm" style="line-height:1.6">🧩 <b>Pilar</b> = o assunto que sustenta a marca (o porquê) · 🎬 <b>Formato</b> = o jeito de gravar (o como) · 🎪 <b>Quadro</b> = a série com nome fixo que se repete (o programa). Um quadro usa um formato e alimenta um pilar.</div>'
     +"<h2>📈 ER por pilar</h2><p class=sub-h>quanto cada pilar engaja de quem alcança</p><div class='card chart'>"
     +D.pilares.map(p=>{const v=parseFloat(String(p.er).replace(",","."))||0;
-      return '<div class="row">'+tag(p.nome)+'<div class="bar"><div class="fill" style="width:'+(v/maxEr*100).toFixed(0)+'%"></div></div><span class="val num">'+esc(p.er)+"%</span></div>";}).join("")
+      const CP={"Autoridade":"#7C3AED","Educação":"#0EA5E9","Prova/bastidores":"#6366F1","Desejo/curadoria":"#EC4899","Oferta":"#94A3B8"};
+      return '<div class="row">'+tag(p.nome)+'<div class="bar"><div class="fill" style="width:'+(v/maxEr*100).toFixed(0)+'%;background:'+(CP[p.nome]||"var(--grad)")+'"></div></div><span class="val num">'+esc(p.er)+"</span></div>";}).join("")
     +"</div>"
     +"<h2>🍕 Mix do grid</h2>"+(D.pilares_frase?'<p class="sub-h" style="font-weight:700;color:var(--ink)">'+esc(D.pilares_frase)+"</p>":"")+"<p class=sub-h>quanto de cada pilar existe no seu feed · a pizza da ESQUERDA é hoje, a da DIREITA é o alvo "+esc(D.mix_alvo_status)+"</p>"
     +(function(){
       const cores={"Autoridade":"#7C3AED","Educação":"#0EA5E9","Prova/bastidores":"#6366F1","Desejo/curadoria":"#EC4899","Oferta":"#94A3B8"};
+      // DONUT · pizza cheia com número dentro da fatia ficava apertada e amadora.
+      // O anel deixa o centro livre para o que importa (o pilar que lidera) e as
+      // fatias respiram com um vão de 2px entre elas.
       const pizza=(vals,rotulo)=>{
-        let a0=-Math.PI/2, ps="";
+        const R=42, C=2*Math.PI*R, VAO=1.6;
+        let off=0, an="", lider=null;
         D.pilares.forEach(p=>{const v=vals(p); if(v<=0) return;
-          if(v>=100){ps+='<circle cx="60" cy="60" r="48" fill="'+cores[p.nome]+'"/>';return;}
-          const a1=a0+v/100*2*Math.PI, lg=(a1-a0)>Math.PI?1:0;
-          const x0=60+48*Math.cos(a0), y0=60+48*Math.sin(a0), x1=60+48*Math.cos(a1), y1=60+48*Math.sin(a1);
-          ps+='<path d="M60 60L'+x0.toFixed(1)+" "+y0.toFixed(1)+"A48 48 0 "+lg+" 1 "+x1.toFixed(1)+" "+y1.toFixed(1)+'Z" fill="'+cores[p.nome]+'" stroke="#fff" stroke-width="1.5"><title>'+esc(p.nome)+" "+v+"%</title></path>";
-          const am=(a0+a1)/2, vx=60+31*Math.cos(am), vy=60+31*Math.sin(am);
-          if(v>=10) ps+='<text x="'+vx.toFixed(1)+'" y="'+vy.toFixed(1)+'" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="800" fill="#fff">'+v+"</text>";
-          a0=a1;});
-        return '<div style="text-align:center"><svg viewBox="0 0 120 120" style="width:134px;height:134px" role="img" aria-label="mix '+rotulo+'">'+ps+'</svg><div class="sm" style="font-weight:800;margin-top:2px">'+rotulo+"</div></div>";
+          if(!lider||v>lider.v) lider={n:p.nome,v:v};
+          const arco=Math.max(0, v/100*C-VAO);
+          an+='<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+cores[p.nome]+'" stroke-width="17"'
+            +' stroke-dasharray="'+arco.toFixed(2)+' '+(C-arco).toFixed(2)+'"'
+            +' stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 60 60)"/>';
+          off+=v/100*C;});
+        const meio = lider
+          ? '<text x="60" y="56" text-anchor="middle" font-size="21" font-weight="800" fill="#0F172A" font-family="Plus Jakarta Sans,Inter,sans-serif">'+lider.v+'%</text>'
+            +'<text x="60" y="71" text-anchor="middle" font-size="9.5" font-weight="700" fill="#556070">'+esc(lider.n.split("/")[0].toUpperCase())+"</text>"
+          : "";
+        return '<div style="text-align:center"><svg viewBox="0 0 120 120" style="width:140px;height:140px" role="img" aria-label="mix '+rotulo+', o maior é '+(lider?lider.n+" com "+lider.v+"%":"sem dado")+'">'
+          +'<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="#F1F5F9" stroke-width="17"/>'+an+meio+"</svg>"
+          +'<div class="sm" style="font-weight:800;letter-spacing:.06em;margin-top:2px">'+rotulo+"</div></div>";
       };
       return '<div class="card"><div style="display:flex;justify-content:space-evenly;flex-wrap:wrap;gap:10px">'+pizza(p=>p.mix_real,"HOJE")+pizza(p=>p.mix_alvo,"ALVO")+"</div>"
         +'<div style="display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;justify-content:center">'
