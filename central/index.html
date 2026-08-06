@@ -856,7 +856,7 @@ function render(data){
         const maxt=Math.max(...RD.tipos.map(x=>x.v),1);
         t+='<div class="sm" style="font-weight:800;margin-top:14px">👥 Que tipo de gente chegou</div>'
           +'<div class="sm" style="margin-bottom:6px">lido na bio pública de cada uma · quem não diz nada na bio fica como “sem sinal”</div>'
-          +RD.tipos.filter(x=>x.v>=2).map(x=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0">'
+          +RD.tipos.filter(x=>x.v>=2).map(x=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0'+(x.muda?";opacity:.62;border-top:1px solid var(--line2);padding-top:8px":"")+'">'
             +'<span class="sm" style="width:104px;flex:0 0 auto;line-height:1.25">'+esc(x.k)+'</span>'
             +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(x.v/maxt*100).toFixed(0)+'%;background:'+(CORT[x.k]||"#94A3B8")+'"></div></div>'
             +'<span class="sm num" style="width:78px;text-align:right;flex:0 0 auto;white-space:nowrap">'+x.v+" · "+String(x.pct.toFixed(1)).replace(".",",")+"%</span></div>").join("");
@@ -972,7 +972,12 @@ function render(data){
       } else t+='<div class="sm">série ainda curta para desenhar</div>';
     } else {
       t='<div style="font:700 14px Inter,sans-serif">'+esc(RT.frase||"Ritmo")+"</div>"
-        +'<div style="display:flex;gap:5px;margin-top:9px;flex-wrap:wrap">'+(RT.dots||[]).map(x=>'<span title="'+esc(x.d)+'" style="width:15px;height:15px;border-radius:50%;'+(x.p?"background:#7C3AED":"background:var(--mid-bg);border:1.5px "+(x.fds?"dotted":"solid")+" var(--line)")+'"></span>').join("")+"</div>"
+        +'<div style="display:flex;gap:4px;margin-top:10px;align-items:flex-end;height:52px">'
+        +(RT.dots||[]).map(x=>'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">'
+          +'<div style="width:100%;border-radius:4px 4px 2px 2px;'
+          +(x.p?"height:34px;background:var(--grad)":"height:11px;background:"+(x.fds?"repeating-linear-gradient(90deg,#E2E8F0 0 3px,transparent 3px 6px)":"#E7ECF3"))+'"></div>'
+          +'<span style="font-size:11px;color:var(--sub);font-weight:600">'+esc(String(x.d).slice(0,2))+"</span></div>").join("")
+        +"</div>"
         +'<div class="sm num" style="margin-top:6px">14 dias · cheia = dia com post · pontilhada = fim de semana '+pillHtml(RT.pill)+"</div>";
     }
     box.innerHTML=t;
@@ -1196,7 +1201,7 @@ function renderCal(){
     let bg="";
     if(RENDE.max>0&&RENDE.por[wd]&&RENDE.por[wd].n>0&&iso>=tIso){
       const f=RENDE.por[wd].er/RENDE.max;
-      if(f>0) bg=';background:rgba(124,58,237,'+(0.05+f*0.17).toFixed(3)+')';
+      if(f>0) bg=';background:rgba(124,58,237,'+(0.03+f*0.09).toFixed(3)+')';
       if(RENDE.por[wd].er===RENDE.max) inner+='<span class="best" aria-label="seu melhor dia">★</span>';
     }
     h+='<div class="cd'+(wd>=5?" wknd":"")+(iso===tIso?" today":"")+(iso===selDay?" sel":"")+'" data-d="'+iso+'" style="position:relative'+bg+'" role="button" tabindex="0">'+inner+"</div>";
