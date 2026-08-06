@@ -490,7 +490,7 @@ function render(data){
     +[[(RTh.frase||"").replace(/^Ritmo: /,""),"📆","ritmo"],
       [esc(NUh.v||"—"),"♡","de cada 100 alcançadas, tantas interagem"],
       [((D.followers&&D.followers.delta)?esc(D.followers.delta):"—")+" seguidores","👤","na semana"]]
-      .map(x=>'<div class="pz"><div class="pi">'+x[1]+'</div><div class="pv'+(/^[−+]?[\d]/.test(String(x[0]).trim())?"":" txt")+'">'+x[0]+'</div><div class="pl">'+x[2]+"</div></div>").join("")
+      .map(x=>'<div class="pz"><div class="pi">'+x[1]+'</div><div class="pv'+(String(x[0]).trim().length<=9?"":" txt")+'">'+x[0]+'</div><div class="pl">'+x[2]+"</div></div>").join("")
     +"</div>"
     // 3 · a semana em 7 quadradinhos (veio da FILA: é visão de hoje, não de fila)
     +(BUh.semana?'<div class="card">'+cab("🗓 "+esc(BUh.frase),"a semana toda numa olhada","trello")
@@ -795,7 +795,7 @@ function render(data){
       +(pl.ganho_est?'<div class="sm num">+ '+fmtR(pl.ganho_est)+" em estimativa (faixa do catálogo)</div>":"")
       +'<div style="height:10px;border-radius:999px;background:var(--mid-bg);margin:8px 0 5px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--brand)"></div></div>'
       +(pl.ritmo?'<div class="sm" style="margin-top:2px">'+esc(pl.ritmo)+"</div>":"")
-      +'<div class="sm num">'+(pl.n_fech_mes||0)+' negócio(s) fechado(s) que se moveram este mês</div>'
+      +'<div class="sm num">'+((pl.n_fech_mes||0)===1?"1 negócio fechado se moveu":(pl.n_fech_mes||0)+" negócios fechados se moveram")+' este mês</div>'
       +(pl.fech_mes&&pl.fech_mes.length?'<details><summary>ver quais</summary><div class="body">'+pl.fech_mes.map(f=>"· "+lk(f.url,esc(f.t))+(f.valor?' <span class="sm num">'+esc(f.valor)+(f.vtipo==="estimativa"?" est.":"")+"</span>":"")).join("<br>")+"</div></details>":"")
       +'<div class="sm num" style="margin-top:4px">no funil (se tudo fechar): '+fmtR(pl.pipe_conf)+(pl.pipe_est?" + "+fmtR(pl.pipe_est)+" est.":"")+"</div>"
       +"</div>";
