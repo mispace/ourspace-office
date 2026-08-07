@@ -499,7 +499,8 @@ function render(data){
     +'<div class="pulso">'
     +[[(RTh.frase||"").replace(/^Ritmo: /,""),"📆","ritmo"],
       [esc(NUh.v||"—"),"♡","de cada 100 alcançadas, tantas interagem"],
-      [((D.followers&&D.followers.delta)?esc(D.followers.delta):"—")+" seguidores","👤","na semana"]]
+      [((D.followers&&D.followers.delta)?esc(String(D.followers.delta).replace("-","−")):"—")+" seguidores","👤",
+       ((D.followers&&D.followers.ref)?esc(D.followers.ref):"na semana")]]
       .map(x=>'<div class="pz"><div class="pi">'+x[1]+'</div><div class="pv'+(String(x[0]).trim().length<=9?"":" txt")+'">'+x[0]+'</div><div class="pl">'+x[2]+"</div></div>").join("")
     +"</div>"
     // 3 · a semana em 7 quadradinhos (veio da FILA: é visão de hoje, não de fila)
@@ -509,8 +510,8 @@ function render(data){
         return '<div title="'+esc(x.d)+(x.cards.length?" · "+esc(x.cards[0].t):"")+'" style="flex:1;text-align:center;border-radius:10px;padding:7px 2px;'+cor+(x.hoje?";box-shadow:0 0 0 2px #6366F1":"")+'">'
           +'<div style="font:800 11px Inter,sans-serif;text-transform:uppercase">'+esc(x.dow)+"</div>"
           +'<div style="font:700 13px Inter,sans-serif">'+esc(x.d.slice(0,2))+"</div>"
-          +'<div style="font-size:13px;line-height:1">'+(x.publicado?"✓":x.cards.length?"•":"")+"</div></div>";}).join("")+"</div>"
-      +'<div class="sm" style="margin-top:7px">roxo = publicou · lilás = já tem card · tracejado = dia livre · cinza = passou sem post</div></div>':"")
+          +'<div style="font-size:13px;line-height:1">'+(x.publicado?"✓":(x.cards.length&&!x.passou)?"•":x.passou?"·":"+")+"</div></div>";}).join("")+"</div>"
+      +'<div class="sm" style="margin-top:7px">✓ publicou · • já tem card · + dia livre · · passou sem post</div></div>':"")
     // 4 · o que vem: evento e story do dia, com um toque cada
     +'<div class="card">'+cab("⏭ O que vem","próximo compromisso e o story de hoje","events")
     +(ev1?'<div class="linha"><span>'+lk(ev1.gcal,esc(ev1.t)+" ↗")+'</span><span class="sm num">'+esc(ev1.d)+"</span></div>"
@@ -532,7 +533,7 @@ function render(data){
     +'<div class="leg"><span><i class="d-post"></i>post</span><span><i class="d-story"></i>story</span><span><i class="d-due"></i>prazo</span><span><i class="d-ev"></i>evento</span></div>'
     +'<p class="sm" id="callegenda" style="margin:2px 2px 8px"></p>'
     +'<div class="card" id="daypanel"><span class="sm">toque num dia para ver o que tem nele</span></div>'
-    +((D.fila&&D.fila.vencidos&&D.fila.vencidos.n)?'<div class="card sm" style="line-height:1.55"><b style="color:var(--down)">'+D.fila.vencidos.n+" cards passaram do prazo no board.</b> Nada muda sozinho: são tarefas antigas com data vencida. "+lk(D.fila.vencidos.link,"Abrir no board ↗","golink")+" e escolher: nova data ou concluir. Se quiser, eu reagendo em lote (me pede).</div>":"")
+    +((D.fila&&D.fila.vencidos&&D.fila.vencidos.n)?'<div class="card sm" style="line-height:1.55"><b style="color:var(--down)">'+D.fila.vencidos.n+(D.fila.vencidos.n===1?" card passou":" cards passaram")+" do prazo no board.</b> Nada muda sozinho: são tarefas antigas com data vencida. "+lk(D.fila.vencidos.link,"Abrir no board ↗","golink")+" e escolher: nova data ou concluir. Se quiser, eu reagendo em lote (me pede).</div>":"")
     +"</section>";
 
   // ---------- POSTS ----------
@@ -713,7 +714,7 @@ function render(data){
     +D.pilares.map(p=>'<div class="card prow" data-pilar="'+esc(p.nome)+'" onclick="filtra(this)">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'+tag(p.nome)
       +'<span style="display:flex;gap:8px;align-items:center"><span class="sm num">n='+p.n+"</span>"+pillHtml(p.pill)
-      +'<span class="er num">'+(p.er===null?'<span class="sm">sem medida</span>':esc(p.er)+"%")+"</span></span></div>"
+      +'<span class="er num">'+(p.er===null?'<span class="sm">sem medida</span>':esc(p.er))+"</span></span></div>"
       +'<details onclick="event.stopPropagation()"><summary>o que entra · para que serve</summary>'
       +'<div class="body"><b>Entra:</b> '+esc(p.oque)+'<br><b>Serve:</b> '+esc(p.paraque)+"</div></details></div>").join("")
     +'<p class="sm" style="margin:6px 2px">toque num pilar para filtrar os posts · <a class="golink" href="#" onclick="showView(\'posts\');return false">ver os posts ↗</a></p>'
@@ -943,8 +944,8 @@ function render(data){
       return '<div class="linha"><span>'+esc(NOMES[k])+'</span><span class="sm num" style="font-weight:600;color:'+(ok?"var(--sub)":"var(--age)")+'">'+fmtAbs(st.at)+(ok?"":" · parado")+"</span></div>";
     }).join("")+"</div>";
   h+="<footer>"+gruposDeLinks()
-    +'<div style="margin-top:10px" class="num">Central @mispace v3 · montado '+esc((D.meta.built_at||"").replace("T"," "))+" (BRT)"
-    +(D.qa&&D.qa.status?" · QA "+esc(D.qa.status):"")+"</div></footer></section>";
+    +'<div style="margin-top:10px" class="num">Central @mispace v3 · montado '+esc(fmtAbs(D.meta.built_at||""))
+    +"</div></footer></section>";
 
   $("#app").innerHTML=h; $("#skel").hidden=true; $("#app").hidden=false; $("#nav").hidden=false;
   ligaSwipe();
@@ -1158,7 +1159,7 @@ function showView(v){
   if(typeof aplicaFiltro==="function") aplicaFiltro();
 }
 function showSub(s){
-  document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-selected",x.dataset.s===s));
+  document.querySelectorAll(".seg button[data-s]").forEach(x=>x.setAttribute("aria-selected",x.dataset.s===s));
   document.querySelectorAll(".subv").forEach(el=>el.hidden=(el.id!=="s-"+s));
 }
 
