@@ -510,8 +510,8 @@ function render(data){
         return '<div title="'+esc(x.d)+(x.cards.length?" · "+esc(x.cards[0].t):"")+'" style="flex:1;text-align:center;border-radius:10px;padding:7px 2px;'+cor+(x.hoje?";box-shadow:0 0 0 2px #6366F1":"")+'">'
           +'<div style="font:800 11px Inter,sans-serif;text-transform:uppercase">'+esc(x.dow)+"</div>"
           +'<div style="font:700 13px Inter,sans-serif">'+esc(x.d.slice(0,2))+"</div>"
-          +'<div style="font-size:13px;line-height:1">'+(x.publicado?"✓":(x.cards.length&&!x.passou)?"•":x.passou?"·":"+")+"</div></div>";}).join("")+"</div>"
-      +'<div class="sm" style="margin-top:7px">✓ publicou · • já tem card · + dia livre · · passou sem post</div></div>':"")
+          +'<div style="font-size:13px;line-height:1">'+(x.publicado?"✓":(x.cards.length&&!x.passou)?"•":x.passou?"○":"+")+"</div></div>";}).join("")+"</div>"
+      +'<div class="sm" style="margin-top:7px">✓ publicou · • já tem card · + dia livre · ○ passou sem post</div></div>':"")
     // 4 · o que vem: evento e story do dia, com um toque cada
     +'<div class="card">'+cab("⏭ O que vem","próximo compromisso e o story de hoje","events")
     +(ev1?'<div class="linha"><span>'+lk(ev1.gcal,esc(ev1.t)+" ↗")+'</span><span class="sm num">'+esc(ev1.d)+"</span></div>"
