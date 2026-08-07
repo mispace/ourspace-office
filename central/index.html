@@ -547,7 +547,13 @@ function render(data){
     +"<b>falta:</b> "+esc(falta)+"<br><b>de onde vem:</b> "+esc(onde)+"<br><b>quando chega:</b> "+esc(quando)+"</div></div>";
   const d7pill=(p,tocavel)=>{const d=p.d7;if(tocavel===undefined)tocavel=true;if(!d)return "";if(d.pend)return '<span class="sm num">D+7 '+esc(d.pend)+"</span>";const c=d.nota==="alta"?"#047857":d.nota==="baixa"?"#B91C1C":"var(--sub)";const y=d.nota==="alta"?"▲":d.nota==="baixa"?"▼":"▬";if(!tocavel) return '<span class="sm num" style="color:'+c+';font-weight:800">'+y+" D+7</span>";
     return '<span class="sm num d7p" role="button" tabindex="0" title="'+esc(d.txt||"")+'" data-d7="'+esc(d.txt||"")+'" style="color:'+c+';font-weight:800;cursor:pointer;border-bottom:1px dotted currentColor">'+y+" D+7</span>";};
-  h+='<section class="view wrap" id="v-posts" hidden>'+fraseAba("posts")+barraJanela()
+  h+='<section class="view wrap" id="v-posts" hidden>'+fraseAba("posts")
+    +((D.colabs&&D.colabs.length)?D.colabs.map(c=>'<div class="card" style="border-left:3px solid #EC4899">'
+      +'<span class="k">🤝 Em conjunto · '+esc(c.d)+'</span>'
+      +'<div style="font-weight:700;font-size:14px;margin-top:6px;line-height:1.45">'+esc(c.cap)+'</div>'
+      +'<div class="sm" style="margin-top:6px">publicado pelo perfil do parceiro · os números vivem lá'+(c.metricas?' · '+esc(c.metricas):'')+'</div>'
+      +'<div class="sm" style="margin-top:4px">'+lk(c.url,'abrir o post ↗','golink')+'</div></div>').join(''):"")
+    +barraJanela()
     +'<div class="card"><span class="k">📅 O período que você escolheu</span>'
     +'<div class="sm" id="jn-per" style="margin-bottom:6px"></div>'
     +'<div class="jrow">'
@@ -747,6 +753,8 @@ function render(data){
     +'<div class="card"><span class="k">'+LOGOS.li+"LinkedIn "+ageChip(S,"linkedin")+"</span>"
     +'<div class="linha"><span>seguidores</span><span class="n num">'+esc(li.followers??"—")+"</span></div>"
     +'<div class="linha"><span>posts na semana da coleta</span><span class="n num">'+esc(li.posts_week??"—")+"</span></div>"
+    +((li.posts&&li.posts.length)?'<div class="linha"><span>último: '+esc(li.posts[0].cap)+'</span><span class="sm num">'+esc(li.posts[0].d)+"</span></div>"
+      +(li.posts[0].views!=null?'<div class="sm" style="margin-top:3px">'+esc(String(li.posts[0].views))+' impressões na leitura de '+esc((D.sources.linkedin||{}).at?fmtAbs(D.sources.linkedin.at):"")+"</div>":""):"")
     +'<div class="sm" style="margin-top:4px">'+esc(li.views_perfil||"")+"</div></div>"
     +(yt?'<div class="card"><span class="k">'+LOGOS.yt+"YouTube "+ageChip(S,"youtube")+"</span>"
       +'<div class="linha"><span>inscritos</span><span class="n num">'+String(yt.subscribers||"—").replace(/\B(?=(\d{3})+(?!\d))/g,".")+"</span></div>"
@@ -879,26 +887,32 @@ function render(data){
         +'<div class="sm" style="margin-top:8px">'+esc(PB.nota)+"</div></div>";})():"")
     +"</section>";
 
-  // ---------- IDEIAS (pedido dela 07/08: "visualizar as ideias e saber já o que
-  // fazer" · "análises reais do que está em alta" · "sugestão de parceria") ----
+  // ---------- IDEIAS · v2 no feedback dela de 07/08 23h: sub-abas para não
+  // ficar longo + cards lado a lado (grade 2 colunas) ----
   const ID=D.ideias||{};
-  h+='<section class="view wrap" id="v-ideias" hidden>'+fraseAba("ideias");
-  // 1 · proativas: o cruzamento agenda × marcas × dado — o que ela pediu de novo
-  h+='<h2>🤝 Jogadas da quinzena</h2><p class=sub-h>cruzamento de agenda, marcas e dado real · cada uma diz de onde veio'+(ID.at?' · leva de '+esc(fmtAbs(ID.at)):'')+(ID.stale?' <span class="age">⚠ leva antiga · a próxima sai na rotina quinzenal</span>':'')+'</p>';
+  h+='<section class="view wrap" id="v-ideias" hidden>'+fraseAba("ideias")
+    +'<div class="seg" role="tablist">'
+    +'<button data-i="jogadas" aria-selected="true" onclick="showIdeia(\'jogadas\')">🤝 Jogadas</button>'
+    +'<button data-i="alta" aria-selected="false" onclick="showIdeia(\'alta\')">🔥 Em alta</button>'
+    +'<button data-i="pautas" aria-selected="false" onclick="showIdeia(\'pautas\')">📚 Pautas</button></div>';
+  // 1 · JOGADAS: grade 2 colunas, card compacto que abre no toque
+  h+='<div class="subi" id="i-jogadas">'
+    +'<p class=sub-h>cruzamento de agenda, marcas e dado real · toque para abrir'+(ID.at?' · leva de '+esc(fmtAbs(ID.at)):'')+(ID.stale?' <span class="age">⚠ leva antiga</span>':'')+'</p>';
   if(ID.proativas&&ID.proativas.length){
-    h+=ID.proativas.map(i=>'<div class="card" style="border-left:3px solid var(--brand)">'
-      +'<div style="font-weight:800;font-size:14.5px;line-height:1.4">'+esc(i.t)+'</div>'
-      +'<div class="sm" style="margin-top:6px;line-height:1.55">'+esc(i.pq)+'</div>'
-      +'<div style="margin-top:8px;font-size:13px;font-weight:700">→ '+esc(i.passo)+'</div>'
-      +(i.fonte?'<div class="sm" style="margin-top:6px;color:var(--sub)">fonte: '+esc(i.fonte)+'</div>':'')
-      +(i.url?'<div class="sm" style="margin-top:4px">'+lk(i.url,'abrir ↗','golink')+'</div>':'')
-      +'</div>').join('');
-  } else {
-    h+='<div class="card sm">a primeira leva sai na rotina quinzenal · dias 5 e 19</div>';
-  }
-  // 2 · em alta agora: demanda real de busca + tópicos quentes
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+      +ID.proativas.map(i=>'<details class="card" style="border-left:3px solid var(--brand);margin:0">'
+        +'<summary style="font-weight:800;font-size:13px;line-height:1.35;cursor:pointer;list-style:none">'+esc(i.t)+'</summary>'
+        +'<div class="sm" style="margin-top:7px;line-height:1.5">'+esc(i.pq)+'</div>'
+        +'<div style="margin-top:7px;font-size:12.5px;font-weight:700">→ '+esc(i.passo)+'</div>'
+        +(i.fonte?'<div class="sm" style="margin-top:5px;color:var(--sub)">fonte: '+esc(i.fonte)+'</div>':'')
+        +(i.url?'<div class="sm" style="margin-top:4px">'+lk(i.url,'abrir ↗','golink')+'</div>':'')
+        +'</details>').join('')+'</div>';
+  } else h+='<div class="card sm">a primeira leva sai na rotina quinzenal · dias 5 e 19</div>';
+  h+='</div>';
+  // 2 · EM ALTA
   const AL=ID.alta||{};
-  h+='<h2>🔥 Em alta agora</h2><p class=sub-h>o que as pessoas buscam e o que está subindo · vira pauta antes de esfriar</p>';
+  h+='<div class="subi" id="i-alta" hidden>'
+    +'<p class=sub-h>o que as pessoas buscam e o que está subindo · vira pauta antes de esfriar</p>';
   if(AL.termos&&AL.termos.length){
     h+='<div class="card"><span class="k">🔍 buscaram e te acharam'+(AL.termos_at?' <span class="sm">('+esc(fmtAbs(AL.termos_at))+')</span>':'')+'</span>'
       +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">'
@@ -913,19 +927,23 @@ function render(data){
     h+='<div class="card"><details><summary>🧭 o que a busca pública do TikTok mostrou'+(AL.busca_at?' ('+esc(fmtAbs(AL.busca_at))+')':'')+'</summary><div class="body">'
       +AL.busca.map(b=>'<div style="margin-top:7px"><b>'+esc(b.q)+'</b><div class="sm">'+esc(b.veredito)+'</div></div>').join('')+'</div></details></div>';
   }
-  // 3 · pautas com prova + banco de ideias (dos boards, ao vivo)
-  h+='<h2>📚 Pauta pronta para puxar</h2><p class=sub-h>casos com prova documentada e o seu banco de ideias · tudo abre no Trello</p>';
+  h+='</div>';
+  // 3 · PAUTAS
+  h+='<div class="subi" id="i-pautas" hidden>'
+    +'<p class=sub-h>casos com prova documentada e o seu banco de ideias · tudo abre no Trello</p>';
   if(ID.pautas&&ID.pautas.length){
     h+='<div class="card"><span class="k">📚 do acervo (prova documentada)</span>'
       +ID.pautas.map(p=>'<div class="linha"><span>'+lk(p.url,esc(p.t),'golink')+'</span></div>').join('')+'</div>';
   }
   if(ID.banco&&ID.banco.length){
-    h+='<div class="card"><details><summary>🧠 banco de ideias ('+ID.banco.length+' mais recentes)</summary><div class="body">'
-      +ID.banco.map(p=>'<div class="linha"><span>'+lk(p.url,esc(p.t),'golink')+'</span></div>').join('')+'</div></details></div>';
+    h+='<div class="card"><span class="k">🧠 banco de ideias ('+ID.banco.length+' mais recentes)</span>'
+      +ID.banco.map(p=>'<div class="linha"><span>'+lk(p.url,esc(p.t),'golink')+'</span></div>').join('')+'</div>';
   }
-  // 4 · quadros e estilos: onde estao, sem duplicar a planilha
   h+='<div class="card sm" style="line-height:1.6">🎪 '+esc(ID.quadros_nota||'')+(ID.planilha?' · '+lk(ID.planilha,'abrir a planilha ↗','golink'):'')+'</div>'
+  +'</div>'
+  +(D.comentar?'<div class="card sm" style="line-height:1.6">💬 <b>Quer mudar algo aqui?</b> Comenta no card e eu leio: '+lk(D.comentar,'abrir o card de comentários ↗','golink')+'</div>':'')
   +'</section>';
+
   h+='<section class="view wrap" id="v-fila" hidden>'+fraseAba("fila");
   if(F){
     const grp=(emoji,nome,f)=>'<div class="card grp"><div class="hd"><span class="k">'+emoji+" "+nome+'</span><span class="n num">'+f.n+"</span></div>"
@@ -951,6 +969,7 @@ function render(data){
       return '<div class="linha"><span>'+esc(NOMES[k])+'</span><span class="sm num" style="font-weight:600;color:'+(ok?"var(--sub)":"var(--age)")+'">'+fmtAbs(st.at)+(ok?"":" · parado")+"</span></div>";
     }).join("")+"</div>";
   h+="<footer>"+gruposDeLinks()
+    +(D.comentar?'<div style="margin-top:10px">💬 '+lk(D.comentar,"comentar a Central (eu leio) ↗","golink")+"</div>":"")
     +'<div style="margin-top:10px" class="num">Central @mispace v3 · montado '+esc(fmtAbs(D.meta.built_at||""))
     +"</div></footer></section>";
 
@@ -1159,6 +1178,10 @@ function ligaTooltipSeguidores(){
   }
 }
 
+function showIdeia(k){
+  document.querySelectorAll('#v-ideias .seg button[data-i]').forEach(b=>b.setAttribute("aria-selected",b.dataset.i===k));
+  document.querySelectorAll('#v-ideias .subi').forEach(el=>el.hidden=(el.id!=="i-"+k));
+}
 function showView(v){
   document.querySelectorAll("#nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));
   document.querySelectorAll(".view").forEach(s=>s.hidden=(s.id!=="v-"+v));
