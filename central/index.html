@@ -33,6 +33,37 @@ a{color:var(--ink)}
 .pill{display:inline-flex;gap:4px;align-items:center;font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
 .p-up{color:var(--up);background:var(--up-bg)} .p-mid{color:var(--mid);background:var(--mid-bg)}
 .p-down{color:var(--down);background:var(--down-bg)} .p-none{color:var(--sub);background:var(--mid-bg)}
+/* ===== mesa de sinais (RADAR · redesenho 07/08, direção B + enxertos de A) ===== */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.sig{position:relative;display:flex;flex-direction:column;gap:5px;min-width:0;background:var(--card);
+     border-radius:var(--r-md);box-shadow:var(--sh-sm);padding:13px 12px 9px}
+.sig>div{min-width:0}
+.sig.full,.sig.exp{grid-column:1/-1}
+.sig .sl{font:800 11.5px 'Inter',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:var(--sub);
+         display:flex;align-items:center;gap:5px}
+.sig .sn{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:800;font-size:26px;
+         letter-spacing:-.02em;line-height:1.05}
+.sig .sn.txt{font-size:18px;line-height:1.2}
+.sig .sn .un{font:700 13px 'Inter',sans-serif;color:var(--sub);letter-spacing:0}
+.sig .sr{font-size:13px;color:var(--sub);line-height:1.45}
+.sig .sa{margin-top:auto}
+.sig .abre{display:block;border:0;background:none;color:var(--gold-deep);font:600 13px 'Inter',sans-serif;
+           text-align:left;padding:0;min-height:40px;cursor:pointer}
+.sig .mais{display:none;border-top:1px solid var(--line2);margin-top:6px;padding-top:8px}
+.sig.exp .mais{display:block}
+.sig .sd{font-size:11.5px;color:var(--faint);margin-top:2px}
+.anel{width:46px;height:46px;flex:0 0 auto}
+@media(min-width:768px){.sgrid{grid-template-columns:1fr 1fr 1fr}}
+/* rosquinha: proporção de um todo (barra empilhada é veto dela, GOSTO_LOG 03/08) */
+.donutw{display:flex;gap:16px;align-items:center;margin:6px 0 2px}
+.dleg{flex:1;min-width:0}
+/* leitura padrão de card: o número + o que fazer com ele (pedido dela 07/08) */
+.leit{position:relative;margin-top:10px;border-radius:12px;padding:10px 12px 10px 15px;
+  font:500 12.5px/1.6 'Inter',sans-serif;color:var(--ink);
+  background:linear-gradient(135deg,var(--off),#FDFCFF);border:1px solid var(--brand-pale)}
+.leit::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:3px;background:var(--grad)}
+.leit b{font-weight:700}
+.leit .verbo{display:block;margin-top:3px;color:var(--gold-deep);font-weight:700}
 .age{display:inline-block;font-size:11.5px;color:var(--faint);margin-left:6px;font-weight:500}
 .age.stale{color:var(--age);background:var(--age-bg);border-radius:9px;padding:0 6px;font-weight:600}
 /* tags de pilar · pastéis quentes que casam com o dourado */
@@ -91,6 +122,10 @@ details .body{font-size:13px;color:var(--sub);padding:6px 0 2px;line-height:1.55
 #nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
                 border-radius:999px;padding:3px 12px;box-sizing:content-box}
 #nav button[aria-selected="true"]{color:var(--ink)}
+@media(max-width:420px){ /* 8 abas no 375: menos ar no icone e fonte 10px, sem cortar toque */
+  #nav button{font-size:10px;letter-spacing:.02em}
+  #nav button svg{padding:3px 7px}
+}
 #nav button[aria-selected="true"] svg{background:var(--gold-pale);color:var(--gold-deep)}
 #nav button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 [hidden]{display:none!important}
@@ -420,6 +455,33 @@ function fmtAge(iso){
   if(h<30) return "há "+Math.round(h)+"h";
   return "há "+Math.round(h/24)+"d";
 }
+const fmtMil=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,".");
+const vg=x=>String(Number(x).toFixed(1)).replace(".",",");
+const nn=x=>parseFloat(String(x).replace("%","").replace(",","."))||0;
+const leit=(sig,acao)=>sig?'<div class="leit num">'+sig
+  +(acao?'<span class="verbo">→ '+acao+"</span>":"")+"</div>":"";
+function anelSvg(pct,cor){
+  const r=15.9155; // circunferência 100: o dasharray vira % direto
+  return '<svg class="anel" viewBox="0 0 36 36" aria-hidden="true">'
+    +'<circle cx="18" cy="18" r="'+r+'" fill="none" stroke="var(--mid-bg)" stroke-width="3.5"/>'
+    +'<circle cx="18" cy="18" r="'+r+'" fill="none" stroke="'+cor+'" stroke-width="3.5" stroke-linecap="round"'
+    +' stroke-dasharray="'+Math.max(2,Math.min(100,pct)).toFixed(1)+' 100" transform="rotate(-90 18 18)"/></svg>';
+}
+function donutSvg(list,base,cores){ // rosquinha com o % do maior escrito no centro
+  const R=34,C=2*Math.PI*R;let off=0,arcs="";
+  list.forEach((x,i)=>{const p=x.v/(base||1);
+    arcs+='<circle r="'+R+'" cx="45" cy="45" fill="none" stroke="'+cores[i%cores.length]+'" stroke-width="13" stroke-dasharray="'+(p*C).toFixed(1)+' '+C.toFixed(1)+'" stroke-dashoffset="'+(-off*C).toFixed(1)+'" transform="rotate(-90 45 45)"/>';off+=p;});
+  const topPct=Math.round(1000*list[0].v/(base||1))/10;
+  return '<svg width="92" height="92" viewBox="0 0 90 90" role="img" aria-label="proporção">'+arcs
+    +'<text x="45" y="49" text-anchor="middle" font-size="14" font-weight="800" font-family="Plus Jakarta Sans,Inter,sans-serif" fill="#0F172A">'+String(topPct).replace(".",",")+'%</text></svg>';
+}
+document.addEventListener("click",e=>{ // expandir para aprofundar (aprovado 04/08)
+  const b=e.target.closest(".abre"); if(!b) return;
+  const c=b.closest(".sig"); if(!c) return;
+  const on=c.classList.toggle("exp");
+  b.setAttribute("aria-expanded",on?"true":"false");
+  b.textContent=on?"fechar ▴":b.dataset.exp;
+});
 function ageChip(S,key){
   const s=S[key]; if(!s) return "";
   if(!s.ok) return '<span class="age stale">sem dado</span>';
@@ -656,7 +718,16 @@ function render(data){
       +'<div class="sm" style="margin-top:4px">'+esc(PS.frase||"")+"</div>"
       +'<div class="sm" style="margin-top:4px">'+lk(PS.url,"abrir o post ↗","golink")+' · <a class="golink" href="#" onclick="showView(\'posts\');return false">ver os posts da janela ↗</a></div>'
       +"</div></div>"
-      +'<div class="sm" style="margin-top:5px">D+7 = como o post envelheceu uma semana depois de publicado</div></div>';
+      +'<div class="sm" style="margin-top:5px">D+7 = como o post envelheceu uma semana depois de publicado</div>'
+      +(function(){const tops=(D.posts.all||[]).filter(p=>nn(p.er)).sort((a,b)=>nn(b.er)-nn(a.er)).slice(0,3);
+        if(tops.length<3) return "";
+        const moda=arr=>{const c={};arr.forEach(x=>c[x]=(c[x]||0)+1);
+          const k=Object.keys(c).sort((a,b)=>c[b]-c[a])[0];return [c[k],k];};
+        const [nf,f]=moda(tops.map(p=>p.fmt)), [np,pi]=moda(tops.map(p=>p.pilar));
+        if(nf<2) return "";
+        return leit("<b>"+nf+" dos seus 3 melhores</b> são "+esc(f)+(np>=2?" e "+np+" carregam a etiqueta "+esc(pi):""),
+          "a aposta mais segura é repetir esse par no próximo post");})()
+      +"</div>";
   const MH=D.melhor_hora;
   if(MH){
     const maxE=Math.max(...(MH.faixas||[]).map(f=>parseFloat(String(f.er).replace(",","."))||0),1);
@@ -670,14 +741,43 @@ function render(data){
       +"</div>"
       +((MH.dias||[]).length?'<details style="margin-top:4px"><summary>por dia da semana</summary><div class="body num">'
         +MH.dias.map(d=>esc(d.nome)+": "+esc(d.er)+"% ("+d.n+")").join(" · ")+"</div></details>":"")
-      +'<div class="sm" style="margin-top:4px">ER médio dos seus posts por faixa do dia · só conta post com hora conhecida</div></div>';
+      +(function(){const va=(MH.faixas||[]).filter(f=>f.n>=3);
+        if(va.length<2) return '<div class="sm" style="margin-top:4px">ER médio por faixa do dia · só conta post com hora conhecida</div>';
+        const top=va.slice().sort((a,b)=>nn(b.er)-nn(a.er))[0], base=va.slice().sort((a,b)=>nn(a.er)-nn(b.er))[0];
+        const dia=(MH.dias||[]).slice().sort((a,b)=>nn(b.er)-nn(a.er))[0];
+        return leit("Publicar de "+esc(top.nome)+" rende <b>"+vg(nn(top.er)-nn(base.er))+" pontos</b> a mais que de "+esc(base.nome)+" ("+esc(top.er)+"% contra "+esc(base.er)+"%)",
+          "agende no horário que paga mais"+(dia?" · "+esc(dia.nome)+" lidera entre os dias ("+esc(dia.er)+"% em "+dia.n+" posts)":""));})()
+      +"</div>";
   }
+  h+=(function(){ // stories: foto segura mais gente na 1ª tela? (amostra minima: 3 fotos + 1 video)
+    const IT=(D.stories||{}).items||[];
+    const fotos=IT.filter(x=>x.type==="📷"&&x.gancho!=null), vids=IT.filter(x=>x.type==="🎬"&&x.gancho!=null);
+    if(fotos.length<3||vids.length<1) return "";
+    const avg=(a,k)=>Math.round(a.reduce((s,x)=>s+(x[k]||0),0)/a.length);
+    const gf=avg(fotos,"gancho"), gv=avg(vids,"gancho"), rf=avg(fotos,"reach"), rv=avg(vids,"reach");
+    return '<div class="card">'+cab("📖 Foto × vídeo nos stories","últimos "+IT.length+" stories","stories")
+      +'<div style="display:flex;gap:8px;margin:10px 0 4px">'
+      +[["FOTO","gancho "+gf+"%",fotos.length+" stories · alcance médio "+rf],
+        ["VÍDEO","gancho "+gv+"%",vids.length+(vids.length===1?" story":" stories")+" · alcance médio "+rv]]
+        .map(x=>'<div style="flex:1;text-align:center;background:var(--off);border:1px solid var(--brand-pale);border-radius:12px;padding:11px 4px">'
+          +'<div class="sm">'+x[0]+'</div><div class="num" style="font-size:21px;font-weight:800">'+x[1]+'</div>'
+          +'<div class="sm">'+x[2]+"</div></div>").join("")+"</div>"
+      +leit("Foto segura <b>"+gf+" de cada 100</b> na 1ª tela e alcança "+rf+" · vídeo segura "+gv+" e alcança "+rv,
+        "abra a sequência do dia com foto · o vídeo rende melhor no meio")
+      +(vids.length<3?'<div class="sm" style="margin-top:5px">▬ só '+vids.length+(vids.length===1?" vídeo":" vídeos")+" na amostra · pista, ainda sem regra</div>":"")
+      +"</div>";})();
   if(SA.crm_linha)
     h+='<div class="card"><div class="linha"><span>💰 '+esc(SA.crm_linha.t)+"</span><span>"+lk(SA.crm_linha.url,"abrir ↗","golink")+"</span></div></div>";
   const _os=(SA.outros||[]).map(o=>esc(o.nome.split(" (")[0])+" "+esc(o.v)).slice(0,3).join(" · ");
   h+='<details class="card"><summary style="font:700 13px Inter,sans-serif;cursor:pointer">🔎 Outros sinais <span class="sm" style="font-weight:400">· '+_os+"</span></summary>"
     +(SA.outros||[]).map(o=>'<div class="linha" style="margin-top:6px"><span>'+o.ico+" "+esc(o.nome)+'<br><span class="sm">'+esc(o.trad)+'</span></span><span class="n num">'+esc(o.v)+" "+((o.pill||o.pill2)?pillHtml(o.pill||o.pill2):"")+"</span></div>").join("")
     +(D.lacunas||[]).map(l=>'<div class="linha" style="margin-top:6px"><span>'+l.ico+" "+esc(l.t)+'<br><span class="sm">'+esc(l.falta)+" · vem de "+esc(l.onde)+(l.quando?" · "+esc(l.quando):"")+"</span></span><span class=\"sm num\">sem dado</span></div>").join("")
+    +(function(){const o0=(SA.outros||[])[0]; if(!o0) return "";
+      const media=nn(o0.v); if(!media) return "";
+      const prova=(D.posts.all||[]).filter(p=>nn(p.sends)>=1.5).sort((a,b)=>(b.ts||"").localeCompare(a.ts||""))[0];
+      return leit("<b>"+vg(media)+" de cada 100</b> propagam · a sua meta é 1,5",
+        prova?("o post de "+esc(prova.d)+" já fez "+esc(prova.sends)+"% · repita o fecho dele (pedir envio)")
+             :"feche o próximo post pedindo envio (manda para uma amiga que…)");})()
     +"</details>";
   h+='<p class="sm" style="margin:8px 2px">'+esc(D.meta.limiar_nota||"")+"</p></div>";
 
@@ -687,13 +787,36 @@ function render(data){
   // Content System · GOSTO_LOG). O pilar segue como etiqueta pequena nos posts.
   const FS=D.formatos_sys;
   h+='<div class="subv" id="s-formatos" hidden>';
+  h+=(function(){ // cruzamento: os dois formatos medidos, lado a lado (nunca empilhado)
+    const gr={}; (D.posts.all||[]).forEach(p=>{const e=nn(p.er); if(!e) return;
+      (gr[p.fmt]=gr[p.fmt]||[]).push({er:e,sends:nn(p.sends),reach:nn(String(p.reach).replace(/\./g,""))});});
+    const F=gr.FEED||[], R=gr.REELS||[];
+    if(F.length<3||R.length<3) return "";
+    const med=(a,k)=>{const v=a.map(x=>x[k]).sort((x,y)=>x-y);return v[Math.floor((v.length-1)/2)];};
+    const avg=(a,k)=>Math.round(a.reduce((s,x)=>s+x[k],0)/a.length);
+    const fe=med(F,"er"), re=med(R,"er"), fs2=med(F,"sends"), rs=med(R,"sends"), fr=avg(F,"reach"), rr=avg(R,"reach");
+    const razao=rr/Math.max(1,fr);
+    return '<div class="card">'+cab("🎬 Reel alcança · feed engaja",esc(D.janela||"")+" · "+(F.length+R.length)+" posts medidos","posts")
+      +'<div style="display:flex;gap:8px;margin:10px 0 4px">'
+      +[["REELS","alcança "+vg(razao)+"×","alcance médio "+fmtMil(rr)],
+        ["FEED","ER "+vg(fe)+"%","mediana em "+F.length+" posts"]]
+        .map(x=>'<div style="flex:1;text-align:center;background:var(--off);border:1px solid var(--brand-pale);border-radius:12px;padding:11px 4px">'
+          +'<div class="sm">'+x[0]+'</div><div class="num" style="font-size:21px;font-weight:800">'+x[1]+'</div>'
+          +'<div class="sm">'+x[2]+"</div></div>").join("")+"</div>"
+      +[["alcance por post",fr,rr,""],["ER (mediana)",fe,re,"%"],["envios (mediana)",fs2,rs,"%"]]
+        .map(r=>{const m=Math.max(r[1],r[2],1);
+          return '<div style="display:flex;gap:8px;align-items:center;margin:6px 0"><span class="sm" style="flex:0 0 96px">'+r[0]+"</span>"
+            +[r[1],r[2]].map((v,i)=>'<div style="flex:1;min-width:0"><div class="bar"><div class="fill" style="width:'+Math.max(3,(v/m*100)).toFixed(0)+'%'+(i?"":";background:var(--mid)")+'"></div></div><span class="sm num">'+(i?"R ":"F ")+(r[3]?vg(v):fmtMil(v))+r[3]+"</span></div>").join("")+"</div>";}).join("")
+      +leit("REELS alcança <b>"+vg(razao)+"× mais</b> gente ("+fmtMil(rr)+" contra "+fmtMil(fr)+" por post) · FEED engaja mais fundo (ER "+vg(fe)+"% contra "+vg(re)+"%)",
+        "reel abre a porta para gente nova · feed aprofunda com quem já chegou · alterne os dois na mesma semana")
+      +"</div>";})();
   if(FS){
     h+='<div class="card sm" style="line-height:1.6">🧩 pilar → 🎬 formato → 📱 conteúdo real · cada card traz um print de post SEU como referência · o texto completo (abertura, setup, 2 ideias por formato) vive na '+lk(FS.planilha,"planilha ↗","golink")+' · editou lá, a sexta traz para cá</div>';
     (FS.novos||[]).forEach(f=>{
       h+='<div class="card"><div style="display:flex;gap:12px;align-items:flex-start">'
         +(f.refs&&f.refs.length&&f.refs[0].img?'<a href="'+esc(f.refs[0].url)+'" target="_blank" rel="noopener" aria-label="ver exemplo real deste formato" style="flex:0 0 84px"><img src="'+f.refs[0].img+'" alt="" style="width:84px;height:84px;object-fit:cover;border-radius:12px"></a>'
           :'<div style="flex:0 0 84px;height:84px;border:2px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">🎬</div>')
-        +'<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="font:800 13px Inter,sans-serif">'+esc(f.n)+'</span><span class="sm num" style="background:#EDE9FE;color:#5B21B6;padding:2px 8px;border-radius:10px;white-space:nowrap">'+esc(f.status)+"</span></div>"
+        +'<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="font:800 13px Inter,sans-serif">'+esc(f.n)+'</span><span class="sm num" style="background:#EDE9FE;color:#5B21B6;padding:2px 8px;border-radius:10px;max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.status)+"</span></div>"
         +'<div class="sm" style="margin-top:3px">'+esc(f.como)+"</div>"
         +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">'+(f.pilares||[]).map(p=>tag(p)).join("")+"</div>"
         +(f.obs?'<div class="sm" style="margin-top:5px">'+esc(f.obs)+"</div>":"")
@@ -727,12 +850,16 @@ function render(data){
   const TC=D.total_canais, PB=D.publico, RD=D.radar;
   const yt=(D.canais||{}).youtube;
   h+='<div class="subv" id="s-canais" hidden>'
-    +(TC?'<div class="card"><span class="k">👥 '+esc(TC.frase)+"</span>"
-      +'<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--mid-bg);margin:9px 0 7px">'
-      +TC.canais.map((c,i)=>'<div title="'+esc(c.n)+" "+c.pct+'%" style="width:'+c.pct+'%;background:'+["#7C3AED","#6366F1","#0EA5E9"][i%3]+'"></div>').join("")+"</div>"
-      +TC.canais.map((c,i)=>'<div class="linha"><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+["#7C3AED","#6366F1","#0EA5E9"][i%3]+';margin-right:6px"></i>'+lk(c.url,esc(c.n),"golink")+'</span><span class="n num">'+String(c.v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+' <span class="sm">'+c.pct+"%</span></span></div>").join("")
+    +(TC?(function(){const PAL=["#7C3AED","#6366F1","#0EA5E9","#EC4899","#94A3B8"];
+      return '<div class="card"><span class="k">👥 '+esc(TC.frase)+"</span>"
+      +'<div class="donutw">'+donutSvg(TC.canais,TC.soma,PAL)+'<div class="dleg">'
+      +TC.canais.map((c,i)=>'<div class="linha" style="padding:2px 0"><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+PAL[i%PAL.length]+';margin-right:6px"></i>'+lk(c.url,esc(c.n),"golink")+'</span><span class="n num">'+fmtMil(c.v)+' <span class="sm">'+c.pct+"%</span></span></div>").join("")+"</div></div>"
       +((TC.faltando||[]).length?'<div class="sm" style="margin-top:6px;color:var(--sub)">▬ fora da conta: '+TC.faltando.map(esc).join(" · ")+"</div>":"")
-      +"</div>":"")
+      +(function(){const cs=TC.canais;if(cs.length<2)return "";
+        const conc=Math.round(cs[0].pct+cs[1].pct), mn=cs[cs.length-1];
+        return leit("<b>"+conc+" de cada 100</b> seguidores seus estão em "+esc(cs[0].n)+" e "+esc(cs[1].n),
+          esc(mn.n)+" guarda "+mn.pct+"% da base · 1 repost por semana lá custa pouco");})()
+      +"</div>";})():"")
     +'<div class="card"><span class="k">'+LOGOS.ig+"Instagram @mispace</span>"
     +'<div class="linha"><span>ER por alcance</span><span class="n num">'+esc((D.kpis[0]||{}).v||"—")+"</span></div>"
     +'<div class="linha"><span>seguidores</span><span class="n num">'+(ser.length?String(ser[ser.length-1].v).replace(/\B(?=(\d{3})+(?!\d))/g,"."):"—")+"</span></div>"
@@ -749,21 +876,38 @@ function render(data){
     +'<div class="linha"><span>chega por busca</span><span class="n num">'+esc(tk.busca_pct||"—")+"</span></div>"
     +(tk.termos&&tk.termos.length?'<details><summary>o que buscaram para te achar</summary><div class="body">'
       +tk.termos.map(x=>"· "+esc(x)).join("<br>")+"</div></details>":"")
+    +(function(){const vs=(tk.posts||[]).map(p=>p.views).filter(v=>v!=null);
+      if(vs.length<3) return "";
+      const so=vs.slice().sort((a,b)=>a-b), mdn=so[Math.floor((so.length-1)/2)];
+      return leit("os "+vs.length+" últimos ficam entre <b>"+Math.min(...vs)+" e "+Math.max(...vs)+" views</b> (mediana "+mdn+")",
+        (tk.busca_pct?tk.busca_pct+" do alcance vem de busca · o termo buscado vira a primeira frase do título":""));})()
     +'<div class="sm" style="margin-top:4px">'+lk(tk.url,"abrir TikTok ↗","golink")+"</div></div>"
     +'<div class="card"><span class="k">'+LOGOS.li+"LinkedIn "+ageChip(S,"linkedin")+"</span>"
     +'<div class="linha"><span>seguidores</span><span class="n num">'+esc(li.followers??"—")+"</span></div>"
     +'<div class="linha"><span>posts na semana da coleta</span><span class="n num">'+esc(li.posts_week??"—")+"</span></div>"
     +((li.posts&&li.posts.length)?'<div class="linha"><span>último: '+esc(li.posts[0].cap)+'</span><span class="sm num">'+esc(li.posts[0].d)+"</span></div>"
       +(li.posts[0].views!=null?'<div class="sm" style="margin-top:3px">'+esc(String(li.posts[0].views))+' impressões na leitura de '+esc((D.sources.linkedin||{}).at?fmtAbs(D.sources.linkedin.at):"")+"</div>":""):"")
+    +(function(){const m=/([+−-]\d+)%/.exec(String(li.views_perfil||""));
+      if(!m||!li.posts_week) return "";
+      return leit("visitas ao perfil <b>"+esc(m[1]).replace("-","−")+"%</b> em 90 dias com "+li.posts_week+" post por semana",
+        "maior retorno por esforço entre os canais · o repost do carrossel da semana mantém a curva");})()
     +'<div class="sm" style="margin-top:4px">'+esc(li.views_perfil||"")+"</div></div>"
     +(yt?'<div class="card"><span class="k">'+LOGOS.yt+"YouTube "+ageChip(S,"youtube")+"</span>"
       +'<div class="linha"><span>inscritos</span><span class="n num">'+String(yt.subscribers||"—").replace(/\B(?=(\d{3})+(?!\d))/g,".")+"</span></div>"
       +((yt.posts&&yt.posts.length)?'<div class="linha"><span>último: '+esc(yt.posts[0].cap)+'</span><span class="sm num">'+esc(yt.posts[0].d)+"</span></div>":"")
+      +(function(){const vs=(yt.posts||[]).map(p=>p.views).filter(v=>v!=null);
+        if(!vs.length) return "";
+        return leit("<b>"+fmtMil(yt.subscribers||0)+"</b> inscritos · os "+vs.length+" vídeos novos têm "+Math.max(...vs)+" views ou menos",
+          "o valor aqui é acervo e busca · o título leva o termo que a busca do TikTok revelou");})()
       +'<div class="sm" style="margin-top:4px">'+lk(yt.url,"abrir o canal ↗","golink")+"</div></div>":"")
     +'<div class="card"><span class="k">'+LOGOS.blog+"Blog (Wix) "+ageChip(S,"blog")+"</span>"
     +(bl.ok?'<div class="linha"><span>'+lk(bl.url,esc(bl.title||"último post"))+'</span><span class="sm num">'+esc(bl.date?bl.date.slice(8,10)+"/"+bl.date.slice(5,7):"")+"</span></div>"
            :'<div class="sm">sem leitura do feed nesta rodada</div>')
-    +'<div class="sm" style="margin-top:4px">o Wix não fornece número de leitura · métrica = cadência</div></div>'
+    +(function(){if(!bl.ok||!bl.date) return '<div class="sm" style="margin-top:4px">o Wix não fornece número de leitura · métrica = cadência</div>';
+      const dias=Math.round((Date.now()-new Date(bl.date+"T12:00:00").getTime())/864e5);
+      return leit("último post há <b>"+dias+" dias</b> ("+bl.date.slice(8,10)+"/"+bl.date.slice(5,7)+")",
+        dias>14?"passou da quinzena · 1 post reaproveitado do carrossel resolve":"dentro da quinzena · o próximo pode nascer do termo mais buscado no TikTok");})()
+    +"</div>"
     +(ol?'<div class="card"><span class="k">'+LOGOS.lab+"@ourspacelab "+ageChip(S,"ourspacelab")+"</span>"
       +'<div class="linha"><span>seguidores</span><span class="n num">'+esc(ol.followers)+"</span></div>"
       +'<div class="linha"><span>posts</span><span class="n num">'+esc(ol.posts??"—")+"</span></div>"
@@ -809,82 +953,145 @@ function render(data){
   // ---------- FILA ----------
   const F=D.fila;
 
-  // ===== RADAR · quem está chegando (aba própria, pedido dela 05/08) =====
+  // ===== RADAR · mesa de sinais (redesenho 07/08 · direção B + enxertos de A) =====
   h+='<section class="view wrap" id="v-radar" hidden>'+fraseAba("radar")
-    +(RD?(function(){
-      const S=RD.saldo;
-      let t='<div class="card" style="border-left:3px solid #7C3AED">'
-        +cab("📡 Quem está chegando", (S?("os números grandes são de "+esc(S.de)+" a "+esc(S.ate)):esc(RD.janela))+" · "+RD.cobertura.total+" pessoas com data","radar")
-        +(RD.lembrete?'<div style="background:var(--age-bg);color:var(--age);border-radius:10px;padding:9px 12px;margin:6px 0 2px;font:600 12.5px/1.5 Inter,sans-serif">⏰ '+esc(RD.lembrete)+"</div>":"");
-      if(S){
-        t+='<div style="display:flex;gap:8px;margin:8px 0">'
-          +[["↘ entraram","+"+S.chegaram,"#047857",false],["↖ saíram","−"+S.sairam,"#B91C1C",false],
-           ["= sobrou",S.liquido,S.liquido.indexOf("−")===0?"#B91C1C":"#047857",true]]
-            .map(x=>'<div style="flex:'+(x[3]?"1.25":"1")+';text-align:center;background:'+(x[3]?"var(--off)":"#fff")+';border:'+(x[3]?"1.5px solid var(--brand-pale)":"1px solid var(--line)")+';border-radius:12px;padding:'+(x[3]?"11px 4px":"9px 4px")+'"><div class="sm">'+x[0]+'</div><div class="num" style="font-size:'+(x[3]?"26px":"13px")+';font-weight:800;color:'+x[2]+'">'+esc(x[1])+"</div></div>").join("")
-          +"</div>"
-          +'<div class="sm"><b>só nesta janela ('+esc(S.de)+" a "+esc(S.ate)+"):</b> os nomes de quem entrou vêm das suas notificações · o que sobrou vem da contagem oficial do Instagram · <b>quantos saíram é conta</b> (entraram menos o que sobrou), porque o Instagram nunca mostra quem deixa de seguir</div>";
-      }
-      if((RD.tipos||[]).length){
+    +(function(){
+      const pillDelta=(v,suf)=>{ if(v===null||v===undefined||v==="") return "";
+        const sx=String(v), neg=sx.charAt(0)==="−"||sx.charAt(0)==="-";
+        if(/^[−-]?0$/.test(sx)) return '<span class="pill p-mid">▬ estável '+esc(suf)+"</span>";
+        return neg?'<span class="pill p-down">▼ '+esc(sx)+" "+esc(suf)+"</span>"
+                  :'<span class="pill p-up">▲ '+(sx.charAt(0)==="+"?esc(sx):"+"+esc(sx))+" "+esc(suf)+"</span>"; };
+      const sig=o=>'<div class="sig'+(o.full?" full":"")+'">'
+        +'<div class="sl">'+o.ic+" "+esc(o.lb)+"</div>"
+        +(o.anel?'<div style="display:flex;gap:10px;align-items:center;min-width:0">'+o.anel+'<div style="min-width:0">':"")
+        +'<div class="sn num'+(o.txt?" txt":"")+'">'+o.n+(o.un?' <span class="un">'+esc(o.un)+"</span>":"")+"</div>"
+        +(o.anel?"</div></div>":"")
+        +(o.anelx||"")
+        +(o.pill?"<div>"+o.pill+"</div>":"")
+        +(o.r?'<div class="sr">'+o.r+"</div>":"")
+        +(o.spark||"")
+        +'<div class="sa">'+(o.a||"")
+        +(o.mais?'<button type="button" class="abre" data-exp="'+esc(o.abre)+'" aria-expanded="false">'+esc(o.abre)+"</button>":"")+"</div>"
+        +(o.mais?'<div class="mais">'+o.mais+"</div>":"")
+        +(o.leitura||"")
+        +'<div class="sd num">'+esc(o.dt||"")+"</div></div>";
+      let t="";
+      // --- grupo 1 · quem está chegando ---
+      const cg=[];
+      const FSer=(D.followers&&D.followers.series)||[];
+      const atual=FSer.length?FSer[FSer.length-1]:null;
+      const S7=(D.janelas||[]).find(j=>j.dias===7)||{};
+      const SAl=RD&&RD.saldo;
+      if(atual||SAl) cg.push(sig({full:1,ic:"👤",lb:"Seguidores agora",
+        n:atual?fmtMil(atual.v):esc(SAl.liquido),
+        pill:pillDelta(S7.seg,"em 7 dias"),
+        r:SAl?("entraram <b>+"+SAl.chegaram+"</b> · saíram cerca de <b>"+SAl.sairam+"</b> · sobrou <b>"+esc(SAl.liquido)+"</b> · de "+esc(SAl.de)+" a "+esc(SAl.ate)):"",
+        spark:(FSer.length>2?sparkSvg(FSer.slice(-30).map(x=>x.v),52,FSer.slice(-30).map(x=>x.d),"spark-fol"):""),
+        abre:"como essa conta é feita ▾",
+        mais:'<div class="sm">os nomes de quem entrou vêm das suas notificações · o que sobrou vem da contagem oficial do Instagram · quantos saíram é conta (entraram menos o que sobrou), porque o Instagram nunca mostra quem deixa de seguir</div>',
+        dt:atual?("série até "+fmtAbs(atual.d)):("dado de "+fmtAbs(RD.at))}));
+      if(RD&&(RD.farois||[]).length){ const f0=RD.farois[0];
+        cg.push(sig({ic:"⭐",lb:"Vale um oi",n:RD.farois.length,un:RD.farois.length===1?"perfil":"perfis",
+          r:"maior: "+esc(f0.nome)+" · "+fmtMil(f0.seg)+" seguidores",
+          a:lk(f0.url,"dar oi no maior ↗","golink"),
+          abre:"ver os "+RD.farois.length+" ▾",
+          mais:RD.farois.map(f=>'<div class="linha"><span>'+lk(f.url,"@"+esc(f.user),"golink")
+            +(f.nome?" · <b>"+esc(f.nome)+"</b>":"")+'<br><span class="sm">'+esc(f.bio||"")+"</span></span>"
+            +'<span class="sm num" style="white-space:nowrap;flex:0 0 auto">'+(f.dias!==null&&f.dias!==undefined?"há "+f.dias+"d":esc(f.d))+"</span></div>").join(""),
+          dt:"dado de "+fmtAbs(RD.at)})); }
+      if(RD&&(RD.de_cliente||[]).length){
+        const dd=x=>{const p=String(x||"").split("/");return (parseInt(p[1],10)||0)*31+(parseInt(p[0],10)||0);};
+        const rec=RD.de_cliente.slice().sort((a,b)=>dd(b.d)-dd(a.d))[0];
+        cg.push(sig({ic:"🎯",lb:"De dentro de cliente",n:RD.n_cliente,un:"pessoas",
+          r:"gente de casas que você conhece · o elo mais curto até contrato",
+          a:lk(rec.url,"abrir o mais recente ↗","golink"),
+          abre:"ver quem ▾",
+          mais:RD.de_cliente.map(f=>'<div class="linha"><span>'+lk(f.url,"@"+esc(f.user),"golink")
+            +(f.nome?'<br><span class="sm">'+esc(f.nome)+"</span>":"")
+            +(f.relacao?'<br><span class="sm" style="color:var(--brand);font-weight:600">'+esc(f.relacao)+"</span>":"")+"</span>"
+            +'<span class="sm num" style="white-space:nowrap;flex:0 0 auto;text-align:right"><b>'+esc(f.org)+"</b><br>"+esc(f.d)+"</span></div>").join(""),
+          dt:"dado de "+fmtAbs(RD.at)})); }
+      if(RD&&RD.conc&&(RD.picos||[]).length){
+        const maxp=Math.max(...RD.picos.map(p=>p.n),1), nEv=RD.picos.filter(p=>p.ctx).length;
+        // leitura: média de pico contra dia comum (enxerto de A, o melhor insight das 3 propostas)
+        const somaP=RD.picos.reduce((a,p)=>a+p.n,0);
+        const mediaPico=Math.round(somaP/RD.picos.length);
+        const mediaComum=Math.round(10*((RD.cobertura?RD.cobertura.total:0)-somaP)/Math.max(1,RD.conc.de-RD.conc.dias))/10;
+        cg.push(sig({ic:"📈",lb:"Chegada em picos",n:RD.conc.pct+"%",
+          r:"de quem chegou apareceu em só "+RD.conc.dias+" dias, de "+RD.conc.de+" com registro"
+            +(nEv===RD.picos.length?" · todos os picos têm evento seu no contexto":""),
+          abre:"ver os dias ▾",
+          mais:RD.picos.map(p=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0;min-width:0"><span class="sm num" style="width:42px;flex:0 0 auto">'+esc(p.d)+"</span>"
+            +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(p.n/maxp*100).toFixed(0)+'%"></div></div>'
+            +'<span class="sm num" style="width:26px;text-align:right;flex:0 0 auto">'+p.n+"</span></div>"
+            +(p.ctx?'<div class="sm" style="margin:-2px 0 6px 50px">'+esc(p.ctx)+"</div>":"")).join(""),
+          leitura:leit("dia de pico traz em média <b>"+mediaPico+" pessoas</b> · dia comum traz "+vg(mediaComum),
+            "evento presencial é o seu maior motor de chegada · post sozinho quase não traz gente nova"),
+          dt:"dado de "+fmtAbs(RD.at)})); }
+      if(RD&&(RD.tipos||[]).length){
         const CORT={"Marca ou loja":"#7C3AED","Serviço":"#6366F1","Agência":"#0284C7",
           "Imprensa e criador":"#047857","Tecnologia / IA":"#8B5CF6","Moda + IA":"#DB2777",
           "Educação":"#0891B2","Executivo":"#7E22CE","Instituição do setor":"#4338CA",
-          "Revenda":"#64748B","Amizade ou pessoal":"#EC4899","Conta vazia":"#CBD5E1",
-          "Sem sinal na bio":"#CBD5E1"};
+          "Revenda":"#64748B","Amizade ou pessoal":"#EC4899","Conta vazia":"#CBD5E1","Sem sinal na bio":"#CBD5E1"};
+        const CS=RD.tipos.filter(x=>!x.muda), t0=CS[0], somaCS=CS.reduce((a,b)=>a+b.v,0)||1;
+        const semS=RD.tipos.find(x=>x.k==="Sem sinal na bio");
         const maxt=Math.max(...RD.tipos.map(x=>x.v),1);
-        t+='<div class="sm" style="font-weight:800;margin-top:14px">👥 Que tipo de gente chegou</div>'
-          +'<div class="sm" style="margin-bottom:6px">lido na bio pública de cada uma · quem não diz nada na bio fica como “sem sinal”</div>'
-          +RD.tipos.filter(x=>x.v>=2).map(x=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0'+(x.muda?";opacity:.62;border-top:1px solid var(--line2);padding-top:8px":"")+'">'
-            +'<span class="sm" style="width:104px;flex:0 0 auto;line-height:1.25">'+esc(x.k)+'</span>'
-            +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(x.v/maxt*100).toFixed(0)+'%;background:'+(CORT[x.k]||"#94A3B8")+'"></div></div>'
-            +'<span class="sm num" style="width:78px;text-align:right;flex:0 0 auto;white-space:nowrap">'+x.v+" · "+String(x.pct.toFixed(1)).replace(".",",")+"%</span></div>").join("");
+        cg.push(sig({ic:"👥",lb:"Quem chega, pela bio",txt:1,anel:anelSvg(t0.pct,"#7C3AED"),
+          n:esc(t0.k),un:vg(t0.pct)+"%",
+          r:"maior grupo entre quem chegou · entre quem tem sinal na bio são "+Math.round(100*t0.v/somaCS)+" de cada 100"
+            +(semS?" · "+semS.v+" perfis ainda sem sinal":""),
+          abre:"ver todos ▾",
+          mais:RD.tipos.filter(x=>x.v>=2).map(x=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0'+(x.muda?";opacity:.62;border-top:1px solid var(--line2);padding-top:8px":"")+'">'
+            +'<span class="sm" style="width:104px;flex:0 0 auto;line-height:1.25">'+esc(x.k)+"</span>"
+            +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(x.v/maxt*100).toFixed(0)+"%;background:"+(CORT[x.k]||"#94A3B8")+'"></div></div>'
+            +'<span class="sm num" style="width:78px;text-align:right;flex:0 0 auto;white-space:nowrap">'+x.v+" · "+vg(x.pct)+"%</span></div>").join("")
+            +'<div class="sm" style="margin-top:6px">lido na bio pública de cada uma · quem nada diz na bio fica como "sem sinal"</div>',
+          dt:"dado de "+fmtAbs(RD.at)})); }
+      if(cg.length){
+        t+="<h2>📡 Quem está chegando "+ageChip(S,"radar")+'</h2><p class="sub-h">'
+          +(SAl?("números grandes de "+esc(SAl.de)+" a "+esc(SAl.ate)+" · "):"")
+          +(RD&&RD.cobertura?RD.cobertura.total+" pessoas com data":"")+"</p>"
+          +(RD&&RD.lembrete?'<div style="background:var(--age-bg);color:var(--age);border-radius:10px;padding:9px 12px;margin:6px 0 2px;font:600 12.5px/1.5 Inter,sans-serif">⏰ '+esc(RD.lembrete)+"</div>":"")
+          +'<div class="sgrid">'+cg.join("")+"</div>";
       }
-      if((RD.de_cliente||[]).length){
-        t+='<div class="sm" style="font-weight:800;margin-top:14px">🎯 Gente de dentro de cliente, prospect ou evento seu</div>'
-          +'<div class="sm" style="margin-bottom:4px">'+RD.n_cliente+(RD.n_cliente===1?" pessoa":" pessoas")+' · é o elo mais curto entre conteúdo e contrato</div>'
-          +RD.de_cliente.map(f=>'<div class="linha" style="margin-top:5px"><span>'+lk(f.url,"@"+esc(f.user),"golink")
-            +(f.nome?'<br><span class="sm">'+esc(f.nome)+"</span>":"")
-            +(f.relacao?'<br><span class="sm" style="color:var(--brand);font-weight:600">'+esc(f.relacao)+"</span>":"")+'</span>'
-            +'<span class="sm num" style="white-space:nowrap;flex:0 0 auto;text-align:right"><b>'+esc(f.org)+"</b><br>"+esc(f.d)+"</span></div>").join("");
+      // --- grupo 2 · quem já te segue (idade em rosquinha + cidade + Brasil × fora) ---
+      if(PB&&(PB.idades||[]).length){
+        const CORES=["#7C3AED","#6366F1","#0EA5E9","#A78BFA","#C7D2FE","#94A3B8"];
+        const pctS=(v,b)=>{const p=100*v/(b||1);return (p<1?"<1":vg(p))+"%";};
+        const somaI=PB.base_idade||PB.idades.reduce((a,b)=>a+b.v,0),
+              somaC=PB.base_cidade||PB.cidades.reduce((a,b)=>a+b.v,0),
+              somaP2=PB.base_pais||PB.paises.reduce((a,b)=>a+b.v,0);
+        const c0=PB.cidades[0], br=(PB.paises||[]).find(x=>x.k==="BR");
+        const NOMEP={US:"Estados Unidos",PT:"Portugal",ES:"Espanha",IT:"Itália",FR:"França",
+                     AR:"Argentina",MX:"México",DE:"Alemanha",GB:"Reino Unido",AO:"Angola"};
+        const fora=(PB.paises||[]).filter(x=>x.k!=="BR").slice(0,3).map(x=>NOMEP[x.k]||x.k);
+        const pg=[];
+        pg.push(sig({full:1,ic:"👤",lb:"Idade de quem te segue",txt:1,n:esc(PB.frase||""),
+          anelx:'<div class="donutw">'+donutSvg(PB.idades,somaI,CORES)
+            +'<div class="dleg">'+PB.idades.map((x,i)=>'<div class="linha" style="padding:2px 0"><span class="sm"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+CORES[i%CORES.length]+';margin-right:6px"></i>'+esc(x.k)+' anos</span><span class="sm num">'+pctS(x.v,somaI)+"</span></div>").join("")+"</div></div>",
+          dt:"dado de "+fmtAbs(PB.at)}));
+        pg.push(sig({ic:"📍",lb:"Maior cidade",txt:1,n:esc(c0.k),
+          r:fmtMil(c0.v)+" pessoas · "+pctS(c0.v,somaC)+" das "+fmtMil(somaC)+" localizadas",
+          abre:"ver cidades ▾",
+          mais:PB.cidades.map((c,i)=>'<div class="linha"><span class="sm">'+(i+1)+"º · "+esc(c.k)+'</span><span class="sm num">'+fmtMil(c.v)+" · "+pctS(c.v,somaC)+"</span></div>").join("")
+            +((PB.cidades_engaja||[]).length?'<details style="margin-top:8px"><summary>quem RESPONDE, por cidade</summary><div class="body num">'
+              +PB.cidades_engaja.map(c=>esc(c.k)+": "+c.v+(c.fora?" (fora das 25 maiores cidades de quem segue)":"")).join(" · ")
+              +"<br><br>seguir é uma coisa, responder é outra: esta lista é de quem interagiu no mês.</div></details>":""),
+          leitura:(PB.prop?leit(esc(PB.prop),""):""),
+          dt:"dado de "+fmtAbs(PB.at)}));
+        if(br) pg.push(sig({ic:"🌎",lb:"Brasil × fora",n:pctS(br.v,somaP2),un:"no Brasil",
+          r:"o resto vem de "+fora.map(esc).join(", "),
+          abre:"ver países ▾",
+          mais:PB.paises.map(x=>'<div class="linha"><span class="sm">'+esc(NOMEP[x.k]||x.k)+'</span><span class="sm num">'+fmtMil(x.v)+" · "+pctS(x.v,somaP2)+"</span></div>").join(""),
+          dt:"dado de "+fmtAbs(PB.at)}));
+        t+='<h2>👥 Quem já te segue</h2><p class="sub-h">contagem do próprio Instagram, sem nome de ninguém'+(PB.nota?' · '+esc(PB.nota):'')+'</p>'
+          +'<div class="sgrid">'+pg.join("")+"</div>";
       }
-      if((RD.farois||[]).length){
-        t+='<div class="sm" style="font-weight:800;margin-top:14px">⭐ Vale um oi</div>'
-          +RD.farois.map(f=>'<div class="linha" style="margin-top:6px"><span>'+lk(f.url,"@"+esc(f.user),"golink")
-            +(f.nome?" · <b>"+esc(f.nome)+"</b>":"")+'<br><span class="sm">'+esc(f.bio||"")+"</span></span>"
-            +'<span class="sm num" style="white-space:nowrap;flex:0 0 auto">há '+(f.dias!==null&&f.dias!==undefined?f.dias+"d":esc(f.d))+"</span></div>").join("");
-      }
-      if((RD.picos||[]).length){
-        const maxp=Math.max(...RD.picos.map(p=>p.n),1);
-        t+='<div class="sm" style="font-weight:800;margin-top:14px">📈 Os dias que trouxeram gente</div>'
-          +(RD.conc?'<div class="sm" style="margin-bottom:4px">'+esc(RD.conc.frase)+"</div>":"")
-          +RD.picos.map(p=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0"><span class="sm num" style="width:42px">'+esc(p.d)+'</span>'
-            +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(p.n/maxp*100).toFixed(0)+'%"></div></div>'
-            +'<span class="sm num" style="width:26px;text-align:right">'+p.n+"</span></div>"
-            +(p.ctx?'<div class="sm" style="margin:-2px 0 6px 50px">'+esc(p.ctx)+"</div>":"")).join("");
-      }
-      t+='<div class="sm" style="margin-top:10px">lidos '+RD.cobertura.lidos+" de "+RD.cobertura.total+" perfis ("+RD.cobertura.pct+"%)"
-        +(RD.cobertura.nota?" · "+esc(RD.cobertura.nota):"")+" · "+esc(RD.ressalva)+"</div>";
-      return t+"</div>";})():"")
-    +(PB?(function(){
-      // uma régua só: a barra e o % dizem a MESMA coisa (proporção da base
-      // classificada). Antes a barra era % do maior e o texto era % da soma das
-      // 5 exibidas, então São Paulo enchia 100% ao lado de "58%".
-      const barras=(lista,tot,cor)=>lista.map(x=>{const p=100*x.v/(tot||1);
-        return '<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span class="sm" style="width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(x.k)+'</span>'
-          +'<div class="bar" style="flex:1"><div class="fill" style="width:'+Math.max(2,Math.round(p))+'%;background:'+cor+'"></div></div>'
-          +'<span class="sm num" style="width:84px;text-align:right;flex:0 0 auto;white-space:nowrap">'+String(x.v).replace(/\B(?=(\d{3})+(?!\d))/g,".")+" · "+(p<1?"<1":String(Math.round(p*10)/10).replace(".",","))+"%</span></div>";}).join("");
-      const somaI=PB.base_idade||PB.idades.reduce((a,b)=>a+b.v,0),
-            somaC=PB.base_cidade||PB.cidades.reduce((a,b)=>a+b.v,0),
-            somaP=PB.base_pais||PB.paises.reduce((a,b)=>a+b.v,0);
-      return '<div class="card">'+cab("👥 "+esc(PB.frase||"Quem é o seu público"),"quem já te segue · "+esc(PB.at||""),"publico")
-        +(PB.prop?'<p style="font:700 13px/1.5 Inter,sans-serif;margin:6px 0 10px">💡 '+esc(PB.prop)+"</p>":"")
-        +'<div class="sm" style="font-weight:800;margin-top:6px">idade</div>'+barras(PB.idades,somaI,"#7C3AED")
-        +'<div class="sm" style="font-weight:800;margin-top:10px">onde estão</div>'
-        +'<div class="sm" style="color:var(--sub);margin:2px 0 6px">% entre as '+String(somaC).replace(/\B(?=(\d{3})+(?!\d))/g,".")+' pessoas que o Instagram localizou por cidade</div>'
-        +barras(PB.cidades,somaC,"#6366F1")
-        +'<div class="sm" style="font-weight:800;margin-top:10px">países</div>'+barras(PB.paises,somaP,"#0EA5E9")
-        +((PB.cidades_engaja||[]).length?'<details style="margin-top:8px"><summary>quem RESPONDE, por cidade</summary><div class="body num">'
-          +PB.cidades_engaja.map(c=>esc(c.k)+": "+c.v+(c.fora?" (não aparece entre as cidades de quem te segue)":"")).join(" · ")+"<br><br>seguir é uma coisa, responder é outra: esta lista é de quem interagiu no mês, seguindo você ou não.</div></details>":"")
-        +'<div class="sm" style="margin-top:8px">'+esc(PB.nota)+"</div></div>";})():"")
+      if(RD&&RD.cobertura)
+        t+='<p class="sm" style="margin:8px 2px">lidos '+RD.cobertura.lidos+" de "+RD.cobertura.total+" perfis ("+RD.cobertura.pct+"%)"
+          +(RD.cobertura.nota?" · "+esc(RD.cobertura.nota):"")+" · nomes com data "+esc(RD.janela||"")+" · "+esc(RD.ressalva||"")+"</p>";
+      return t;
+    })()
     +"</section>";
 
   // ---------- IDEIAS · v2 no feedback dela de 07/08 23h: sub-abas para não
@@ -995,7 +1202,16 @@ function render(data){
         +(NU.serie&&NU.serie.length>1?sparkSvg(NU.serie,34):"")+"</div>"
         +'<div class="sm">'+esc(NU.traducao||"")+(NU.n?" · sobre "+NU.n+" posts ("+esc(D.janela||"")+")":"")+"</div>"
         +'<div class="sm num" style="margin-top:3px">'+esc(NU.regua||"")+" "+pillHtml(NU.pill)+"</div>"
-        +(NU.info?'<details style="margin-top:6px"><summary>o que é isso?</summary><div class="body"><b>O que é:</b> '+esc(NU.info.oque||"")+"<br><b>Como mede:</b> "+esc(NU.info.como||"")+"<br><b>Por que importa:</b> "+esc(NU.info.pq||"")+"<br><b>Como melhorar:</b> "+esc(NU.info.melhorar||"")+"</div></details>":"");
+        +(NU.info?'<details style="margin-top:6px"><summary>o que é isso?</summary><div class="body"><b>O que é:</b> '+esc(NU.info.oque||"")+"<br><b>Como mede:</b> "+esc(NU.info.como||"")+"<br><b>Por que importa:</b> "+esc(NU.info.pq||"")+"<br><b>Como melhorar:</b> "+esc(NU.info.melhorar||"")+"</div></details>":"")
+        +(function(){ // leitura: quanto falta até a meta e qual formato encurta (META 13 = meta dela de 31/07)
+          const META=13, er=nn(NU.v); if(!er) return "";
+          const gr={}; (D.posts.all||[]).forEach(p=>{const e=nn(p.er); if(!e) return; (gr[p.fmt]=gr[p.fmt]||[]).push(e);});
+          let mf=null; Object.keys(gr).forEach(f=>{if(gr[f].length<3) return;
+            const v=gr[f].slice().sort((a,b)=>a-b), md=v[Math.floor((v.length-1)/2)];
+            if(!mf||md>mf.md) mf={f:f,md:md,n:v.length};});
+          if(er>=META) return leit("<b>"+vg(er-META)+" pontos</b> acima da sua meta de 13%","o jogo agora é alcance");
+          return leit("Faltam <b>"+vg(META-er)+" pontos</b> até a sua meta de 13%"+(mf?" · "+esc(mf.f)+" já rende "+vg(mf.md)+"% de mediana em "+mf.n+" posts":""),
+            mf?("o próximo post de "+esc(mf.f.toLowerCase())+" encurta o caminho"):"");})();
     } else if(k==="seg"){
       t='<div style="font:700 14px Inter,sans-serif">'+esc(SG.frase||"Seguidores")+"</div>";
       if(ser.length>1){
@@ -1006,7 +1222,16 @@ function render(data){
           +'<div class="sm num" style="display:flex;justify-content:space-between;margin-top:4px"><span>'+ser[0].d.slice(8,10)+"/"+ser[0].d.slice(5,7)+" · "+fmtN(ser[0].v)+'</span><span>'+ser[ser.length-1].d.slice(8,10)+"/"+ser[ser.length-1].d.slice(5,7)+": <b>"+fmtN(ser[ser.length-1].v)+"</b></span></div>"
           +'<div class="sm">as barras roxas marcam os trechos em que você publicou</div>'
           +(SG.delta7?'<div class="sm num" style="margin-top:3px">'+esc(SG.delta7)+"</div>":"")
-          +'<details><summary>ver dia a dia</summary><div class="body num">'+ser.map(p=>p.d.slice(8,10)+"/"+p.d.slice(5,7)+": "+fmtN(p.v)).join("<br>")+"</div></details>";
+          +'<details><summary>ver dia a dia</summary><div class="body num">'+ser.map(p=>p.d.slice(8,10)+"/"+p.d.slice(5,7)+": "+fmtN(p.v)).join("<br>")+"</div></details>"
+          +(function(){ // leitura: a série pareada com as marcas de publicação
+            const M={}; (D.fol_marcas||[]).forEach(m=>M[m.d]=m.p);
+            let com=0,sem=0,tc=0,ts=0;
+            for(let i=1;i<ser.length;i++){const dlt=ser[i].v-ser[i-1].v;
+              if(M[ser[i].d]){com+=dlt;tc++;} else {sem+=dlt;ts++;}}
+            if(tc<1||ts<1) return "";
+            const sg=v=>(v>0?"+":"")+v;
+            return leit("Trechos com post: <b>"+sg(com)+"</b> · trechos sem post: <b>"+sg(sem).replace("-","−")+"</b> ("+ser[0].d.slice(8,10)+"/"+ser[0].d.slice(5,7)+" a "+ser[ser.length-1].d.slice(8,10)+"/"+ser[ser.length-1].d.slice(5,7)+")",
+              "publicar segura a base · parar derruba");})();
       } else t+='<div class="sm">série ainda curta para desenhar</div>';
     } else {
       t='<div style="font:700 14px Inter,sans-serif">'+esc(RT.frase||"Ritmo")+"</div>"
@@ -1016,7 +1241,11 @@ function render(data){
           +(x.p?"height:34px;background:var(--grad)":"height:11px;background:"+(x.fds?"repeating-linear-gradient(90deg,#E2E8F0 0 3px,transparent 3px 6px)":"#E7ECF3"))+'"></div>'
           +'<span style="font-size:11px;color:var(--sub);font-weight:600">'+esc(String(x.d).slice(0,2))+"</span></div>").join("")
         +"</div>"
-        +'<div class="sm num" style="margin-top:6px">14 dias · cheia = dia com post · pontilhada = fim de semana '+pillHtml(RT.pill)+"</div>";
+        +'<div class="sm num" style="margin-top:6px">14 dias · cheia = dia com post · pontilhada = fim de semana '+pillHtml(RT.pill)+"</div>"
+        +(function(){const BU=D.buracos||{}; if(!BU.meta) return "";
+          const p14=(RT.dots||[]).filter(x=>x.p).length;
+          return leit("<b>"+p14+" posts</b> em 14 dias · o combinado é "+BU.meta+" por semana ("+(BU.meta*2)+" em 14)",
+            (BU.faltam>0?("falta"+(BU.faltam>1?"m":"")+" "+BU.faltam+" nesta semana · o dia livre está na aba HOJE"):"semana fechada · agende a próxima"));})();
     }
     box.innerHTML=t;
     if(k==="seg") ligaTooltipSeguidores();
