@@ -282,7 +282,7 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const DIAS=["segunda","terça","quarta","quinta","sexta","sábado","domingo"];
 const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-const LIMITES={posts:4,stories:2,learning:9,tiktok:9,linkedin:9,trello:2,crm:2,blog:9,events:14,ourspacelab:40,formatos:14};
+const LIMITES={posts:4,stories:2,learning:8,tiktok:9,linkedin:9,trello:2,crm:2,blog:9,events:14,ourspacelab:40,formatos:14};
 const TAGCLS={"Autoridade":"t-aut","Educação":"t-edu","Prova/bastidores":"t-pro","Desejo/curadoria":"t-des","Oferta":"t-ofe"};
 const tag=(p,extra)=>'<span class="tag '+(TAGCLS[p]||"t-aut")+(extra?" "+extra:"")+'">'+esc((p||"").split("/")[0])+"</span>";
 const LOGOS={
@@ -349,7 +349,7 @@ function barraJanela(){
         + (j.dias===null ? "tudo" : j.dias+" dias") + "</button>").join("")
     + '<span class="datas"><input type="date" id="jde" aria-label="de"><input type="date" id="jate" aria-label="até">'
     + '<button data-j="livre" aria-selected="false">aplicar</button></span></div>'
-    + '<div id="janaviso" hidden></div>'
+    + '<div id="janaviso" hidden></div><div class="sm" id="janvazio" hidden style="background:var(--off);border-radius:12px;padding:12px 14px;margin:6px 0"></div>'
     + '<div class="sm" style="margin:2px 2px 0">esta barra muda só os blocos desta aba · a ANÁLISE lê sempre '+esc(D.janela||"")+'</div>';
 }
 
@@ -369,6 +369,8 @@ function aplicaJanela(){
   const põe = (id, v) => { const e=document.getElementById(id); if(e) e.textContent = (v===null||v===undefined) ? "sem dado" : v; };
   if(j){
     põe("jn-er", j.er); põe("jn-sends", j.sends); põe("jn-seg", j.seg);
+    const nt=document.getElementById("jn-segnota");
+    if(nt){ nt.textContent=j.seg_nota||""; nt.hidden=!j.seg_nota; }
     põe("jn-n", j.n_medidos + (j.n_medidos===1 ? " post" : " posts"));
     põe("jn-per", j.de + " a " + j.ate);
   }
@@ -378,6 +380,14 @@ function aplicaJanela(){
     const t = el.dataset.pts || "";
     el.hidden = !!(t && (t < ini || t > fim));
   });
+  // faixa sem post nenhum deixava três blocos vazios na tela (achado 07/08)
+  const vis=[...document.querySelectorAll("tr[data-pts]")].filter(x=>!x.hidden).length;
+  const vazio=document.getElementById("janvazio");
+  ["#grade","#tabelaposts"].forEach(sel=>{
+    const e=document.querySelector(sel); if(e) e.hidden = (vis===0);
+  });
+  if(vazio){ vazio.hidden = (vis!==0);
+    if(vis===0) vazio.textContent = "Nenhum post neste período. Escolha outro ou volte para “tudo”."; }
   if(typeof aplicaFiltro === "function") aplicaFiltro();
 }
 
@@ -539,7 +549,8 @@ function render(data){
     +'<div class="jrow">'
     +[["♡ ER","jn-er"],["✈ envios","jn-sends"],["👤 seguidores","jn-seg"]]
       .map(x=>'<div class="jtile"><div class="sm">'+x[0]+'</div><div class="num" id="'+x[1]+'"></div></div>').join("")
-    +'</div><div class="sm" style="margin-top:6px">sobre <span id="jn-n"></span> com medida do Instagram</div></div>' 
+    +'</div><div class="sm" id="jn-segnota" hidden style="margin-top:5px"></div>'
+    +'<div class="sm" style="margin-top:6px">sobre <span id="jn-n"></span> com medida do Instagram</div></div>' 
     +(function(){const T=D.trouxe;if(!T)return "";
       const maxv=Math.max(...T.formatos.map(f=>parseFloat(String(f.vis_post).replace(",","."))||0),1);
       return '<div class="card" style="border-left:3px solid #7C3AED">'
@@ -579,7 +590,7 @@ function render(data){
     +'<div class="seg" style="position:static;margin:6px 0 8px" id="ordseg" role="tablist">'
     +[["er","♡ ER"],["sends","✈ envios"],["d","🗓 data"]].map((o,i)=>'<button data-ord="'+o[0]+'" aria-selected="'+(i===0)+'">'+o[1]+"</button>").join("")+"</div>"
     +'<div id="grade" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px"></div></div>'
-    +'<details style="margin-top:8px"><summary>ver os posts da janela em tabela</summary>' 
+    +'<details id="tabelaposts" style="margin-top:8px"><summary>ver os posts da janela em tabela</summary>' 
     +'<div style="overflow-x:auto"><table class="tfix"><tr><th>data</th><th>formato</th><th>pilar</th><th>ER %</th><th>envios %</th><th>D+7</th><th></th></tr>'
     +P.all.map(p=>'<tr data-pilar="'+esc(p.pilar)+'" data-pts="'+esc(p.ts||"")+'"><td class="num">'+esc(p.d)+"</td><td>"+esc(p.fmt)+"</td><td>"+tag(p.pilar)
       +'</td><td class="num"><b>'+(p.er===null?'<span class="sm">sem medida</span>':esc(p.er)+"%")+'</b></td><td class="num">'+(p.sends===null?"·":esc(p.sends)+"%")+"</td><td>"+d7pill(p)+"</td><td>"+lk(p.url,"abrir ↗","golink")+"</td></tr>").join("")
@@ -709,7 +720,7 @@ function render(data){
     +'<div class="card"><span class="k">Leitura da semana '+ageChip(S,"learning")+"</span>"
     +(S.learning&&S.learning.at?'<div class="sm" style="margin-top:3px">retrato de '+esc(fmtAbs(S.learning.at))+" · os números do texto são daquele dia</div>":"")
     +'<p style="font-weight:600;margin:6px 0 4px;font-size:13px">'+esc(L.headline||"sem leitura ainda")+"</p>"
-    +(L.action?'<p style="font-size:13px">→ '+esc(L.action)+' <a class="golink" href="#" onclick="showView(\'posts\');return false">ver posts ↗</a></p>':"")
+    +(L.action_valida?'<p style="font-size:13px">→ '+esc(L.action_valida)+' <a class="golink" href="#" onclick="showView(\'posts\');return false">ver posts ↗</a></p>':"")
     +'<details><summary>funcionou · aposentar · testar</summary><div class="body">'
     +(L.won?"<b>Funcionou:</b> "+esc(L.won)+"<br><br>":"")
     +(L.retire?"<b>Aposentar:</b> "+esc(L.retire)+"<br><br>":"")
@@ -917,7 +928,7 @@ function render(data){
       +grp("👀","Aprovar",F.aprovar)+grp("🎬","Gravar",F.gravar)+grp("♻️","Reaproveitar",F.repurpose)
       +"<h2>💡 Pautas · de onde começar</h2><div class=card>"
       +((D.pautas&&D.pautas.length)?D.pautas.map(p=>'<div class="linha"><span>'+lk(p.url,esc(p.t),"golink")+"</span><span></span></div>").join(""):'<div class="sm">lista Ideias vazia</div>')
-      +((D.learning&&D.learning.action)?'<div class="sm" style="margin-top:4px"><b>por quê agora:</b> '+esc(D.learning.action)+"</div>":"")
+      +((D.learning&&D.learning.action_valida)?'<div class="sm" style="margin-top:4px"><b>por quê agora:</b> '+esc(D.learning.action_valida)+"</div>":"")
       +'<div class="sm" style="margin-top:4px">'+lk(F.ideias.link,"lista Ideias ↗","golink")+' · '+F.ideias.n+' pautas vivas · o dinheiro mudou para a aba <a class="golink" href="#" onclick="showView(\'negocio\');return false">R$</a></div>'
       +"</div>";
   } else {
