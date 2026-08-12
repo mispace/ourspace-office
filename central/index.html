@@ -538,7 +538,7 @@ function render(data){
     +hoje.getDate()+" de "+MESES[hoje.getMonth()].slice(0,3)+" · "+esc(fmtAge(D.meta.built_at)||"")+"</div></div>"
     +lk(m.link,"🎚 "+esc(m.value||"Normal")+(m.ok?"":" (padrão)"),"marcha")
     +'<button id="ajuda" title="como ler esta central" aria-label="como ler" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font:700 15px Inter,sans-serif;cursor:pointer;margin-right:6px">?</button>'
-    +'<button id="refresh" title="atualizar agora" aria-label="atualizar agora" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font-size:15px;cursor:pointer">↻</button>'
+    +'<button id="refresh" title="atualiza agora: Instagram (posts, stories, seguidores, demografia · se o dado tiver 2h ou mais), Trello, funil e blog · TikTok, LinkedIn e YouTube entram na sexta de manhã · ideias novas nos dias 5 e 19" aria-label="atualizar agora" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font-size:15px;cursor:pointer">↻</button>'
     +"</div></div></div>";
 
   // ---------- HOJE ----------
@@ -598,7 +598,8 @@ function render(data){
     +'<div class="leg"><span><i class="d-post"></i>post</span><span><i class="d-story"></i>story</span><span><i class="d-due"></i>prazo</span><span><i class="d-ev"></i>evento</span></div>'
     +'<p class="sm" id="callegenda" style="margin:2px 2px 8px"></p>'
     +'<div class="card" id="daypanel"><span class="sm">toque num dia para ver o que tem nele</span></div>'
-    +((D.fila&&D.fila.vencidos&&D.fila.vencidos.n)?'<div class="card sm" style="line-height:1.55"><b style="color:var(--down)">'+D.fila.vencidos.n+(D.fila.vencidos.n===1?" card passou":" cards passaram")+" do prazo no board.</b> Nada muda sozinho: são tarefas antigas com data vencida. "+lk(D.fila.vencidos.link,"Abrir no board ↗","golink")+" e escolher: nova data ou concluir. Se quiser, eu reagendo em lote (me pede).</div>":"")
+    +((D.fila&&D.fila.vencidos&&D.fila.vencidos.n)?'<div class="card sm" style="line-height:1.55"><b style="color:var(--down)">'+D.fila.vencidos.n+(D.fila.vencidos.n===1?" card passou":" cards passaram")+" do prazo no board.</b> Nada muda sozinho: são tarefas antigas com data vencida. "+lk(D.fila.vencidos.link,"Abrir no board ↗","golink")+" e escolher: nova data ou concluir."
+      +(D.comentar?'<div style="margin-top:8px"><a class="golink" href="'+esc(D.comentar)+'" target="_blank" rel="noopener" style="display:inline-block;background:var(--brand);color:#fff;border-radius:10px;padding:9px 14px;font:700 13px Inter,sans-serif;min-height:40px">↪ reagendar vencidos em lote</a><span class="sm" style="display:block;margin-top:5px">abre o card de comentários · escreva ali "reagenda os vencidos" e a triagem do dia move cada um para o próximo dia útil e responde o que mudou</span></div>':"")+"</div>":"")
     +"</section>";
 
   // ---------- POSTS ----------
@@ -1356,7 +1357,7 @@ function render(data){
     vigiaRodada();
     const b=$("#refresh"); b.textContent="✓"; b.disabled=true;
     const av=$("#banner");
-    const msg='pedido de atualização enviado · a página nova fica pronta em ~2 minutos · depois é só recarregar';
+    const msg='pedido enviado · atualiza: Instagram (se o dado tiver 2h ou mais), Trello, funil e blog · TikTok, LinkedIn e YouTube são da sexta de manhã · pronta em ~2 min, depois recarregue';
     if(av){ av.textContent=msg; } else { const d=document.createElement("div"); d.id="banner"; d.textContent=msg; $("#v-hoje").prepend(d); }
   });
   $("#cprev").addEventListener("click",()=>moveCal(-1));
