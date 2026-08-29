@@ -318,7 +318,7 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const DIAS=["segunda","terça","quarta","quinta","sexta","sábado","domingo"];
 const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-const LIMITES={posts:4,stories:2,learning:8,tiktok:9,linkedin:9,trello:2,crm:2,blog:9,events:14,ourspacelab:40,formatos:14};
+const LIMITES={posts:4,stories:2,learning:8,insights:21,tiktok:9,linkedin:9,trello:2,crm:2,blog:9,events:14,ourspacelab:40,formatos:14};
 const TAGCLS={"Autoridade":"t-aut","Educação":"t-edu","Prova/bastidores":"t-pro","Desejo/curadoria":"t-des","Oferta":"t-ofe"};
 const tag=(p,extra)=>'<span class="tag '+(TAGCLS[p]||"t-aut")+(extra?" "+extra:"")+'">'+esc((p||"").split("/")[0])+"</span>";
 const LOGOS={yt:'<svg viewBox="0 0 24 24" style="width:15px;height:15px;vertical-align:-2px;margin-right:5px" fill="#FF0033"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9.2v5.6L15 12z" fill="#fff"/></svg>',
@@ -703,6 +703,18 @@ function render(data){
         +(RP.fecho.mudar?"<b>Mudar:</b> "+esc(RP.fecho.mudar)+"<br>":"")
         +(RP.fecho.testar?"<b>Testar:</b> "+esc(RP.fecho.testar):"")+"</div></details>":"")
       +"</div>";
+  const INS=(D.insights&&D.insights.itens)||[];
+  if(INS.length)
+    h+='<div class="card"><span class="k">🔍 Leituras '+ageChip(S,"insights")+"</span>"
+      +'<div class="sm">o que a gente descobriu olhando os dados. não é coleta: é conclusão, e por isso tem data.</div>'
+      +INS.map(function(i){return '<details style="margin-top:7px"><summary>'+esc(i.t||"")
+        +' <span class="sm">· '+esc(fmtAbs(i.d||""))+'</span></summary><div class="body">'
+        +esc(i.txt||"")
+        +(i.acao?'<div style="margin-top:5px"><b>o que fazer:</b> '+esc(i.acao)+"</div>":"")
+        +(i.fonte?'<div class="sm" style="margin-top:4px">fonte: '+esc(i.fonte)+"</div>":"")
+        +"</div></details>";}).join("")
+      +"</div>";
+
   const NU=SA.numero||{}, RT=SA.ritmo||{}, SG=SA.seg||{}, fs=D.followers||{}, ser=fs.series||[];
   h+='<div class="card" id="mbox">'+cab("📈 Como você está",esc(D.janela||"")+" · toque na métrica","posts")
     +'<div class="seg" style="position:static;margin:8px 0" id="mseg" role="tablist">'
@@ -1168,7 +1180,7 @@ function render(data){
   } else {
     h+='<div class="card"><span class="age stale">Trello sem dado nesta rodada</span></div>';
   }
-  const NOMES={posts:"Instagram · posts",stories:"Instagram · stories",trello:"Trello (fila/agenda)",crm:"CRM (pipeline)",learning:"Leitura da semana",tiktok:"TikTok",linkedin:"LinkedIn",events:"Eventos (agenda)",blog:"Blog (Wix)",ourspacelab:"@ourspacelab",formatos:"Formatos (espelho da planilha)"};
+  const NOMES={posts:"Instagram · posts",stories:"Instagram · stories",trello:"Trello (fila/agenda)",crm:"CRM (pipeline)",learning:"Leitura da semana",insights:"Leituras (análises)",tiktok:"TikTok",linkedin:"LinkedIn",events:"Eventos (agenda)",blog:"Blog (Wix)",ourspacelab:"@ourspacelab",formatos:"Formatos (espelho da planilha)"};
   h+='<h2 id="atualizacoes">🕐 Atualizações</h2><p class=sub-h>quando cada dado chegou · o ↻ lá em cima pede uma rodada nova (fica pronta em ~2 min)</p><div class="card">'
     +Object.keys(NOMES).filter(k=>S[k]).map(k=>{
       const st=S[k]; const dias=st.at?(Date.now()-new Date(String(st.at).slice(0,10)+"T12:00:00").getTime())/864e5:99;
