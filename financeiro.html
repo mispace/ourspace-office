@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Financeiro · OUR SPACE</title>
+<style>
+  :root{
+    --papel:#F4F4F2; --ink:#0F0F12; --card:#FFFFFF; --linha:#E3E3DE; --stone:#5D5D64;
+    --peri:#6C90F1; --lilac:#774BDD; --vivo:#c23a3a;
+    --sans:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --papel:#0F0F12; --ink:#F2F1EE; --card:#17171C; --linha:#26262C; --stone:#A2A2AA; --vivo:#e2605f; }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--papel);color:var(--ink);font-family:var(--sans)}
+  .gate{max-width:320px;margin:0 auto;padding:22vh 20px 0;text-align:center}
+  .gate h1{font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0 0 4px}
+  .gate h1 span{color:var(--stone);font-weight:500}
+  .gate p.dica{color:var(--stone);font-size:12.5px;margin:0 0 18px;line-height:1.5}
+  .gate input{
+    width:100%;box-sizing:border-box;padding:11px 13px;font-size:15px;
+    border:1px solid var(--linha);border-radius:11px;background:var(--card);color:var(--ink)
+  }
+  .gate button{
+    margin-top:10px;width:100%;padding:11px;font-size:13.5px;font-weight:600;
+    background:var(--ink);color:var(--papel);border:none;border-radius:11px;cursor:pointer
+  }
+  .gate button:disabled{opacity:.6;cursor:default}
+  .gate .err{color:var(--vivo);font-size:12.5px;min-height:18px;margin-top:10px;font-weight:600}
+  #sair{
+    position:fixed;top:10px;right:12px;font-size:11px;color:var(--stone);background:var(--card);
+    border:1px solid var(--linha);border-radius:8px;padding:5px 10px;cursor:pointer;display:none;z-index:10
+  }
+  #painel{
+    display:none;position:fixed;inset:0;width:100%;height:100%;border:none;background:var(--card)
+  }
+</style>
+</head>
+<body>
+<div class="gate" id="gate">
+  <h1>Financeiro <span>· OUR SPACE</span></h1>
+  <p class="dica">Dados cifrados (AES-256-GCM). A senha decifra só no seu navegador; nada em texto claro sai daqui.</p>
+  <input type="password" id="pw" placeholder="senha" autocomplete="current-password">
+  <button id="go">Abrir</button>
+  <div class="err" id="err"></div>
+</div>
+<button id="sair">sair</button>
+<iframe id="painel" title="Painel financeiro"></iframe>
+<script>
+const CHAVE_SESSAO = 'fin_v4_k';
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+async function deriveKey(pw, salt, iter){
+  const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:iter, hash:'SHA-256'}, km, {name:'AES-GCM', length:256}, true, ['decrypt']);
+}
+
+function mostrarPainel(html){
+  const iframe = document.getElementById('painel');
+  iframe.srcdoc = html;
+  document.getElementById('gate').style.display = 'none';
+  iframe.style.display = 'block';
+  document.getElementById('sair').style.display = 'block';
+}
+
+async function abrir(pw){
+  const env = await (await fetch('financeiro.enc?t=' + Date.now(), {cache:'no-store'})).json();
+  let key;
+  const cached = sessionStorage.getItem(CHAVE_SESSAO);
+  if (!pw && cached){
+    key = await crypto.subtle.importKey('raw', b64(cached), 'AES-GCM', false, ['decrypt']);
+  } else {
+    key = await deriveKey(pw, b64(env.salt), env.iter);
+    const raw = await crypto.subtle.exportKey('raw', key);
+    sessionStorage.setItem(CHAVE_SESSAO, btoa(String.fromCharCode(...new Uint8Array(raw))));
+  }
+  const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:b64(env.iv)}, key, b64(env.ct));
+  const payload = JSON.parse(new TextDecoder().decode(pt));
+  mostrarPainel(payload.html);
+}
+
+document.getElementById('go').addEventListener('click', async () => {
+  const btn = document.getElementById('go');
+  const pw = document.getElementById('pw').value;
+  const err = document.getElementById('err');
+  err.textContent = '';
+  btn.disabled = true;
+  try {
+    await abrir(pw);
+  } catch (e) {
+    sessionStorage.removeItem(CHAVE_SESSAO);
+    err.textContent = 'Senha incorreta (ou dados indisponíveis agora).';
+  } finally {
+    btn.disabled = false;
+  }
+});
+document.getElementById('pw').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('go').click(); });
+document.getElementById('sair').addEventListener('click', () => {
+  sessionStorage.removeItem(CHAVE_SESSAO);
+  location.reload();
+});
+(async () => {
+  if (sessionStorage.getItem(CHAVE_SESSAO)) {
+    try { await abrir(null); } catch (e) { sessionStorage.removeItem(CHAVE_SESSAO); }
+  }
+})();
+</script>
+</body>
+</html>
