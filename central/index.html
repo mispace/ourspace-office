@@ -318,7 +318,7 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const DIAS=["segunda","terça","quarta","quinta","sexta","sábado","domingo"];
 const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-const LIMITES={posts:4,stories:2,learning:9,insights:21,tiktok:9,linkedin:9,trello:2,crm:2,blog:9,events:14,ourspacelab:40,formatos:14,youtube:9,publico:40,ideias:20}; // 03/11: igualado ao qa_v3.py (learning, insights, events divergiam)
+const LIMITES={posts:4,stories:2,learning:9,insights:21,tiktok:9,linkedin:9,trello:2,crm:2,blog:9,events:14,ourspacelab:40,formatos:14,youtube:9,publico:40,ideias:20,radar:40}; // 03/11: igualado ao qa_v3.py (learning, insights, events divergiam)
 const TAGCLS={"Autoridade":"t-aut","Educação":"t-edu","Prova/bastidores":"t-pro","Desejo/curadoria":"t-des","Oferta":"t-ofe"};
 const tag=(p,extra)=>'<span class="tag '+(TAGCLS[p]||"t-aut")+(extra?" "+extra:"")+'">'+esc((p||"").split("/")[0])+"</span>";
 const LOGOS={yt:'<svg viewBox="0 0 24 24" style="width:15px;height:15px;vertical-align:-2px;margin-right:5px" fill="#FF0033"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9.2v5.6L15 12z" fill="#fff"/></svg>',
@@ -538,7 +538,7 @@ function render(data){
     +hoje.getDate()+" de "+MESES[hoje.getMonth()].slice(0,3)+" · "+esc(fmtAge(D.meta.built_at)||"")+"</div></div>"
     +lk(m.link,"🎚 "+esc(m.value||"Normal")+(m.ok?"":" (padrão)"),"marcha")
     +'<button id="ajuda" title="como ler esta central" aria-label="como ler" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font:700 15px Inter,sans-serif;cursor:pointer;margin-right:6px">?</button>'
-    +'<button id="refresh" title="atualiza agora: Instagram (posts, stories, seguidores, demografia · se o dado tiver 2h ou mais), Trello, funil e blog · TikTok, LinkedIn e YouTube entram na sexta de manhã · ideias novas nos dias 5 e 19" aria-label="atualizar agora" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font-size:15px;cursor:pointer">↻</button>'
+    +'<button id="refresh" title="atualiza agora: Instagram (posts, stories, seguidores, demografia · se o dado tiver 2h ou mais), Trello, funil e blog · TikTok, LinkedIn e YouTube só entram quando a Mesa coleta numa sessão (não é automático) · ideias novas nos dias 5 e 19" aria-label="atualizar agora" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font-size:15px;cursor:pointer">↻</button>'
     +"</div></div></div>";
 
   // ---------- HOJE ----------
@@ -913,7 +913,7 @@ function render(data){
         return leit("<b>"+fmtMil(yt.subscribers||0)+"</b> inscritos · os "+vs.length+" vídeos novos têm "+Math.max(...vs)+" views ou menos",
           "o valor aqui é acervo e busca · o título leva o termo que a busca do TikTok revelou");})()
       +'<div class="sm" style="margin-top:4px">'+lk(yt.url,"abrir o canal ↗","golink")+"</div></div>":"")
-    +'<div class="card"><span class="k">'+LOGOS.blog+"Blog (Wix) "+ageChip(S,"blog")+"</span>"
+    +'<div class="card"><span class="k">'+LOGOS.blog+"Blog "+ageChip(S,"blog")+"</span>"
     +(bl.ok?'<div class="linha"><span>'+lk(bl.url,esc(bl.title||"último post"))+'</span><span class="sm num">'+esc(bl.date?bl.date.slice(8,10)+"/"+bl.date.slice(5,7):"")+"</span></div>"
            :'<div class="sm">sem leitura do feed nesta rodada</div>')
     +(function(){if(!bl.ok||!bl.date) return '<div class="sm" style="margin-top:4px">o Wix não fornece número de leitura · métrica = cadência</div>';
@@ -1180,7 +1180,7 @@ function render(data){
   } else {
     h+='<div class="card"><span class="age stale">Trello sem dado nesta rodada</span></div>';
   }
-  const NOMES={posts:"Instagram · posts",stories:"Instagram · stories",trello:"Trello (fila/agenda)",crm:"CRM (pipeline)",learning:"Leitura da semana",insights:"Leituras (análises)",tiktok:"TikTok",linkedin:"LinkedIn",events:"Eventos (agenda)",blog:"Blog (Wix)",ourspacelab:"@ourspacelab",formatos:"Formatos (espelho da planilha)"};
+  const NOMES={posts:"Instagram · posts",stories:"Instagram · stories",trello:"Trello (fila/agenda)",crm:"CRM (pipeline)",learning:"Leitura da semana",insights:"Leituras (análises)",tiktok:"TikTok",linkedin:"LinkedIn",events:"Eventos (agenda)",blog:"Blog",ourspacelab:"@ourspacelab",formatos:"Formatos (espelho da planilha)"};
   h+='<h2 id="atualizacoes">🕐 Atualizações</h2><p class=sub-h>quando cada dado chegou · o ↻ lá em cima pede uma rodada nova (fica pronta em ~2 min)</p><div class="card">'
     +Object.keys(NOMES).filter(k=>S[k]).map(k=>{
       const st=S[k]; const dias=st.at?(Date.now()-new Date(String(st.at).slice(0,10)+"T12:00:00").getTime())/864e5:99;
@@ -1369,7 +1369,7 @@ function render(data){
     vigiaRodada();
     const b=$("#refresh"); b.textContent="✓"; b.disabled=true;
     const av=$("#banner");
-    const msg='pedido enviado · atualiza: Instagram (se o dado tiver 2h ou mais), Trello, funil e blog · TikTok, LinkedIn e YouTube são da sexta de manhã · pronta em ~2 min, depois recarregue';
+    const msg='pedido enviado · atualiza: Instagram (se o dado tiver 2h ou mais), Trello, funil e blog · TikTok, LinkedIn e YouTube só entram quando a Mesa coleta numa sessão · pronta em ~2 min, depois recarregue';
     if(av){ av.textContent=msg; } else { const d=document.createElement("div"); d.id="banner"; d.textContent=msg; $("#v-hoje").prepend(d); }
   });
   $("#cprev").addEventListener("click",()=>moveCal(-1));
