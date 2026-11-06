@@ -90,7 +90,7 @@ details .body{font-size:13px;color:var(--sub);padding:6px 0 2px;line-height:1.55
 .logo{flex:0 0 auto;width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#fff;vertical-align:-8px;margin-right:8px}
 .logo svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .logo b{font:700 13px 'Inter',sans-serif;color:#fff}
-.lg-ig{background:#C13584}.lg-tt{background:#1A1A1A}.lg-li{background:#0A66C2}.lg-blog{background:var(--brand)}.lg-lab{background:var(--brand-dark)}
+.lg-ig{background:#C13584}.lg-tt{background:#1A1A1A}.lg-li{background:#0A66C2}.lg-blog{background:var(--brand)}
 /* ============ lock ============ */
 #lock{position:fixed;inset:0;background:var(--canvas);display:flex;align-items:center;justify-content:center;z-index:60}
 #skel div{height:74px;background:linear-gradient(180deg,var(--line2),var(--off));border-radius:var(--r-lg);margin:10px 0}
@@ -318,15 +318,14 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const DIAS=["segunda","terça","quarta","quinta","sexta","sábado","domingo"];
 const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-const LIMITES={posts:4,stories:2,learning:9,insights:21,tiktok:9,linkedin:9,trello:2,crm:2,blog:9,events:14,ourspacelab:40,formatos:14,youtube:9,publico:40,ideias:20,radar:40}; // 03/11: igualado ao qa_v3.py (learning, insights, events divergiam)
+const LIMITES={posts:4,stories:2,learning:9,insights:21,tiktok:9,linkedin:9,trello:2,crm:2,blog:9,events:14,formatos:14,youtube:9,publico:40,ideias:20,radar:40}; // 03/11: igualado ao qa_v3.py (learning, insights, events divergiam)
 const TAGCLS={"Autoridade":"t-aut","Educação":"t-edu","Prova/bastidores":"t-pro","Lifestyle":"t-des","Desejo/curadoria":"t-des","Oferta":"t-ofe"};
 const tag=(p,extra)=>'<span class="tag '+(TAGCLS[p]||"t-aut")+(extra?" "+extra:"")+'">'+esc((p||"").split("/")[0])+"</span>";
 const LOGOS={yt:'<svg viewBox="0 0 24 24" style="width:15px;height:15px;vertical-align:-2px;margin-right:5px" fill="#FF0033"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9.2v5.6L15 12z" fill="#fff"/></svg>',
   ig:'<span class="logo lg-ig"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="#fff" stroke="none"/></svg></span>',
   tt:'<span class="logo lg-tt"><svg viewBox="0 0 24 24"><path d="M14 4v9.5a4 4 0 1 1-3-3.87"/><path d="M14 4c.5 2.6 2.3 4.2 5 4.5"/></svg></span>',
   li:'<span class="logo lg-li"><b>in</b></span>',
-  blog:'<span class="logo lg-blog"><svg viewBox="0 0 24 24"><path d="M5 19l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L9 18l-4 1z"/></svg></span>',
-  lab:'<span class="logo lg-lab"><b>OS</b></span>'
+  blog:'<span class="logo lg-blog"><svg viewBox="0 0 24 24"><path d="M5 19l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L9 18l-4 1z"/></svg></span>'
 };
 
 const fmtAbs=iso=>{ if(!iso) return "sem carimbo"; const t=String(iso); return t.slice(8,10)+"/"+t.slice(5,7)+(t.length>10?" "+t.slice(11,16):""); };
@@ -579,7 +578,7 @@ function render(data){
       +'<div class="sm" style="margin-top:7px">✓ publicou · • já tem card · + dia livre · ○ passou sem post</div></div>':"")
     // 4 · o que vem: evento e story do dia, com um toque cada
     +'<div class="card">'+cab("⏭ O que vem","próximo compromisso e o story de hoje","events")
-    +(ev1?'<div class="linha"><span>'+lk(ev1.gcal,esc(ev1.t)+" ↗")+'</span><span class="sm num">'+esc(ev1.d)+"</span></div>"
+    +(ev1?'<div class="linha"><span>'+lk(ev1.url||ev1.gcal,esc(ev1.t)+" ↗")+'</span><span class="sm num">'+esc(ev1.d)+"</span></div>"
         :(_ev1repetido?'<div class="sm">depois do compromisso de amanhã, nada marcado</div>'
           :'<div class="sm">nenhum compromisso marcado nos próximos dias</div>'))
     +'<div class="linha"><span>📱 Story de hoje · '+lk(D.fila&&D.fila.ideias?D.fila.ideias.link:null,"pautas ↗","golink")+'</span><span class="sm">'+esc((D.stories||{}).template||"")+"</span></div>"
@@ -859,7 +858,7 @@ function render(data){
   } else { h+='<div class="card"><span class="age stale">formatos ainda sem espelho nesta rodada</span></div>'; }
   h+="</div>";
 
-  const bl=C.blog||{}, ol=C.ourspacelab;
+  const bl=C.blog||{};
   const TC=D.total_canais, PB=D.publico, RD=D.radar;
   const yt=(D.canais||{}).youtube;
   h+='<div class="subv" id="s-canais" hidden>'
@@ -921,11 +920,6 @@ function render(data){
       return leit("último post há <b>"+dias+" dias</b> ("+bl.date.slice(8,10)+"/"+bl.date.slice(5,7)+")",
         dias>14?"passou da quinzena · 1 post reaproveitado do carrossel resolve":"dentro da quinzena · o próximo pode nascer do termo mais buscado no TikTok");})()
     +"</div>"
-    +(ol?'<div class="card"><span class="k">'+LOGOS.lab+"@ourspacelab "+ageChip(S,"ourspacelab")+"</span>"
-      +'<div class="linha"><span>seguidores</span><span class="n num">'+esc(ol.followers)+"</span></div>"
-      +'<div class="linha"><span>posts</span><span class="n num">'+esc(ol.posts??"—")+"</span></div>"
-      +'<div class="sm" style="margin-top:4px">contagem mensal (1ª sexta) · '+lk(ol.url,"abrir ↗","golink")+"</div></div>"
-      :'<div class="card"><span class="k">'+LOGOS.lab+'@ourspacelab</span><div class="sm" style="margin-top:6px">contagem mensal entra na 1ª sexta de agosto (rotina instalada) · '+lk("https://www.instagram.com/ourspacelab/","abrir ↗","golink")+"</div></div>")
     +"</div></section>";
 
   // ---------- NEGÓCIO (aba R$ · pedido dela 03/08) ----------
@@ -998,7 +992,8 @@ function render(data){
       if(atual||SAl) cg.push(sig({full:1,ic:"👤",lb:"Seguidores agora",
         n:atual?fmtMil(atual.v):esc(SAl.liquido),
         pill:pillDelta(S7.seg,"em 7 dias"),
-        r:SAl?("entraram <b>+"+SAl.chegaram+"</b> · saíram cerca de <b>"+SAl.sairam+"</b> · sobrou <b>"+esc(SAl.liquido)+"</b> · de "+esc(SAl.de)+" a "+esc(SAl.ate)):"",
+        r:(SAl?("entraram <b>+"+SAl.chegaram+"</b> · saíram cerca de <b>"+SAl.sairam+"</b> · sobrou <b>"+esc(SAl.liquido)+"</b> · de "+esc(SAl.de)+" a "+esc(SAl.ate)):"")
+          +((RD&&RD.seguidores&&RD.seguidores.frase)?((SAl?"<br>":"")+esc(RD.seguidores.frase)):""),
         spark:(FSer.length>2?sparkSvg(FSer.slice(-30).map(x=>x.v),52,FSer.slice(-30).map(x=>x.d),"spark-fol"):""),
         abre:"como essa conta é feita ▾",
         mais:'<div class="sm">os nomes de quem entrou vêm das suas notificações · o que sobrou vem da contagem oficial do Instagram · quantos saíram é conta (entraram menos o que sobrou), porque o Instagram nunca mostra quem deixa de seguir</div>',
@@ -1061,7 +1056,7 @@ function render(data){
             +'<div class="sm" style="margin-top:6px">lido na bio pública de cada uma · quem nada diz na bio fica como "sem sinal"</div>',
           dt:"dado de "+fmtAbs(RD.at)})); }
       if(cg.length){
-        t+="<h2>📡 Quem está chegando "+ageChip(S,"radar")+'</h2><p class="sub-h">'
+        t+="<h2>📡 Quem está chegando "+ageChip((S.radar&&S.radar.prints_at)?{radar:Object.assign({},S.radar,{at:S.radar.prints_at})}:S,"radar") /* 06/11: o bloco mostra os prints, então a idade é a dos prints e não a do export de seguidores */+'</h2><p class="sub-h">'
           +(SAl?("números grandes de "+esc(SAl.de)+" a "+esc(SAl.ate)+" · "):"")
           +(RD&&RD.cobertura?RD.cobertura.total+" pessoas com data":"")+"</p>"
           +(RD&&RD.lembrete?'<div style="background:var(--age-bg);color:var(--age);border-radius:10px;padding:9px 12px;margin:6px 0 2px;font:600 12.5px/1.5 Inter,sans-serif">⏰ '+esc(RD.lembrete)+"</div>":"")
@@ -1180,7 +1175,7 @@ function render(data){
   } else {
     h+='<div class="card"><span class="age stale">Trello sem dado nesta rodada</span></div>';
   }
-  const NOMES={posts:"Instagram · posts",stories:"Instagram · stories",trello:"Trello (fila/agenda)",crm:"CRM (pipeline)",learning:"Leitura da semana",insights:"Leituras (análises)",tiktok:"TikTok",linkedin:"LinkedIn",events:"Eventos (agenda)",blog:"Blog",ourspacelab:"@ourspacelab",formatos:"Formatos (espelho da planilha)"};
+  const NOMES={posts:"Instagram · posts",stories:"Instagram · stories",trello:"Trello (fila/agenda)",crm:"CRM (pipeline)",learning:"Leitura da semana",insights:"Leituras (análises)",tiktok:"TikTok",linkedin:"LinkedIn",events:"Eventos (agenda)",blog:"Blog",formatos:"Formatos (espelho da planilha)"};
   h+='<h2 id="atualizacoes">🕐 Atualizações</h2><p class=sub-h>quando cada dado chegou · o ↻ lá em cima pede uma rodada nova (fica pronta em ~2 min)</p><div class="card">'
     +Object.keys(NOMES).filter(k=>S[k]).map(k=>{
       const st=S[k]; const dias=st.at?(Date.now()-new Date(String(st.at).slice(0,10)+"T12:00:00").getTime())/864e5:99;
@@ -1524,8 +1519,8 @@ function dayPanel(iso){
       +'<span style="margin-left:auto">'+lk(a.url,"abrir ↗","golink")+"</span></div>";
   });
   (evs[iso]||[]).forEach(e=>{
-    rows+='<div class="dp"><div><div class="tt">🎤 '+esc(e.t)+'</div><div class="sm">evento na agenda</div></div>'
-      +'<span style="margin-left:auto">'+lk(e.gcal,"abrir ↗","golink")+"</span></div>";
+    rows+='<div class="dp"><div><div class="tt">🎤 '+esc(e.t)+'</div><div class="sm">'+(e.origem==="Trello DATAS"?"data da lista DATAS do board":"evento na agenda")+'</div></div>'
+      +'<span style="margin-left:auto">'+lk(e.url||e.gcal,"abrir ↗","golink")+"</span></div>";
   });
   $("#daypanel").innerHTML='<span class="k">'+dd+"</span>"+(rows||'<div class="sm" style="margin-top:6px">nada neste dia</div>');
 }
