@@ -318,7 +318,7 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const DIAS=["segunda","terça","quarta","quinta","sexta","sábado","domingo"];
 const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-const LIMITES={posts:4,stories:2,learning:9,insights:21,tiktok:9,linkedin:9,trello:2,crm:2,blog:9,events:14,formatos:14,youtube:9,publico:40,ideias:20,radar:40}; // 03/11: igualado ao qa_v3.py (learning, insights, events divergiam)
+const LIMITES={posts:4,stories:2,learning:9,insights:21,tiktok:9,linkedin:9,trello:2,crm:2,mes:2,blog:9,events:14,formatos:14,youtube:9,publico:40,ideias:20,radar:40}; // 03/11: igualado ao qa_v3.py (learning, insights, events divergiam)
 const TAGCLS={"Autoridade":"t-aut","Educação":"t-edu","Prova/bastidores":"t-pro","Lifestyle":"t-des","Desejo/curadoria":"t-des","Oferta":"t-ofe"};
 const tag=(p,extra)=>'<span class="tag '+(TAGCLS[p]||"t-aut")+(extra?" "+extra:"")+'">'+esc((p||"").split("/")[0])+"</span>";
 const LOGOS={yt:'<svg viewBox="0 0 24 24" style="width:15px;height:15px;vertical-align:-2px;margin-right:5px" fill="#FF0033"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9.2v5.6L15 12z" fill="#fff"/></svg>',
@@ -687,7 +687,7 @@ function render(data){
   h+='<section class="view wrap" id="v-analise" hidden>'
     +'<div class="seg" role="tablist">'
     +'<button data-s="saude" aria-selected="true">💚 Saúde</button>'
-    +'<button data-s="formatos" aria-selected="false">🎬 Formatos</button>'
+    +'<button data-s="formatos" aria-selected="false">🗂️ Séries</button>'
     +'<button data-s="canais" aria-selected="false">📡 Canais</button></div>';
 
   const SA=D.saude||{};
@@ -797,8 +797,43 @@ function render(data){
   const maxEr=Math.max(...D.pilares.map(p=>parseFloat(String(p.er).replace(",","."))||0),1);
   // Pilares sairam da Central em 07/08/2026 (decisao dela: vivem so na planilha
   // Content System · GOSTO_LOG). O pilar segue como etiqueta pequena nos posts.
+  // 03/11/2026 ela pediu pilares, series e ideias de volta na Central ("bonitinhos"):
+  // a entrada mais nova vence, e o mix dos 5 volta dentro de <details> FECHADO.
+  // A reconfirmacao de 11/2026 do GOSTO_LOG de 07/08 vai como 1 linha no card 🗓️.
   const FS=D.formatos_sys;
   h+='<div class="subv" id="s-formatos" hidden>';
+  h+=(function(){ // 3 pilares de CONTEÚDO (o que a peça faz) · lista separada do mix dos 5
+    const T=D.taxonomia; if(!T) return "";
+    const CLS={"Ensino":"t-edu","Fazendo":"t-pro","Análise":"t-aut"};
+    const nser=(T.pilares||[]).reduce((a,p)=>a+p.series.length,0)+(T.soltas||[]).length;
+    const chip=(s,cls)=>{   // .tag é nowrap e 24px: a contagem fica FORA dele e pode quebrar
+      const cont=(s.n_pub_mes!=null||s.n_aprovar!=null)
+        ? '<span class="sm" style="margin-left:6px;white-space:normal">'+(s.n_pub_mes!=null?s.n_pub_mes+" no mês · ":"")
+          +(s.n_aprovar||0)+" em Aprovar · "+(s.n_gravar||0)+" em Gravar</span>" : "";
+      return cont
+        ? '<div style="flex:1 1 100%;display:flex;align-items:baseline;flex-wrap:wrap"><span class="tag '+cls+'">'+esc(s.nome)+"</span>"+cont+"</div>"
+        : '<span class="tag '+cls+'">'+esc(s.nome)+"</span>";};
+    const grupo=(nome,oque,series,cls,nota)=>'<div style="margin-top:10px">'
+      +'<div style="font:600 13px Inter,sans-serif;color:var(--gold-deep)">'+esc(nome)+"</div>"
+      +(oque?'<div class="sm">'+esc(oque)+"</div>":"")
+      +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:5px">'+series.map(s=>chip(s,cls)).join("")+"</div>"
+      +(nota?'<div class="sm" style="margin-top:4px">'+esc(nota)+"</div>":"")+"</div>";
+    let s='<div class="card">'+cab("🗂️ "+esc(T.titulo_conteudo),(T.pilares||[]).length+" pilares · "+nser+" séries com nome de trabalho","trello");
+    s+=(T.pilares||[]).map(p=>grupo(p.nome,p.o_que,p.series,CLS[p.nome]||"t-aut",p.nota)).join("");
+    if((T.soltas||[]).length)
+      s+=grupo("Sem pilar ainda",esc(T.soltas_o_que||""),T.soltas,"t-ofe",null);
+    s+='<div class="sm" style="margin-top:9px">'+esc(T.buraco)+"</div>"
+      +'<div class="sm" style="margin-top:3px">'+esc(T.em_estudo)+"</div>";
+    return s+"</div>";})();
+  h+=(function(){ // os 5 do MIX, em card separado e fechado: é OUTRA lista (a fatia do grid)
+    const T=D.taxonomia; if(!T||!T.mix||!T.mix.itens.length) return "";
+    return '<details class="card"><summary style="font:700 13px Inter,sans-serif;cursor:pointer">🧩 '
+      +esc(T.mix.titulo)+"</summary>"
+      +'<div class="sm" style="margin:6px 0 8px">lista diferente da de cima: aqui é como a peça parece no grid; lá é o que a peça faz</div>'
+      +T.mix.itens.map(i=>'<div style="margin:7px 0"><div class="sm">'+esc(i.frase)+"</div>"
+        +'<div class="bar" style="margin-top:3px"><div class="fill" style="width:'+Math.min(100,i.mix_real)+'%"></div></div></div>').join("")
+      +'<div class="sm" style="margin-top:6px">conta os posts do Instagram da janela, pela etiqueta de pilar de cada post</div>'
+      +"</details>";})();
   h+=(function(){ // cruzamento: os dois formatos medidos, lado a lado (nunca empilhado)
     const gr={}; (D.posts.all||[]).forEach(p=>{const e=nn(p.er); if(!e) return;
       (gr[p.fmt]=gr[p.fmt]||[]).push({er:e,sends:nn(p.sends),reach:nn(String(p.reach).replace(/\./g,""))});});
@@ -925,10 +960,40 @@ function render(data){
   // ---------- NEGÓCIO (aba R$ · pedido dela 03/08) ----------
   const FF=D.fila||{}, CR=FF.pipeline||null;
   h+='<section class="view wrap" id="v-negocio" hidden>'+fraseAba("negocio");
+  h+=(function(){ // «O mês em uma tela» · todo número vem do build (data.mes), nenhuma conta aqui
+    const M=D.mes; if(!M) return "";
+    let s='<div class="card" style="border-left:3px solid var(--brand)">'
+      +cab("📅 O mês em uma tela · "+esc(M.rot),"do dia 1 até hoje · dia "+M.dia+" de "+M.dias_mes,"mes");
+    if(!M.ok) return s+'<div class="sm" style="margin-top:6px"><span class="age stale">sem dado do Trello nesta rodada</span> · os números voltam na próxima leitura do board</div></div>';
+    const tile=(rot,val,sub,peq)=>'<div class="jtile" style="flex:1 1 42%">'
+      +'<div class="sm">'+rot+'</div><div class="num"'+(peq?' style="font-size:17px"':'')+'>'+val+'</div>'
+      +'<div class="sm">'+sub+'</div></div>';
+    s+='<div class="jrow" style="flex-wrap:wrap;margin:9px 0 2px">'
+      +tile("Peças publicadas",M.pecas.n,"no ritmo de "+M.pecas.meta_sem+" por semana, seriam "+M.pecas.meta_ate_hoje+" até hoje"+(M.pecas.parcial?" · contagem parcial":""))
+      +tile("Recebido",esc(M.pagos.total_txt),(M.pagos.n?(M.pagos.n===1?"1 card marcado Pago":M.pagos.n+" cards marcados Pago"):"sem registro de pagamento no board de gestão de clientes")+(M.pagos.parcial?" · contagem parcial":""),true)
+      +tile("A receber",esc(M.a_receber.total_txt),(M.a_receber.n?(M.a_receber.n===1?"1 card com pagamento em aberto":M.a_receber.n+" cards com pagamento em aberto"):"nenhum pagamento em aberto")+(M.a_receber.parcial?" · "+M.a_receber.parcial+" em Parcial, fora da soma":""),true)
+      +tile("Seguidores",(M.seg?esc(M.seg.delta_txt):"sem dado"),(M.seg?"de "+esc(M.seg.de)+" a "+esc(M.seg.ate):"sem coleta neste mês"))
+      +'</div>';
+    if(M.seg&&M.seg.nota) s+='<div class="sm" style="margin-top:4px">'+esc(M.seg.nota)+'</div>';
+    s+='<div class="sm" style="margin-top:6px">mês passado, fechado ('+esc(M.anterior.rot)+'): '
+      +M.anterior.pecas_n+' peças'+(M.anterior.parcial?' (contagem parcial)':'')+' · '
+      +(M.anterior.sem_pago?'sem registro de pagamento no board de gestão de clientes no mês'
+        :esc(M.anterior.pagos_total_txt)+' em '+M.anterior.pagos_n+' cards')+'</div>';
+    s+=leit(esc(M.insight.frase),esc(M.insight.passo));
+    s+=leit(esc(M.insight2.frase),esc(M.insight2.passo));
+    if((M.pagos.itens||[]).length)
+      s+='<div class="sm" style="margin-top:6px">marcado Pago neste mês: '
+        +M.pagos.itens.map(i=>lk(i.url,esc(i.t),"golink")+' · '+(i.valor?esc(i.valor):"sem valor anotado")+' em '+esc(i.d)).join("; ")
+        +(M.pagos.mais?'; +'+M.pagos.mais+' no board de gestão de clientes':'')+'</div>';
+    if((M.pecas.itens||[]).length)
+      s+='<div class="sm" style="margin-top:4px">as últimas em Publicado: '
+        +M.pecas.itens.map(i=>lk(i.url,esc(i.t),"golink")+' ('+esc(i.d)+')').join("; ")+'</div>';
+    s+='<div class="sm" style="margin-top:6px">peças = cards que entraram em 🌍 Publicado no board Conteúdo, por isso conta também LinkedIn, stories e blog, e não é o mesmo número da sua semana no Instagram · dinheiro só entra aqui quando o Status pagamento do card vira Pago</div>';
+    return s+"</div>";})();
   if(CR&&CR.placar){
     const pl=CR.placar, fmtR=v=>"R$"+String(Math.round(v||0)).replace(/\B(?=(\d{3})+(?!\d))/g,".");
     const pct=Math.min(100,Math.round(((pl.ganho_conf||0)+(pl.ganho_est||0))/(pl.meta||25000)*100));
-    h+='<h2>🏆 Placar do mês · '+esc(pl.mes||"")+" "+ageChip(S,"crm")+'</h2><p class=sub-h>fechado no mês contra a meta que você declarou</p>'
+    h+='<h2>🏆 Placar do mês · '+esc(pl.mes||"")+" "+ageChip(S,"crm")+'</h2><p class=sub-h>outra conta: o valor escrito no título do card ao chegar em Fechado, contra uma meta antiga do código · o dinheiro confirmado é o de cima, pelo campo Status pagamento</p>'
       +'<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="num" style="font-size:26px;font-weight:800">'+fmtR(pl.ganho_conf)+'</span><span class="sm num">meta '+fmtR(pl.meta)+"</span></div>"
       +(pl.ganho_est?'<div class="sm num">+ '+fmtR(pl.ganho_est)+" em estimativa (faixa do catálogo)</div>":"")
       +'<div style="height:10px;border-radius:999px;background:var(--mid-bg);margin:8px 0 5px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--brand)"></div></div>'
@@ -1309,13 +1374,15 @@ function render(data){
       +'<details style="margin-top:8px"><summary style="font:700 13px Inter,sans-serif;cursor:pointer">as palavras que aparecem por aí</summary><div style="font:400 12px/1.75 Inter,sans-serif;color:var(--sub);margin-top:4px">'
       +[["ER","de cada 100 pessoas alcançadas, quantas interagiram"],
         ["envios","de cada 100 alcançadas, quantas salvaram o post ou mandaram para alguém"],
-        ["séries","o programa com nome fixo · as 4 em revisão com você vivem na aba 🎪 Séries da Content System: IA sem pânico, Repertório, Bastidor, Leitura crítica"],
+        ["séries","o programa com nome fixo que se repete · hoje: "+((D.taxonomia&&D.taxonomia.pilares)?[].concat(...D.taxonomia.pilares.map(p=>p.series.map(s=>s.nome)),(D.taxonomia.soltas||[]).map(s=>s.nome)).join(", "):"na aba 🗂️ Séries")],
         ["alcance","quantas contas diferentes viram"],
         ["D+7","a nota do post uma semana depois de publicado"],
         ["janela","o período que está sendo somado · a data aparece no bloco"],
-        ["pilar","o assunto que sustenta a marca · o porquê"],
+        ["pilar de conteúdo","o jeito de contar, o que a peça faz: "+((D.taxonomia&&D.taxonomia.pilares)?D.taxonomia.pilares.map(p=>p.nome).join(", "):"Ensino, Fazendo, Análise")],
+        ["pilar do mix","outra lista: a fatia do grid, como a peça parece · são "+((D.taxonomia&&D.taxonomia.mix&&D.taxonomia.mix.itens)?D.taxonomia.mix.itens.length:5)+" e vivem fechados na aba 🗂️ Séries"],
         ["formato","o jeito de gravar e montar · o como"],
-        ["quadro","a série com nome fixo que se repete · o programa"],
+        ["quadro","o mesmo que série · é como a aba 🎪 da planilha Content System chama"],
+        ["CRM","o board onde cada cliente, proposta e pagamento vira card · é de onde sai o dinheiro desta tela"],
         ["marcha","o ritmo do mês (Normal, Lançamento, Evento, Ritmo-baixo) · você troca no board"],
         ["gancho","quantos ficam no primeiro story em vez de pular"],
         ["saída na 1ª tela","quantos abrem e vão embora logo no primeiro story"],
