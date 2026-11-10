@@ -609,6 +609,7 @@ let D=null, IMGMAP={}, TERCA={};
 
 function render(data){
   D=data;
+  avisaPaginaVelha();
   const S=D.sources||{};
   IMGMAP={};
   [].concat(D.posts.top3||[],D.posts.recentes||[],D.posts.all||[]).forEach(p=>{ if(p.img&&p.url) IMGMAP[p.url]=p.img; });
@@ -1621,6 +1622,22 @@ function render(data){
     });
     document.body.appendChild(ov);
   });
+  // A pagina pode ficar guardada no aparelho (aplicativo no iPhone, e o GitHub guarda por
+  // 10 minutos), enquanto o data e sempre buscado sem cache. Se o build gravou uma marca
+  // diferente da que esta nesta pagina, e porque a pagina e velha: ela avisa e se atualiza.
+  function avisaPaginaVelha(){
+    try{
+      const esperada=(D&&D.meta&&D.meta.shell)||null;
+      if(!esperada||esperada===SHELL_V) return;
+      if(document.getElementById("paginaVelha")) return;
+      const b=document.createElement("button");
+      b.id="paginaVelha";
+      b.style.cssText="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--fab) + 54px);z-index:100;background:#111;color:#fff;border:0;border-radius:999px;padding:12px 18px;font:700 14px/1.2 Inter,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.28);max-width:92vw";
+      b.textContent="↻ Tem versão nova desta tela · toque para atualizar";
+      b.onclick=()=>{ try{ const u=new URL(location.href); u.searchParams.set("v",Date.now()); location.replace(u.toString()); }catch(e){ location.reload(); } };
+      document.body.appendChild(b);
+    }catch(e){}
+  }
   let _lm=null;
   async function _headLM(){try{const r=await fetch((MODE==="enc"?"data.enc":"data.json")+"?v="+Date.now(),{method:"HEAD",cache:"no-store"});return r.headers.get("last-modified")||r.headers.get("etag");}catch(e){return null;}}
   async function vigiaRodada(){
@@ -1835,6 +1852,11 @@ function aplicaFiltro(){
     f.textContent="filtrando por "+FILTRO+" · tocar para ver tudo";
   } else if(f){ f.remove(); }
 }
+// SHELL_V: a marca desta pagina. O build le esta linha e grava o mesmo valor em meta.shell
+// do data.json. Como o data e sempre buscado sem cache e a pagina pode ficar guardada no
+// aparelho (ela usa como aplicativo no iPhone, e o GitHub guarda por 10 minutos), e assim
+// que a propria pagina descobre que esta velha e se oferece para atualizar. 10/11/2026.
+const SHELL_V="2026-11-10-mesa";
 const ABAS=["terca","hoje","agenda","posts","analise","negocio","ideias","radar"];
 let ATUAL="terca";
 function ligaSwipe(){
