@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Central @mispace</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪷</text></svg>">
+<meta name="theme-color" content="#EDF1F8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Central">
+<link rel="manifest" href='data:application/manifest+json,{"name":"Central @mispace","short_name":"Central","display":"standalone","background_color":"%23EDF1F8","theme_color":"%23EDF1F8","start_url":"./"}'>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ============ tokens · studio.ourspace.com.br (produto vivo · 31/07) ============ */
@@ -19,17 +25,23 @@
   --sh-sm:0 1px 3px rgba(16,24,40,.04),0 12px 28px -16px rgba(16,24,40,.20);
   --sh-md:0 2px 4px rgba(16,24,40,.05), 0 18px 40px -16px rgba(16,24,40,.16);
   --nav-h:60px; --fab:calc(60px + env(safe-area-inset-bottom,0px) + 12px);
+  --w:640px;   /* a MESMA largura manda no #top e no .wrap · 780 numa tela de 1.440 deixava 440px de vazio de cada lado */
   --r-lg:18px; --r-md:13px; --r-sm:9px;   /* 3 degraus de raio · antes eram 12 valores soltos */
 }
-*{box-sizing:border-box;margin:0}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+/* tirar o flash cinza do toque sem dar resposta nenhuma deixa o toque mudo: a resposta é a opacidade */
+button:active,.golink:active,.agl .dp:active,#nav button:active{opacity:.6}
+html{-webkit-text-size-adjust:100%}
 body{font:14px/1.5 'Inter',system-ui,sans-serif;font-weight:400;color:var(--ink);background:var(--canvas);
-     -webkit-font-smoothing:antialiased;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px)}
+     -webkit-font-smoothing:antialiased;overscroll-behavior-y:contain;
+     padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px)}
 a{color:var(--ink)}
 .disp{font-family:'Plus Jakarta Sans','Inter',sans-serif}
 .num{font-variant-numeric:tabular-nums}
 .card{background:var(--card);border-radius:var(--r-lg);box-shadow:var(--sh-sm);padding:18px;margin:16px 0}
 .k{text-transform:uppercase;color:var(--sub)}
-.wrap{max-width:640px;margin:0 auto;padding:0 14px}
+.wrap{max-width:var(--w);margin:0 auto;
+      padding-left:calc(14px + env(safe-area-inset-left,0px));padding-right:calc(14px + env(safe-area-inset-right,0px))}
 .pill{display:inline-flex;gap:4px;align-items:center;font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
 .p-up{color:var(--up);background:var(--up-bg)} .p-mid{color:var(--mid);background:var(--mid-bg)}
 .p-down{color:var(--down);background:var(--down-bg)} .p-none{color:var(--sub);background:var(--mid-bg)}
@@ -48,7 +60,7 @@ a{color:var(--ink)}
 .sig .sr{font-size:13px;color:var(--sub);line-height:1.45}
 .sig .sa{margin-top:auto}
 .sig .abre{display:block;border:0;background:none;color:var(--gold-deep);font:600 13px 'Inter',sans-serif;
-           text-align:left;padding:0;min-height:40px;cursor:pointer}
+           text-align:left;padding:0;min-height:44px;cursor:pointer}
 .sig .mais{display:none;border-top:1px solid var(--line2);margin-top:6px;padding-top:8px}
 .sig.exp .mais{display:block}
 .sig .sd{font-size:11.5px;color:var(--faint);margin-top:2px}
@@ -108,15 +120,34 @@ details .body{font-size:13px;color:var(--sub);padding:6px 0 2px;line-height:1.55
 @supports (backdrop-filter:blur(12px)){
   #top{background:rgba(248,250,252,.72);backdrop-filter:blur(14px) saturate(1.5);contain:paint}
 }
-#top .row{display:flex;align-items:center;gap:10px}
-#top .ava{width:40px;height:40px;border-radius:50%;object-fit:cover;background:var(--gold-pale);border:2px solid transparent;background-image:linear-gradient(#fff,#fff),var(--grad);background-origin:border-box;background-clip:content-box,border-box}
+#top .row{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
+#top .nome{flex:1 1 auto;min-width:0}
+#top .ava,#top #ajuda,#top #refresh{flex:0 0 auto}
+#top .ava{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--gold-pale);border:2px solid transparent;background-image:linear-gradient(#fff,#fff),var(--grad);background-origin:border-box;background-clip:content-box,border-box}
 #top .oi{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;line-height:1.05}
 #top .dt{font-size:11.5px;color:var(--sub)}
-.marcha{min-height:40px;display:inline-flex;align-items:center;margin-left:auto;font-size:11.5px;font-weight:600;color:var(--gold-deep);background:var(--gold-pale);
+.marcha{min-height:44px;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;
+        display:inline-flex;align-items:center;margin-left:auto;font-size:11.5px;font-weight:600;color:var(--gold-deep);background:var(--gold-pale);
         border:1px solid var(--brand-pale);border-radius:999px;padding:5px 12px;text-decoration:none;white-space:nowrap}
+/* a pílula pede 79px e tem 64 em 393: saía cortada no meio («🎚 Norma»), sem nem o «…»
+   (ellipsis não vale dentro de inline-flex). Escondê-la devolve 71px para a coluna do
+   nome, onde o carimbo de frescor também cortava. Reaparece na folha de ajuda. */
+.dsem3{display:none}
+@media(max-width:420px){
+  .marcha{display:none}
+  /* o carimbo de frescor pedia 200px no pior dia («domingo, 28 de set · agora há pouco»)
+     e a coluna do nome tem 179: esconder a pílula devolveu 63px, mas os botões ? e ↻ em
+     44px (alvo mínimo) levaram 8 de volta. O dia da semana em 3 letras, como a AGENDA já
+     escreve, baixa o pior caso para 176, e o gap em 8px dá 185 de coluna: 8,7 de sobra em
+     todo dia da semana e em todo estado do carimbo. Medido no DOM em 375px. */
+  .dsem{display:none}
+  .dsem3{display:inline}
+  #top .row{gap:8px}
+}
 #nav{position:fixed;left:0;right:0;bottom:0;z-index:50;background:#fff;border-top:1px solid var(--line);
      padding-bottom:env(safe-area-inset-bottom)}
-#nav .row{display:flex;max-width:640px;margin:0 auto}
+#nav .row{display:flex;max-width:var(--w);margin:0 auto;
+          padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 #nav button{flex:1;min-width:0;height:var(--nav-h);border:0;background:none;cursor:pointer;display:flex;flex-direction:column;
             align-items:center;justify-content:center;gap:3px;font:600 11px 'Inter',sans-serif;letter-spacing:.04em;color:var(--faint)}
 #nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
@@ -129,13 +160,27 @@ details .body{font-size:13px;color:var(--sub);padding:6px 0 2px;line-height:1.55
 #nav button[aria-selected="true"] svg{background:var(--gold-pale);color:var(--gold-deep)}
 #nav button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 [hidden]{display:none!important}
-@media(min-width:768px){
+@media(min-width:768px) and (min-height:600px){
   body{padding-bottom:20px;padding-left:220px}
+  :root{--fab:20px;--w:780px}   /* a barra virou coluna: flutuante não precisa subir 72px */
   #nav{left:0;right:auto;top:0;bottom:0;width:220px;border-top:0;border-right:1px solid var(--line);overflow-y:auto}
   #nav .row{flex-direction:column;padding-top:clamp(10px,7vh,76px);gap:2px}
   #nav button{flex:0 0 auto;height:46px;flex-direction:row;justify-content:flex-start;gap:10px;padding:0 18px;font-size:13px}
   #nav button svg{padding:3px 8px}
-  .wrap{max-width:780px}
+}
+/* celular deitado (812x375): barra embaixo, nunca coluna lateral de 220px com 255px de conteúdo */
+@media(max-height:500px){
+  :root{--nav-h:48px}
+  #nav{position:fixed;left:0;right:0;top:auto;bottom:0;width:auto;border-top:1px solid var(--line);border-right:0}
+  #nav .row{flex-direction:row}
+  body{padding-left:0}
+}
+.agcol,.agcol2{min-width:0}
+@media(min-width:1100px){
+  :root{--w:1040px}
+  /* a altura sobra: TERÇA, HOJE e AGENDA em 2 colunas */
+  #v-terca,#v-hoje,#v-agenda{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 20px;align-items:start}
+  #v-terca>.larga,#v-hoje>.larga,#v-agenda>.larga,#v-hoje>.acao,#v-hoje>#banner,#v-terca>h2,#v-agenda>h2{grid-column:1/-1}
 }
 /* ============ HOJE ============ */
 #banner{border-radius:13px;background:var(--age-bg);color:var(--age);font-weight:500;font-size:13px;padding:10px 13px;margin:10px 0 0;line-height:1.5}
@@ -156,6 +201,8 @@ body::before{content:"";position:fixed;inset:0 0 auto 0;height:230px;z-index:-1;
 .prow .er{margin-left:auto}
 /* auditoria mobile 05/08: header de 3 linhas comia 11% da tela e cobria as sub-abas */
 .onel{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62vw}
+/* dentro de card o nome da série era cortado em 160 de 216px: duas linhas acomodam */
+.card .onel{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;max-width:100%}
 .agirb{border:1px solid var(--brand-pale);background:var(--off);color:var(--brand-dark);border-radius:13px;padding:7px 11px;font:700 11.5px Inter,sans-serif;cursor:pointer;min-height:44px;margin-left:6px}
 .agirb:active{transform:scale(.97)}
 /* corte na borda direita (medido em 375px: links da FILA saíam 79px para fora):
@@ -165,6 +212,11 @@ body::before{content:"";position:fixed;inset:0 0 auto 0;height:230px;z-index:-1;
 .num,.n,.pill,.age{overflow-wrap:normal;word-break:keep-all}
 .linha{gap:10px}
 .tfix{max-width:100%}
+.xscroll{overflow-x:auto;overscroll-behavior-x:contain}
+/* a tabela rodava em 283px e pedia 418 em 375: três paddings se somavam antes dela
+   (14+14+18). Na faixa estreita ela sangra o card e recupera 36px. */
+.tsangra{overflow-x:auto;overscroll-behavior-x:contain}
+@media(max-width:560px){.tsangra{margin:0 -18px;padding:0 18px}}
 .pulso{display:flex;gap:8px;margin:10px 0}
 .pulso .pz{flex:1;background:#fff;border-radius:var(--r-md);padding:12px 8px;text-align:center;box-shadow:var(--sh-sm)}
 .pulso .pi{font-size:13px;line-height:1;opacity:.75}
@@ -174,8 +226,16 @@ body::before{content:"";position:fixed;inset:0 0 auto 0;height:230px;z-index:-1;
 /* auditoria mobile 04/08: alvo de toque mínimo (link de 19px era metade do recomendado) */
 /* alvo de toque sem quebrar a quebra de linha: padding vertical em elemento inline
    aumenta a área clicável e deixa o texto continuar quebrando (inline-flex não deixava) */
-.golink,a.golink{display:inline;padding:11px 0;overflow-wrap:break-word}
-summary{min-height:40px;display:flex;align-items:center;gap:6px}
+.golink,a.golink{display:inline;padding:14px 0;overflow-wrap:break-word}
+/* a receita da casa: padding vertical em elemento inline aumenta a área de toque e deixa o
+   texto continuar quebrando · 14px porque com 11 o «abrir ↗» da agenda media 38 px */
+.linha a,.dp a,.agl a{display:inline;padding:15px 0}
+/* o ⚡ NÃO entra na regra de cima: «.dp button» vencia «.agirb», zerava o padding lateral
+   e, por display:inline, ignorava o min-height · media 14x45,5px, e é o que escreve. */
+.dp button.agirb{display:inline-flex;align-items:center;justify-content:center;
+                 padding:7px 11px;min-width:44px;min-height:44px}
+summary{min-height:44px;display:flex;align-items:center;gap:6px}
+.d7p{padding:14px 0;min-height:44px;display:inline-block}
 /* escala tipográfica: 4 degraus com contraste real, no lugar de 7 quase iguais */
 .sm{font-size:11.5px}
 .k{font-size:11.5px;letter-spacing:.05em;display:flex;align-items:center;gap:6px;font-weight:800;
@@ -185,7 +245,6 @@ summary{min-height:40px;display:flex;align-items:center;gap:6px}
 .tfix td:first-child,.tfix th:first-child{position:sticky;left:0;background:#fff;z-index:1}
 @media print{#nav,#top,.seg,.jan,#filtrobar,#novaRodada,#refresh,#ajuda,details:not([open]){display:none!important}
   body{padding:0!important}.card{break-inside:avoid;box-shadow:none;border:1px solid #E2E8F0}}
-.cd .best{position:absolute;top:1px;right:3px;font-size:11.5px;color:#5B21B6;line-height:1}
 .jan{display:flex;flex-wrap:wrap;gap:6px;padding:8px 0 2px}
 .jan button{flex:0 0 auto;min-height:44px;padding:0 8px;border:1px solid var(--line);border-radius:999px;background:#fff;
   font:700 13px 'Inter',sans-serif;color:var(--sub);cursor:pointer;white-space:nowrap}
@@ -198,7 +257,7 @@ summary{min-height:40px;display:flex;align-items:center;gap:6px}
 .jtile{flex:1;text-align:center;background:var(--off);border-radius:13px;padding:10px 4px}
 .jtile .num{font-size:20px;font-weight:800}
 .seg{position:sticky;top:var(--hdr,92px);z-index:30;display:flex;background:var(--mid-bg);border-radius:13px;padding:3px;margin:12px 0 4px}
-.seg button{flex:1;height:40px;border:0;border-radius:9px;background:none;font:600 13px 'Inter',sans-serif;color:var(--sub);cursor:pointer;
+.seg button{flex:1;height:40px;min-height:44px;border:0;border-radius:9px;background:none;font:600 13px 'Inter',sans-serif;color:var(--sub);cursor:pointer;
   display:flex;align-items:center;justify-content:center;gap:4px;line-height:1.15;padding:0 2px}
 .seg button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:var(--sh-sm)}
 /* KPI cards */
@@ -238,34 +297,52 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;color:var(--faint);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;padding:6px 5px 4px}
 td{padding:5px;border-top:1px solid var(--line2)}
 .dim{display:none}
-/* calendário */
-.calnav{display:flex;align-items:center;justify-content:space-between;margin:12px 0 6px}
-.calnav b{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;text-transform:capitalize}
-.calnav button{width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:13px;font-size:20px;cursor:pointer;color:var(--gold-deep)}
-.wdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px}
-.wdays span{font-size:11.5px;text-transform:uppercase;color:var(--faint);text-align:center;font-weight:600}
-.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.cd{min-height:58px;border-radius:9px;background:var(--card);padding:3px 4px;cursor:pointer;position:relative}
-.cd.out{opacity:0;pointer-events:none;border:0;background:none}
-.cd.wknd{background:var(--off)}
-.cd .dn{font-size:11.5px;font-weight:700;color:var(--ink)}
-.cd.today{outline:2px solid var(--gold);outline-offset:-2px}
-.cd.today .dn{color:var(--gold-deep)}
-.cd.sel{box-shadow:inset 0 0 0 2.5px var(--brand);border-radius:9px;z-index:1}
-.cd.sel .dn{background:var(--brand);color:#fff;border-radius:9px;padding:1px 6px;font-weight:800}
-.cd.sel.today{box-shadow:inset 0 0 0 2.5px var(--brand)}
-.cd .th{width:36px;height:36px;border-radius:9px;object-fit:cover;display:block;margin:2px auto 0}
-.cd .dots{display:flex;gap:3px;justify-content:center;margin-top:4px}
-.cd .dot{width:6px;height:6px;border-radius:50%}
-.d-post{background:var(--gold)} .d-story{background:var(--nude);border-radius:1px}
-.d-due{background:var(--slate);border-radius:1px;transform:rotate(45deg)} .d-ev{background:var(--brand-dark);width:9px;border-radius:1px}
+/* ===== AGENDA · lista de dias (a grade de mês saiu em 10/11/2026: 36 células de 58px,
+   505px de altura com navegação e legendas, para mostrar 8 dias com conteúdo) ===== */
+.agl{margin:4px 0 2px}
+.agl .dia{display:flex;align-items:baseline;gap:7px;margin:13px 0 1px;font:800 13px 'Inter',sans-serif}
+.agl .dia .q{font-weight:600;color:var(--sub)}
+.agl .dia.fds{color:var(--faint)}
+.agl .vago{font-size:11.5px;color:var(--faint);padding:7px 0;border-top:1px solid var(--line2)}
+.dp{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line2);min-height:44px}
+.dp:first-of-type{border-top:0}
+.dp img{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:0 0 auto}
+.dp .ic{flex:0 0 auto;font-size:14px;line-height:1.55}
+.dp .tt{font-size:13px;font-weight:600;line-height:1.35}
+/* faixa de 3 semanas (só no computador): o véu roxo continua sendo o ER do dia da semana */
+.wk{display:flex;gap:3px;margin:8px 0 2px}
+.wk .wd{flex:1 1 0;min-width:0;text-align:center;border-radius:8px;padding:7px 1px;background:var(--card);font-size:11.5px;line-height:1.3}
+.wk .wd .dl{font-weight:600;color:var(--sub);font-size:11.5px}
+.wk .wd .dn{font-weight:800}
+.wk .wd.hoje{outline:2px solid var(--gold);outline-offset:-2px}
+.wk .wd .mk{height:6px;margin-top:3px;font-size:11.5px;line-height:.6;color:var(--brand-dark)}
 .leg{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--sub);margin:8px 2px}
-.leg i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;font-style:normal}
-#daypanel{scroll-margin-top:calc(var(--hdr,92px) + 8px)}
-#daypanel .dp{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line2)}
-#daypanel .dp:first-of-type{border-top:0}
-#daypanel img{width:40px;height:40px;border-radius:8px;object-fit:cover}
-#daypanel .tt{font-size:13px;font-weight:600;line-height:1.3}
+/* ===== «ver mais»: nada é apagado, o que sai de cara diz o que tem dentro ===== */
+.verm{background:var(--card);border-radius:var(--r-lg);box-shadow:var(--sh-sm);padding:10px 14px;margin:14px 0}
+.verm>summary{font:700 13px 'Inter',sans-serif;color:var(--gold-deep)}
+.verm[open]>summary{color:var(--ink)}
+.verm .card{margin:10px 0}
+.verm h2:first-child{margin-top:8px}
+/* ===== TERÇA ===== */
+.terh{display:flex;align-items:baseline;gap:8px}
+.terl{font:500 13px/1.7 'Inter',sans-serif;color:var(--ink);padding:3px 0}
+.terj{font:700 14px/1.45 'Inter',sans-serif}
+.terr{font:500 13px/1.5 'Inter',sans-serif;color:var(--gold-deep);margin-top:5px}
+.terc textarea{width:100%;margin-top:8px;font:400 16px/1.35 'Inter',sans-serif;padding:8px 10px;
+  border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);
+  -webkit-appearance:none;resize:vertical}
+.terc textarea:focus{border-color:var(--brand);outline:none}
+.terst{font-size:11.5px;color:var(--sub);margin-top:5px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.terst:empty{display:none}
+.terst b{font-weight:700}
+#v-terca .card{padding:14px;margin:12px 0}
+#v-terca h2{margin:16px 2px 0}
+.terbtns{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}
+.terbtns button{flex:1 1 46%;min-height:48px;border-radius:13px;border:0;cursor:pointer;
+  font:700 13px 'Inter',sans-serif}
+.terbtns .b1{background:var(--grad);color:#fff}
+.terbtns .b2{background:#fff;color:var(--gold-deep);border:1px solid var(--brand-pale)}
+.tercop{border:0;background:none;color:var(--gold-deep);font:700 12.5px Inter,sans-serif;cursor:pointer;min-height:44px;padding:0}
 /* fila */
 .grp .hd{display:flex;justify-content:space-between;align-items:baseline}
 .grp .hd .n{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.01em;line-height:1.05}
@@ -299,12 +376,12 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,[
 <main id="app" hidden></main>
 
 <nav id="nav" hidden aria-label="Seções"><div class="row">
-  <button data-v="hoje" aria-selected="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>HOJE</button>
+  <button data-v="terca" aria-selected="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18M8 14h4"/></svg>TERÇA</button>
+  <button data-v="hoje" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>HOJE</button>
   <button data-v="agenda" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>AGENDA</button>
   <button data-v="posts" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>POSTS</button>
   <button data-v="analise" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>ANÁLISE</button>
   <button data-v="negocio" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 2v20M16.5 6.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3 2 3 4.5 3 4.5 1.3 4.5 3-2 3-4.5 3-4.5-1.3-4.5-3"/></svg>R$</button>
-  <button data-v="fila" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>FILA</button>
   <button data-v="ideias" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.6 1 1.4 1 2.5h6c0-1.1.3-1.9 1-2.5A6 6 0 0 0 12 3z"/></svg>IDEIAS</button>
   <button data-v="radar" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 12L20 6"/><circle cx="12" cy="12" r="8"/></svg>RADAR</button>
 </div></nav>
@@ -331,6 +408,20 @@ const LOGOS={yt:'<svg viewBox="0 0 24 24" style="width:15px;height:15px;vertical
 const fmtAbs=iso=>{ if(!iso) return "sem carimbo"; const t=String(iso); return t.slice(8,10)+"/"+t.slice(5,7)+(t.length>10?" "+t.slice(11,16):""); };
 // links agrupados: "Responder" primeiro, porque é o que espera por ela.
 // Cada um diz para que serve, senão o nome do arquivo não ajuda ninguém.
+// «quando cada dado chegou» · veio da aba FILA (dissolvida em 10/11): a folha de ajuda
+// já é o lugar do «como ler esta central», e o bloco é o mesmo, com o mesmo carimbo.
+function atualizacoesHtml(){
+  const S=D.sources||{};
+  const NOMES={posts:"Instagram · posts",stories:"Instagram · stories",trello:"Trello (fila/agenda)",crm:"CRM (pipeline)",learning:"Leitura da semana",insights:"Leituras (análises)",tiktok:"TikTok",linkedin:"LinkedIn",events:"Eventos (agenda)",blog:"Blog",formatos:"Formatos (espelho da planilha)"};
+  return '<div class="card" style="margin:6px 0">'
+    +Object.keys(NOMES).filter(k=>S[k]).map(k=>{
+      const st=S[k]; const dias=st.at?(Date.now()-new Date(String(st.at).slice(0,10)+"T12:00:00").getTime())/864e5:99;
+      const ok=st.ok&&dias<=(LIMITES[k]??9);
+      // sem data NÃO é «conferido nesta rodada»: em checkout raso a idade chega vazia
+      if(!st.at) return '<div class="linha"><span>'+esc(NOMES[k])+'</span><span class="sm num">'+(st.ok?"não sei dizer quando chegou":"sem dado")+"</span></div>";
+      return '<div class="linha"><span>'+esc(NOMES[k])+'</span><span class="sm num" style="font-weight:600;color:'+(ok?"var(--sub)":"var(--age)")+'">'+fmtAbs(st.at)+(ok?"":" · parado")+"</span></div>";
+    }).join("")+"</div>";
+}
 function gruposDeLinks(){
   const L=D.links||[];
   const ORDEM=["Responder","Trabalhar","Público e pesquisa","Dinheiro","Você","Sistema"];
@@ -514,7 +605,7 @@ function sparkSvg(vals,h,datas,cls){
     +'<polyline points="'+pts.join(" ")+'" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round"/></svg>';
 }
 
-let D=null, IMGMAP={}, selDay=null, calY=0, calM=0;
+let D=null, IMGMAP={}, TERCA={};
 
 function render(data){
   D=data;
@@ -533,24 +624,107 @@ function render(data){
   const fraseAba=k=>{const f=(D.frases_aba||{})[k];return f?'<p style="font:700 14px/1.45 Inter,sans-serif;margin:2px 2px 10px">💡 '+esc(f)+"</p>":"";};
   let h='<div id="top"><div class="wrap"><div class="row">'
     +(ava?'<img class="ava" src="'+ava+'" alt="">':'<span class="ava"></span>')
-    +'<div><div class="oi">Oi, Michelle</div><div class="dt onel" id="carimbo" style="cursor:pointer" title="toque para ver quando cada dado chegou">'+DIAS[(hoje.getDay()+6)%7]+", "
+    +'<div class="nome"><div class="oi">Oi, Michelle</div><div class="dt onel" id="carimbo" style="cursor:pointer" title="toque para ver quando cada dado chegou">'
+    +'<span class="dsem">'+DIAS[(hoje.getDay()+6)%7]+'</span><span class="dsem3">'+DIAS[(hoje.getDay()+6)%7].slice(0,3)+"</span>"+", "
     +hoje.getDate()+" de "+MESES[hoje.getMonth()].slice(0,3)+" · "+esc(fmtAge(D.meta.built_at)||"")+"</div></div>"
     +lk(m.link,"🎚 "+esc(m.value||"Normal")+(m.ok?"":" (padrão)"),"marcha")
-    +'<button id="ajuda" title="como ler esta central" aria-label="como ler" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font:700 15px Inter,sans-serif;cursor:pointer;margin-right:6px">?</button>'
-    +'<button id="refresh" title="atualiza agora: Instagram (posts, stories, seguidores, demografia · se o dado tiver 2h ou mais), Trello, funil e blog · TikTok, LinkedIn e YouTube só entram quando a Mesa coleta numa sessão (não é automático) · ideias novas nos dias 5 e 19" aria-label="atualizar agora" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font-size:15px;cursor:pointer">↻</button>'
+    +'<button id="ajuda" title="como ler esta central" aria-label="como ler" style="width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font:700 15px Inter,sans-serif;cursor:pointer;margin-right:6px">?</button>'
+    +'<button id="refresh" title="atualiza agora: Instagram (posts, stories, seguidores, demografia · se o dado tiver 2h ou mais), Trello, funil e blog · TikTok, LinkedIn e YouTube só entram quando a Mesa coleta numa sessão (não é automático) · ideias novas nos dias 5 e 19" aria-label="atualizar agora" style="width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font-size:15px;cursor:pointer">↻</button>'
     +"</div></div></div>";
+
+  // ---------- «ver mais»: nada é apagado; o que sai de cara diz o que tem dentro ----------
+  const verm=(rot,inner)=>inner?'<details class="verm larga"><summary>⌄ '+esc(rot)+"</summary><div>"+inner+"</div></details>":"";
+  // ficha de grupo da fila (veio da aba FILA, dissolvida em 10/11: é visão de hoje)
+  const grp=(emoji,nome,f)=>!f?"":'<div class="card grp"><div class="hd"><span class="k">'+emoji+" "+nome+'</span><span class="n num">'+f.n+"</span></div>"
+      +(f.antigo?'<div class="sm" style="margin-top:4px">mais antigo: '+lk(f.antigo.url,esc(f.antigo.t),"golink")+" · desde "+esc(f.antigo.desde)
+        +((D.acao&&/^https:\/\/trello\.com\/c\//.test(f.antigo.url||""))?' <button class="agirb" data-card="'+esc((f.antigo.url||"").split("/").filter(Boolean).pop())+'" data-tit="'+esc(f.antigo.t)+'" data-ctx="'+esc(nome.toLowerCase())+'">⚡ agir</button>':"")
+        +"</div>":'<div class="sm" style="margin-top:4px">vazia</div>')+"</div>";
+
+  // ---------- TERÇA ----------
+  // A aba que ela abre na terça: o que mudou, o que espera por ela, o que eu devo, a peça
+  // da semana e o lugar onde ela escreve. Cada item nasce de fonte viva (build_v3.monta
+  // terca) e sai da tela quando a fonte muda.
+  const TE=D.terca||{};
+  const terCampo=(k,ph)=>'<div class="terc">'
+    +'<textarea rows="2" data-tk="'+esc(k)+'" placeholder="'+esc(ph)+'" autocapitalize="sentences" autocorrect="on" spellcheck="true"></textarea>'
+    +'<div class="terst" data-st="'+esc(k)+'"></div></div>';
+  const terAgir=(url,tit)=>(D.acao&&/^https:\/\/trello\.com\/c\//.test(url||""))
+    ?' <button class="agirb" data-card="'+esc((url||"").split("/").filter(Boolean).pop())+'" data-tit="'+esc(tit||"")+'" data-ctx="terca">⚡ agir daqui</button>':"";
+  h+='<section class="view wrap" id="v-terca">'
+    +'<p class="larga" style="font:700 14px/1.45 Inter,sans-serif;margin:8px 2px 2px">🗓️ Mesa da semana · '+esc(TE.rot||TE.hoje||"")+"</p>"
+    +'<p class="sub-h larga">'+esc((D.frases_aba||{}).terca||"")+"</p>"
+    // 1 · o que mudou (só fato com número, no máximo 4 linhas)
+    +((TE.mudou||[]).length
+      ?'<p class="larga" style="font:500 13px/1.6 Inter,sans-serif;margin:6px 2px"><b>📊 desde '+esc(TE.desde||"o último retrato")+":</b> "+esc(TE.mudou[0])+"</p>"
+        +(TE.mudou.length>1?verm((TE.mudou.length-1)+(TE.mudou.length===2?" outra linha do que mudou":" outras linhas do que mudou"),
+          TE.mudou.slice(1).map(x=>'<div class="terl">· '+esc(x)+"</div>").join("")):"")
+      :'<p class="sm larga" style="margin:6px 2px">'+esc(TE.mudou_vazio||"")+"</p>")
+    // 2 · precisa de você (no máximo 3, 1 por fonte)
+    +(function(){
+      const PR=TE.precisa||[];
+      if(!PR.length) return '<div class="card"><span class="k">🙋 Precisa de você</span><div class="sm" style="margin-top:6px">'+esc(TE.precisa_vazio||"")+"</div></div>";
+      // «semJogo»: atrás do «ver mais» o resumo JÁ é a frase inteira, e repeti-la
+      // dentro fazia ela ler a mesma coisa duas vezes
+      const card=(it,semJogo)=>'<div class="card">'
+        +(semJogo?"":'<div class="terj">'+esc(it.jogo)+"</div>")
+        +'<div class="terr">eu recomendo: '+esc(it.reco)+"</div>"
+        +(it.resp?'<div class="sm" style="margin-top:6px">o que eu já respondi · '+esc(it.resp)+"</div>":"")
+        +(it.url?'<div class="sm" style="margin-top:6px">'
+          +lk(it.url,/^https:\/\/trello\.com\/c\//.test(it.url)?"abrir o card ↗":"abrir ↗","golink")
+          +terAgir(it.url,it.jogo)+"</div>":"")
+        +terCampo(it.k,"escreva ok, ou o que muda")
+        +"</div>";
+      // 2 à vista e o terceiro atrás de um resumo que já diz o que ele é: o que fez ela
+      // parar de abrir a Mesa foi a tela cheia, não a falta de item
+      return '<h2 class="larga">🙋 Precisa de você</h2>'+PR.slice(0,2).map(it=>card(it)).join("")
+        +(PR.length>2?PR.slice(2).map(it=>verm(it.jogo,card(it,true))).join(""):"");
+    })()
+    // 3 · o que eu te devo · dívida minha, não decisão dela: fica atrás de «ver mais»,
+    // com a conta e a data mais antiga no próprio resumo
+    +((TE.devo||[]).length
+      // a ordem é por PRAZO, então o primeiro é o que vence antes, nunca «o mais antigo» ·
+      // e três dos cinco vencem fora desta semana, então o rótulo perdeu «esta semana»
+      ?verm("o que eu te devo ("+TE.devo.length+(TE.devo[0]&&TE.devo[0].d?") · a primeira vence em "+TE.devo[0].d:")"),
+        TE.devo.map(i=>{const u=i.url||(TE.semana&&TE.semana.url);
+          return '<div class="linha"><span>'+esc(i.t)+(u?" "+lk(u,"abrir ↗","golink"):"")+'</span><span class="sm num">'+esc(i.d||"")+"</span></div>";}).join("")
+        +(TE.devo_mais?'<div class="sm" style="margin-top:5px">e mais '+TE.devo_mais+"</div>":""))
+      :'<p class="sm larga" style="margin:6px 2px">'+esc(TE.devo_vazio||"")+"</p>")
+    // 4 · a peça da semana
+    // o selo de frescor do Trello saiu do cab: a linha vinha com duas marcas de tempo
+    // («mexido hoje … · agora há pouco»), uma do card e outra da coleta, sem dizer qual
+    +(TE.peca?'<div class="card">'+cab("🎬 A peça da semana",esc(TE.peca.idade||"")+" · "+TE.peca.n_fila+" esperando em Aprovar",null)
+        +'<div class="terj">'+esc(TE.peca.t)+"</div>"
+        +'<div class="terr">o que falta: '+esc(TE.peca.falta)+"</div>"
+        +'<div class="sm" style="margin-top:6px">'+lk(TE.peca.url,"abrir o card ↗","golink")
+        +((D.acao&&TE.peca.card)?' <button class="agirb tercab" data-card="'+esc(TE.peca.card)+'" data-tit="'+esc(TE.peca.t)+'">✅ aprovar</button>':"")
+        +terAgir(TE.peca.url,TE.peca.t)+"</div>"
+        +terCampo(TE.peca.k,"escreva ok, ou o que muda")
+        +"</div>"
+      :'<div class="card"><span class="k">🎬 A peça da semana</span><div class="sm" style="margin-top:6px">'+esc(TE.peca_vazio||"")+"</div></div>")
+    // 5 · a pergunta dela para mim e os dois botões
+    +verm("uma pergunta sua para mim",terCampo("pergunta:x","o que você quer me perguntar"))
+    +'<div class="terbtns larga"><button class="b1" id="terenvia" hidden>📨 Enviar para o card da semana</button>'
+    +'<button class="b2" id="tercopia">📋 Copiar tudo</button></div>'
+    +'<div class="sm larga" id="tertoken" style="margin:2px 2px 8px"></div>'
+    +'<div class="sm larga" id="teratras" style="margin:2px 2px 8px"></div>'
+    +'<p class="sm larga" style="margin:2px 2px 12px">'+(TE.semana
+        ?"vai para "+lk(TE.semana.url,esc(TE.semana.t),"golink")
+        :esc(TE.semana_vazio||""))+"</p>"
+    +"</section>";
 
   // ---------- HOJE ----------
   const t=D.today||{}, main=t.main||{};
   // ---------- HOJE (repaginado: ação · pulso · semana · o que vem) ----------
-  const SAh=D.saude||{}, NUh=SAh.numero||{}, RTh=SAh.ritmo||{}, BUh=D.buracos||{};
-  const _evs=(D.fila&&D.fila.eventos)||[];
+  const SAh=D.saude||{}, NUh=SAh.numero||{}, RTh=SAh.ritmo||{}, BUh=D.buracos||{}, FI=D.fila;
+  // os eventos vêm da MESMA lista da AGENDA (fonte única desde 10/11: fila.eventos
+  // duplicava 3 itens e cada link repetido contava no teto de alvos da página)
+  const _evs=(((D.fila||{}).agenda)||[]).filter(a=>a.tipo==="evento"||a.tipo==="comemorativa");
   const _acaoTem=e=>!!(e&&t.main&&t.main.t&&t.main.t.indexOf(String(e.t).slice(0,18))>=0);
   const ev1=_evs.length?(_acaoTem(_evs[0])?(_evs[1]||null):_evs[0]):null;
   const _ev1repetido=_evs.length&&_acaoTem(_evs[0]);
-  h+='<section class="view wrap" id="v-hoje">'
-    +(D.meta.alert?'<div id="banner">'+esc(D.meta.alert)+"</div>":"")
-    // 1 · a ação, com a régua embaixo (por que é ela hoje)
+  h+='<section class="view wrap" id="v-hoje" hidden>'
+    // 1 · a ação, com a régua embaixo (por que é ela hoje) · o aviso de fonte parada
+    // saiu do lugar mais nobre da tela e virou uma linha no fim (10/11)
     +'<div class="acao"><div class="k" style="color:var(--brand)">🎯 O que fazer hoje</div>'
     +'<div class="verb">'+esc(main.t||"…")+"</div>"
     +'<div class="why">'+esc(main.why||"")+"</div>"
@@ -565,6 +739,13 @@ function render(data){
        ((D.followers&&D.followers.ref)?esc(D.followers.ref):"na semana")]]
       .map(x=>'<div class="pz"><div class="pi">'+x[1]+'</div><div class="pv'+(String(x[0]).trim().length<=9?"":" txt")+'">'+x[0]+'</div><div class="pl">'+x[2]+"</div></div>").join("")
     +"</div>"
+    // 2.5 · a fila em 3 números (veio da aba FILA, dissolvida em 10/11)
+    +(FI?'<div class="card">'+cab("📥 A fila","o que está te travando · aprovar é sempre seu","trello")
+      +'<div class="jrow" style="margin-top:8px">'
+      +[["👀","Aprovar",FI.aprovar],["🎬","Gravar",FI.gravar],["♻️","Reaproveitar",FI.repurpose]]
+        .map(x=>'<div class="jtile"><div class="sm">'+x[0]+" "+x[1]+'</div><div class="num">'+((x[2]||{}).n??"—")+"</div></div>").join("")
+      +"</div></div>"
+      +verm("ver o mais antigo de cada fila",grp("👀","Aprovar",FI.aprovar)+grp("🎬","Gravar",FI.gravar)+grp("♻️","Reaproveitar",FI.repurpose)):"")
     // 3 · a semana em 7 quadradinhos (veio da FILA: é visão de hoje, não de fila)
     +(BUh.semana?'<div class="card">'+cab("🗓 "+esc(BUh.frase),"a semana toda numa olhada","trello")
       +'<div style="display:flex;gap:5px;margin-top:8px">'+BUh.semana.map(x=>{
@@ -577,28 +758,38 @@ function render(data){
           +'<div style="font-size:13px;line-height:1">'+(x.publicado?"✓":(x.cards.length&&!x.passou)?"•":x.passou?"○":"+")+"</div></div>";}).join("")+"</div>"
       +'<div class="sm" style="margin-top:7px">✓ publicou · • já tem card · + dia livre · ○ passou sem post</div></div>':"")
     // 4 · o que vem: evento e story do dia, com um toque cada
-    +'<div class="card">'+cab("⏭ O que vem","próximo compromisso e o story de hoje","events")
-    +(ev1?'<div class="linha"><span>'+lk(ev1.url||ev1.gcal,esc(ev1.t)+" ↗")+'</span><span class="sm num">'+esc(ev1.d)+"</span></div>"
+    +'<div class="card">'+cab("⏭ O que vem",(_ev1repetido?"depois do compromisso de amanhã":"próximo compromisso")+" e o story de hoje","events")
+    +(ev1?'<div class="linha"><span>'+lk(ev1.url,esc(ev1.t)+(ev1.url?" ↗":""))
+        +(ev1.idade?'<br><span class="sm">escrito há '+ev1.idade+(ev1.idade===1?" dia":" dias")+", não confirmado</span>":"")
+        +'</span><span class="sm num">'+esc(ev1.d)+"</span></div>"
         :(_ev1repetido?'<div class="sm">depois do compromisso de amanhã, nada marcado</div>'
           :'<div class="sm">nenhum compromisso marcado nos próximos dias</div>'))
     +'<div class="linha"><span>📱 Story de hoje · '+lk(D.fila&&D.fila.ideias?D.fila.ideias.link:null,"pautas ↗","golink")+'</span><span class="sm">'+esc((D.stories||{}).template||"")+"</span></div>"
     +"</div>"
-    // 5 · as secundárias, agora como linhas discretas
-    +((t.secondary||[]).length?'<div class="card">'+cab("↩ Se sobrar tempo","o que vem depois da ação de hoje","trello")
-      +(t.secondary||[]).map(sx=>'<div class="linha"><span><b>'+esc(sx.t)+"</b> "+'<span class="sm">'+esc(sx.why||"")+"</span></span>"+(sx.url?lk(sx.url,"abrir ↗","golink"):"")+"</div>").join("")
-      +"</div>":"")
+    // 5 · as secundárias, atrás de «ver mais»
+    +verm("se sobrar tempo ("+(t.secondary||[]).length+")",((t.secondary||[]).length
+      ?(t.secondary||[]).map(sx=>'<div class="linha"><span><b>'+esc(sx.t)+"</b> "+'<span class="sm">'+esc(sx.why||"")+"</span></span>"+(sx.url?lk(sx.url,"abrir ↗","golink"):"")+"</div>").join("")
+      :""))
+    // 6 · o aviso de coleta parada, no fim e levando para a folha de ajuda
+    +(D.meta.alert?'<p class="sm larga" style="margin:8px 2px 12px">'+esc(D.meta.alert)
+      +' · <button class="tercop" id="vaiajuda">ver quando cada dado chegou</button></p>':"")
     +"</section>";
 
   // ---------- AGENDA ----------
   h+='<section class="view wrap" id="v-agenda" hidden>'+fraseAba("agenda")
-    +'<div class="calnav"><button id="cprev" aria-label="mês anterior">‹</button><b id="cmes"></b><button id="cnext" aria-label="próximo mês">›</button></div>'
-    +'<div class="wdays">'+["s","t","q","q","s","s","d"].map(x=>"<span>"+x+"</span>").join("")+"</div>"
-    +'<div class="cal" id="cal"></div>'
-    +'<div class="leg"><span><i class="d-post"></i>post</span><span><i class="d-story"></i>story</span><span><i class="d-due"></i>prazo</span><span><i class="d-ev"></i>evento</span></div>'
-    +'<p class="sm" id="callegenda" style="margin:2px 2px 8px"></p>'
-    +'<div class="card" id="daypanel"><span class="sm">toque num dia para ver o que tem nele</span></div>'
-    +((D.fila&&D.fila.vencidos&&D.fila.vencidos.n)?'<div class="card sm" style="line-height:1.55"><b style="color:var(--down)">'+D.fila.vencidos.n+(D.fila.vencidos.n===1?" card passou":" cards passaram")+" do prazo no board.</b> Nada muda sozinho: são tarefas antigas com data vencida. "+lk(D.fila.vencidos.link,"Abrir no board ↗","golink")+" e escolher: nova data ou concluir."
-      +(D.comentar?'<div style="margin-top:8px"><a class="golink" href="'+esc(D.comentar)+'" target="_blank" rel="noopener" style="display:inline-block;background:var(--brand);color:#fff;border-radius:10px;padding:9px 14px;font:700 13px Inter,sans-serif;min-height:40px">↪ reagendar vencidos em lote</a><span class="sm" style="display:block;margin-top:5px">abre o card de comentários · escreva ali "reagenda os vencidos" e a triagem do dia move cada um para o próximo dia útil e responde o que mudou</span></div>':"")+"</div>":"")
+    // lista de dias, só dos dias que têm algo. A grade de mês saiu em 10/11/2026: gastava
+    // 505 px (36 células, navegação e legendas) para mostrar 8 dias com conteúdo, e
+    // dezembro e janeiro abriam vazios porque o DADO parava em 7 dias, não a navegação.
+    +'<div class="agcol"><div class="agl" id="agl1"></div>'
+    +((D.fila&&D.fila.vencidos&&D.fila.vencidos.n)?'<div class="card sm" style="line-height:1.55"><b style="color:var(--down)">'+D.fila.vencidos.n+(D.fila.vencidos.n===1?" card passou":" cards passaram")+" do prazo"+(D.fila.vencidos.frase?" · "+esc(D.fila.vencidos.frase):"")+".</b> Nada muda sozinho: são tarefas antigas com data vencida. "+((D.fila.vencidos.links||[]).map(x=>lk(x.url,"Abrir o "+esc(x.b)+" ↗","golink")).join(" · "))+" e escolher: nova data ou concluir."
+      +(D.comentar?'<div style="margin-top:8px"><a class="golink" href="'+esc(D.comentar)+'" target="_blank" rel="noopener" style="display:inline-block;background:var(--brand);color:#fff;border-radius:10px;padding:9px 14px;font:700 13px Inter,sans-serif;min-height:44px">↪ reagendar vencidos em lote</a><span class="sm" style="display:block;margin-top:5px">abre o card de comentários · escreva ali "reagenda os vencidos" e a triagem do dia move cada um para o próximo dia útil e responde o que mudou</span></div>':"")+"</div>":"")
+    +"</div>"
+    +'<div class="agcol2">'
+    +'<details class="verm" id="agd2"><summary>⌄ o resto desta semana e as próximas 3</summary><div class="agl" id="agl2"></div></details>'
+    +'<details class="verm" id="agd3"><summary>⌄ mais para frente</summary><div class="agl" id="agl3"></div></details>'
+    +'<div id="wkbox" hidden></div>'
+    +'<details class="verm"><summary>⌄ o que cada ícone quer dizer</summary><div class="sm" style="line-height:1.9">💰 dinheiro · ⏰ prazo de tarefa · 🎤 evento para acompanhar · 🎉 data comemorativa · 📷 post publicado · 📱 story</div></details>'
+    +"</div>"
     +"</section>";
 
   // ---------- POSTS ----------
@@ -609,21 +800,20 @@ function render(data){
     +"<b>falta:</b> "+esc(falta)+"<br><b>de onde vem:</b> "+esc(onde)+"<br><b>quando chega:</b> "+esc(quando)+"</div></div>";
   const d7pill=(p,tocavel)=>{const d=p.d7;if(tocavel===undefined)tocavel=true;if(!d)return "";if(d.pend)return '<span class="sm num">D+7 '+esc(d.pend)+"</span>";const c=d.nota==="alta"?"#047857":d.nota==="baixa"?"#B91C1C":"var(--sub)";const y=d.nota==="alta"?"▲":d.nota==="baixa"?"▼":"▬";if(!tocavel) return '<span class="sm num" style="color:'+c+';font-weight:800">'+y+" D+7</span>";
     return '<span class="sm num d7p" role="button" tabindex="0" title="'+esc(d.txt||"")+'" data-d7="'+esc(d.txt||"")+'" style="color:'+c+';font-weight:800;cursor:pointer;border-bottom:1px dotted currentColor">'+y+" D+7</span>";};
-  h+='<section class="view wrap" id="v-posts" hidden>'+fraseAba("posts")
-    +((D.colabs&&D.colabs.length)?D.colabs.map(c=>'<div class="card" style="border-left:3px solid #EC4899">'
+  const _pColabs=((D.colabs&&D.colabs.length)?D.colabs.map(c=>'<div class="card" style="border-left:3px solid #EC4899">'
       +'<span class="k">🤝 Em conjunto · '+esc(c.d)+'</span>'
       +'<div style="font-weight:700;font-size:14px;margin-top:6px;line-height:1.45">'+esc(c.cap)+'</div>'
       +'<div class="sm" style="margin-top:6px">publicado pelo perfil do parceiro · os números vivem lá'+(c.metricas?' · '+esc(c.metricas):'')+'</div>'
-      +'<div class="sm" style="margin-top:4px">'+lk(c.url,'abrir o post ↗','golink')+'</div></div>').join(''):"")
-    +barraJanela()
+      +'<div class="sm" style="margin-top:4px">'+lk(c.url,'abrir o post ↗','golink')+'</div></div>').join(''):"");
+  const _pJanela=barraJanela()
     +'<div class="card"><span class="k">📅 O período que você escolheu</span>'
     +'<div class="sm" id="jn-per" style="margin-bottom:6px"></div>'
     +'<div class="jrow">'
     +[["♡ ER","jn-er"],["✈ envios","jn-sends"],["👤 seguidores","jn-seg"]]
       .map(x=>'<div class="jtile"><div class="sm">'+x[0]+'</div><div class="num" id="'+x[1]+'"></div></div>').join("")
     +'</div><div class="sm" id="jn-segnota" hidden style="margin-top:5px"></div>'
-    +'<div class="sm" style="margin-top:6px">sobre <span id="jn-n"></span> com medida do Instagram</div></div>' 
-    +(function(){const T=D.trouxe;if(!T)return "";
+    +'<div class="sm" style="margin-top:6px">sobre <span id="jn-n"></span> com medida do Instagram</div></div>';
+  const _pTrouxe=(function(){const T=D.trouxe;if(!T)return "";
       const maxv=Math.max(...T.formatos.map(f=>parseFloat(String(f.vis_post).replace(",","."))||0),1);
       return '<div class="card" style="border-left:3px solid #7C3AED">'
         +cab("👋 "+esc(T.frase),esc(T.janela)+" · "+T.n+" posts","posts")
@@ -635,8 +825,8 @@ function render(data){
         +'<div class="sm" style="margin-top:8px"><b>quem mais levou gente ao perfil:</b><br>'
         +T.top.map(x=>"· "+lk(x.url,esc(x.d)+" "+esc(x.fmt),"golink")+' <span class="num">'+x.vis+" visitas"+(x.seg?" · +"+x.seg+(x.seg===1?" seguidor":" seguidores"):"")+"</span>").join("<br>")+"</div>"
         +'<div class="sm" style="margin-top:6px">'+esc(T.nota)
-        +(T.fora?"<br>"+esc(T.fora):"")+"</div></div>";})()
-    +(function(){const U=(D.saude||{}).ultimo;if(!U)return "";
+        +(T.fora?"<br>"+esc(T.fora):"")+"</div></div>";})();
+  const _pUltimo=(function(){const U=(D.saude||{}).ultimo;if(!U)return "";
       const f={img:IMGMAP[U.url]};
       const cor=U.pos==="acima"?"#047857":U.pos==="abaixo"?"#B91C1C":"var(--sub)";
       const sim=U.pos==="acima"?"▲":U.pos==="abaixo"?"▼":"▬";
@@ -652,8 +842,8 @@ function render(data){
         +(U.base?'<div class="sm">'+esc(U.base)+"</div>":"")
         +(U.rank?'<div class="sm" style="margin-top:3px">'+esc(U.rank)+"</div>":"")
         +'<div class="sm" style="margin-top:4px">'+tag(U.pilar)+" "+lk(U.url,"abrir ↗","golink")+"</div>"
-        +"</div></div></div>";})()
-    +'<div class="card"><span class="k">Mais recentes</span>'
+        +"</div></div></div>";})();
+  const _pMedidos='<div class="card"><span class="k">Mais recentes</span>'
     +P.recentes.map(p=>'<div class="linha" data-pilar="'+esc(p.pilar)+'" data-pts="'+esc(p.ts||"")+'"><span>'+lk(p.url,esc(p.t||p.d))
       +' <span class="sm num">'+esc(p.d)+"</span> "+tag(p.pilar)
       +(p.d7&&p.d7.txt?'<br><span class="sm num">'+d7pill(p,false)+" · "+esc(p.d7.txt)+"</span>":(p.d7&&p.d7.pend?"<br>"+d7pill(p):""))
@@ -663,25 +853,44 @@ function render(data){
     +[["er","♡ ER"],["sends","✈ envios"],["d","🗓 data"]].map((o,i)=>'<button data-ord="'+o[0]+'" aria-selected="'+(i===0)+'">'+o[1]+"</button>").join("")+"</div>"
     +'<div id="grade" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px"></div></div>'
     +'<details id="tabelaposts" style="margin-top:8px"><summary>ver os posts da janela em tabela</summary>' 
-    +'<div style="overflow-x:auto"><table class="tfix"><tr><th>data</th><th>formato</th><th>pilar</th><th>ER %</th><th>envios %</th><th>D+7</th><th></th></tr>'
+    +'<div class="tsangra"><table class="tfix"><tr><th>data</th><th>formato</th><th>pilar</th><th>ER %</th><th>envios %</th><th>D+7</th><th></th></tr>'
     +P.all.map(p=>'<tr data-pilar="'+esc(p.pilar)+'" data-pts="'+esc(p.ts||"")+'"><td class="num">'+esc(p.d)+"</td><td>"+esc(p.fmt)+"</td><td>"+tag(p.pilar)
       +'</td><td class="num"><b>'+(p.er===null?'<span class="sm">sem medida</span>':esc(p.er)+"%")+'</b></td><td class="num">'+(p.sends===null?"·":esc(p.sends)+"%")+"</td><td>"+d7pill(p)+"</td><td>"+lk(p.url,"abrir ↗","golink")+"</td></tr>").join("")
     +"</table></div>"
     +'<p class="sm" style="margin-top:6px">D+7 = a nota do post uma semana depois de publicado, contra a mediana da janela · ▲ acima ▬ na média ▼ abaixo · a leitura completa aparece nos Mais recentes</p>'
     +"</details></div>";
+  let _pStories="", _pSemana="";
   if(st.items&&st.items.length)
-    h+="<h2>"+LOGOS.ig+"Stories "+ageChip(S,"stories")+"</h2>"
+    _pStories="<h2>"+LOGOS.ig+"Stories "+ageChip(S,"stories")+"</h2>"
       +'<p class="sub-h">o motor da conta · toque num story (ou no i) para a mini-análise</p>'
       +'<div class="hscroll">'+st.items.map((x,i)=>'<div class="stt" data-si="'+i+'" role="button" tabindex="0" aria-label="ver a leitura deste story">'
         +(x.img?'<img src="'+x.img+'" alt="">':"")
         +'<span class="iBtn" aria-hidden="true">i</span>'
         +'<span class="ov"><span class="g num">'+(x.gancho??"—")+'</span><br><span class="d num">'+esc(x.d)+" "+x.type+"</span></span></div>").join("")+"</div>"
-      +'<div class="card" id="stinfo"><span class="sm">toque num story para ver a leitura dele</span></div>'
-      +'<div class="card"><div class="linha"><span>na última semana</span><span class="n num">'+(st.n7??"—")+"</span></div>"
+      +'<div class="card" id="stinfo"><span class="sm">toque num story para ver a leitura dele</span></div>';
+  if(st.items&&st.items.length)
+    _pSemana='<div class="card"><div class="linha"><span>na última semana</span><span class="n num">'+(st.n7??"—")+"</span></div>"
       +'<div class="linha"><span>gancho médio</span><span class="n num">'+esc(st.gancho??"—")+"</span></div>"
       +'<div class="linha"><span>saída na 1ª tela</span><span class="n num">'+esc(st.saida??"—")+"</span></div></div>";
   const C=D.canais||{}, tk=C.tiktok||{}, li=C.linkedin||{};
-  h+="</section>";
+  // os 6 mais recentes em grade de 3 por 2 · a grade completa dos 20 medidos fica no «ver mais»
+  const _pGrade6=(function(){
+    const ps=((D.posts||{}).all||[]).filter(p=>p.url).slice().sort((a,b)=>String(b.ts||"").localeCompare(String(a.ts||""))).slice(0,6);
+    if(!ps.length) return "";
+    return '<div class="card">'+cab("🖼 Os 6 mais recentes","toque para abrir no Instagram","posts")
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px">'
+      +ps.map(p=>'<a class="post" href="'+esc(p.url)+'" target="_blank" rel="noopener" style="flex:none;aspect-ratio:1/1">'
+        +(IMGMAP[p.url]?'<img src="'+IMGMAP[p.url]+'" alt="">':"")
+        +'<span class="ov" style="padding:16px 6px 5px"><span class="er" style="font-size:14px">'+(p.er===null?"·":esc(p.er)+"%")+'</span><br><span class="m">'+esc(p.d||"")+"</span></span></a>").join("")
+      +"</div></div>";})();
+  h+='<section class="view wrap" id="v-posts" hidden>'+fraseAba("posts")
+    +_pUltimo+_pStories+_pGrade6
+    +verm("escolher outro período",_pJanela)
+    +verm("ver os "+(((D.posts||{}).all||[]).length)+" medidos, em lista e em tabela",_pMedidos)
+    +verm("quantas pessoas os posts trouxeram",_pTrouxe)
+    +verm("em conjunto"+((D.colabs&&D.colabs.length)?" ("+D.colabs.length+")":""),_pColabs)
+    +verm("a semana de stories",_pSemana)
+    +"</section>";
 
   // ---------- ANÁLISE ----------
   h+='<section class="view wrap" id="v-analise" hidden>'
@@ -720,6 +929,10 @@ function render(data){
     +[["er","♡ ER"],["seg","👤 Seguidores"],["ritmo","📆 Ritmo"]].map((m,i)=>'<button data-m="'+m[0]+'" aria-selected="'+(i===0)+'">'+m[1]+"</button>").join("")
     +"</div><div id=\"mconteudo\"></div></div>";
 
+  // de cara ficam «a semana em 4 linhas», as leituras e «como você está» · os outros 6
+  // cartões (melhor post, melhor horário, foto × vídeo, funil, outros sinais, metas)
+  // vão para trás de um «ver mais» (a aba tinha 3,13 telas no celular)
+  const _hSa=h; h="";
   const PS=SA.post;
   if(PS)
     h+='<div class="card"><span class="k">🏆 Melhor post '+(SA.janela?esc(SA.janela):"da janela")+(PS.d?' · '+esc(PS.d):'')+'</span>'
@@ -791,7 +1004,9 @@ function render(data){
         prova?("o post de "+esc(prova.d)+" já fez "+esc(prova.sends)+"% · repita o fecho dele (pedir envio)")
              :"feche o próximo post pedindo envio (manda para uma amiga que…)");})()
     +"</details>";
-  h+='<p class="sm" style="margin:8px 2px">'+esc(D.meta.limiar_nota||"")+"</p></div>";
+  h+='<p class="sm" style="margin:8px 2px">'+esc(D.meta.limiar_nota||"")+"</p>";
+  const _saOut=h; h=_hSa;
+  h+=verm("os outros 6 cartões: melhor post, melhor horário, foto contra vídeo, funil, outros sinais e metas",_saOut)+"</div>";
 
   const L=D.learning||{};
   const maxEr=Math.max(...D.pilares.map(p=>parseFloat(String(p.er).replace(",","."))||0),1);
@@ -834,7 +1049,7 @@ function render(data){
         +'<div class="bar" style="margin-top:3px"><div class="fill" style="width:'+Math.min(100,i.mix_real)+'%"></div></div></div>').join("")
       +'<div class="sm" style="margin-top:6px">conta os posts do Instagram da janela, pela etiqueta de pilar de cada post</div>'
       +"</details>";})();
-  h+=(function(){ // cruzamento: os dois formatos medidos, lado a lado (nunca empilhado)
+  h+=verm("reel contra feed, com os dois medidos lado a lado",(function(){ // cruzamento: os dois formatos medidos, lado a lado (nunca empilhado)
     const gr={}; (D.posts.all||[]).forEach(p=>{const e=nn(p.er); if(!e) return;
       (gr[p.fmt]=gr[p.fmt]||[]).push({er:e,sends:nn(p.sends),reach:nn(String(p.reach).replace(/\./g,""))});});
     const F=gr.FEED||[], R=gr.REELS||[];
@@ -856,8 +1071,9 @@ function render(data){
             +[r[1],r[2]].map((v,i)=>'<div style="flex:1;min-width:0"><div class="bar"><div class="fill" style="width:'+Math.max(3,(v/m*100)).toFixed(0)+'%'+(i?"":";background:var(--mid)")+'"></div></div><span class="sm num">'+(i?"R ":"F ")+(r[3]?vg(v):fmtMil(v))+r[3]+"</span></div>").join("")+"</div>";}).join("")
       +leit("REELS alcança <b>"+vg(razao)+"× mais</b> gente ("+fmtMil(rr)+" contra "+fmtMil(fr)+" por post) · FEED engaja mais fundo (ER "+vg(fe)+"% contra "+vg(re)+"%)",
         "reel abre a porta para gente nova · feed aprofunda com quem já chegou · alterne os dois na mesma semana")
-      +"</div>";})();
+      +"</div>";})());
   if(FS){
+    const _hFs=h; h="";
     h+='<div class="card sm" style="line-height:1.6">🧩 pilar → 🎬 formato → 📱 conteúdo real · cada card traz um print de post SEU como referência · o texto completo (abertura, setup, 2 ideias por formato) vive na '+lk(FS.planilha,"planilha ↗","golink")+' · editou lá, a sexta traz para cá</div>';
     (FS.novos||[]).forEach(f=>{
       h+='<div class="card"><div style="display:flex;gap:12px;align-items:flex-start">'
@@ -890,6 +1106,8 @@ function render(data){
           .join('<hr style="border:0;border-top:1px solid var(--line);margin:8px 0">')
         +"</div></details>":"")
       +"</div></div></div>";
+    const _fsOut=h; h=_hFs;
+    h+=verm("as fichas de formato, com exemplo real de post seu ("+(((FS||{}).novos||[]).length+1)+")",_fsOut);
   } else { h+='<div class="card"><span class="age stale">formatos ainda sem espelho nesta rodada</span></div>'; }
   h+="</div>";
 
@@ -918,7 +1136,8 @@ function render(data){
         +I.termos.map(t=>'<span class="sm" style="background:#EDE9FE;color:#5B21B6;padding:4px 10px;border-radius:12px">'+esc(t.t)+"</span>").join("")+"</div>"
         +'<div class="sm" style="margin-top:8px">'+esc(I.fonte)+"</div>"
         +'<div class="sm" style="margin-top:3px">'+esc(I.nota)+" "+lk(I.link,"virar pauta no board ↗","golink")+"</div></div>";})()
-    +'<div class="card"><span class="k">'+LOGOS.tt+"TikTok "+ageChip(S,"tiktok")+"</span>"
+    +verm("os outros 5 canais: TikTok, LinkedIn, YouTube, blog e o que falta",
+    '<div class="card"><span class="k">'+LOGOS.tt+"TikTok "+ageChip(S,"tiktok")+"</span>"
     +'<div class="linha"><span>views (7d na coleta)</span><span class="n num">'+esc(tk.views||"—")+"</span></div>"
     +'<div class="linha"><span>chega por busca</span><span class="n num">'+esc(tk.busca_pct||"—")+"</span></div>"
     +(tk.termos&&tk.termos.length?'<details><summary>o que buscaram para te achar</summary><div class="body">'
@@ -954,12 +1173,13 @@ function render(data){
       const dias=Math.round((Date.now()-new Date(bl.date+"T12:00:00").getTime())/864e5);
       return leit("último post há <b>"+dias+" dias</b> ("+bl.date.slice(8,10)+"/"+bl.date.slice(5,7)+")",
         dias>14?"passou da quinzena · 1 post reaproveitado do carrossel resolve":"dentro da quinzena · o próximo pode nascer do termo mais buscado no TikTok");})()
-    +"</div>"
+    +"</div>")
     +"</div></section>";
 
   // ---------- NEGÓCIO (aba R$ · pedido dela 03/08) ----------
   const FF=D.fila||{}, CR=FF.pipeline||null;
-  h+='<section class="view wrap" id="v-negocio" hidden>'+fraseAba("negocio");
+  let _ngMes="",_ngPlacar="",_ngCobrar="",_ngFunil="",_ngCurso="",_ngStale="";
+  const _hNg=h; h="";
   h+=(function(){ // «O mês em uma tela» · todo número vem do build (data.mes), nenhuma conta aqui
     const M=D.mes; if(!M) return "";
     let s='<div class="card" style="border-left:3px solid var(--brand)">'
@@ -990,6 +1210,7 @@ function render(data){
         +M.pecas.itens.map(i=>lk(i.url,esc(i.t),"golink")+' ('+esc(i.d)+')').join("; ")+'</div>';
     s+='<div class="sm" style="margin-top:6px">peças = cards que entraram em 🌍 Publicado no board Conteúdo, por isso conta também LinkedIn, stories e blog, e não é o mesmo número da sua semana no Instagram · dinheiro só entra aqui quando o Status pagamento do card vira Pago</div>';
     return s+"</div>";})();
+  _ngMes=h; h="";
   if(CR&&CR.placar){
     const pl=CR.placar, fmtR=v=>"R$"+String(Math.round(v||0)).replace(/\B(?=(\d{3})+(?!\d))/g,".");
     const pct=Math.min(100,Math.round(((pl.ganho_conf||0)+(pl.ganho_est||0))/(pl.meta||25000)*100));
@@ -1002,10 +1223,12 @@ function render(data){
       +(pl.fech_mes&&pl.fech_mes.length?'<details><summary>ver quais</summary><div class="body">'+pl.fech_mes.map(f=>"· "+lk(f.url,esc(f.t))+(f.valor?' <span class="sm num">'+esc(f.valor)+(f.vtipo==="estimativa"?" est.":"")+"</span>":"")).join("<br>")+"</div></details>":"")
       +'<div class="sm num" style="margin-top:4px">no funil (se tudo fechar): '+fmtR(pl.pipe_conf)+(pl.pipe_est?" + "+fmtR(pl.pipe_est)+" est.":"")+"</div>"
       +"</div>";
+    _ngPlacar=h; h="";
     if(CR.cobrar&&CR.cobrar.length)
       h+='<div class="card" style="border-left:3px solid var(--down)"><span class="k">💬 Cobrar hoje</span>'
         +CR.cobrar.map(c=>'<div class="linha"><span>'+lk(c.url,esc(c.t),"golink")+(c.etapa?' <span class="sm">'+esc(c.etapa)+"</span>":"")+'</span><span class="sm num" style="color:var(--down);font-weight:700">'+c.dias+"d parado</span></div>").join("")
         +'<div class="sm" style="margin-top:4px">parado no funil sem resposta · 1 mensagem reativa</div></div>';
+    _ngCobrar=h; h="";
     h+="<h2>🔻 Funil · quem está onde</h2><p class=sub-h>cada nome abre o card no Trello</p>";
     (CR.etapas||[]).forEach(et=>{
       h+='<div class="card"><div class="hd" style="gap:10px"><span class="k">'+esc(et.nome)+'</span><span class="n num">'+et.n+"</span></div>"
@@ -1014,16 +1237,21 @@ function render(data){
 +"</div>";
     });
     if(!(CR.etapas||[]).length) h+='<div class="card"><div class="sm">nenhum negócio ativo no funil agora · '+lk(CR.link,"abrir o CRM ↗","golink")+"</div></div>";
+    _ngFunil=h; h="";
     h+='<p class="sm" style="margin:6px 2px">'+lk(CR.link,"abrir o CRM ↗","golink")+' · valor real: digite "R$ 12.000" no título ou na descrição do card que ele entra aqui sozinho na próxima rodada</p>'
       +(FF.curso?'<div class="card"><div class="linha"><span>'+lk(FF.curso.url,esc(FF.curso.t))+"</span><span></span></div></div>":"")
-      +'<div class="card"><span class="k">Como isso atualiza</span><div class="sm" style="margin-top:6px">o robô lê o board CRM ao vivo em TODA rodada da Central (as horas estão no card Atualizações, aba FILA) · mexeu no Trello, o webhook republica em ~1-2 min · nada aqui é digitado à mão</div></div>';
+      +'<div class="card"><span class="k">Como isso atualiza</span><div class="sm" style="margin-top:6px">o robô lê o board CRM ao vivo em TODA rodada da Central (as horas estão na folha de ajuda, em «quando cada dado chegou») · mexeu no Trello, o webhook republica em ~1-2 min · nada aqui é digitado à mão</div></div>';
+    _ngCurso=h; h="";
   } else {
     h+='<div class="card"><span class="age stale">CRM sem dado nesta rodada</span></div>';
   }
-  h+="</section>";
-
-  // ---------- FILA ----------
-  const F=D.fila;
+  _ngStale=h; h=_hNg;
+  h+='<section class="view wrap" id="v-negocio" hidden>'+fraseAba("negocio")
+    +_ngCobrar+_ngPlacar+_ngStale
+    +verm("o mês em uma tela",_ngMes)
+    +verm("o funil em 3 etapas"+((CR&&(CR.etapas||[]).length)?" ("+CR.etapas.length+")":""),_ngFunil)
+    +verm("o curso e como isto atualiza",_ngCurso)
+    +"</section>";
 
   // ===== RADAR · mesa de sinais (redesenho 07/08 · direção B + enxertos de A) =====
   h+='<section class="view wrap" id="v-radar" hidden>'+fraseAba("radar")
@@ -1125,7 +1353,8 @@ function render(data){
           +(SAl?("números grandes de "+esc(SAl.de)+" a "+esc(SAl.ate)+" · "):"")
           +(RD&&RD.cobertura?RD.cobertura.total+" pessoas com data":"")+"</p>"
           +(RD&&RD.lembrete?'<div style="background:var(--age-bg);color:var(--age);border-radius:10px;padding:9px 12px;margin:6px 0 2px;font:600 12.5px/1.5 Inter,sans-serif">⏰ '+esc(RD.lembrete)+"</div>":"")
-          +'<div class="sgrid">'+cg.join("")+"</div>";
+          +'<div class="sgrid">'+cg.slice(0,4).join("")+"</div>"
+          +(cg.length>4?verm("ver os outros "+(cg.length-4)+" sinais de quem está chegando",'<div class="sgrid">'+cg.slice(4).join("")+"</div>"):"");
       }
       // --- grupo 2 · quem já te segue (idade em rosquinha + cidade + Brasil × fora) ---
       if(PB&&(PB.idades||[]).length){
@@ -1157,8 +1386,9 @@ function render(data){
           abre:"ver países ▾",
           mais:PB.paises.map(x=>'<div class="linha"><span class="sm">'+esc(NOMEP[x.k]||x.k)+'</span><span class="sm num">'+fmtMil(x.v)+" · "+pctS(x.v,somaP2)+"</span></div>").join(""),
           dt:"dado de "+fmtAbs(PB.at)}));
-        t+='<h2>👥 Quem já te segue</h2><p class="sub-h">contagem do próprio Instagram, sem nome de ninguém'+(PB.nota?' · '+esc(PB.nota):'')+'</p>'
-          +'<div class="sgrid">'+pg.join("")+"</div>";
+        t+=verm("quem já te segue ("+pg.length+")",
+          '<p class="sub-h">contagem do próprio Instagram, sem nome de ninguém'+(PB.nota?" · "+esc(PB.nota):"")+"</p>"
+          +'<div class="sgrid">'+pg.join("")+"</div>");
       }
       if(RD&&RD.cobertura)
         t+='<p class="sm" style="margin:8px 2px">lidos '+RD.cobertura.lidos+" de "+RD.cobertura.total+" perfis ("+RD.cobertura.pct+"%)"
@@ -1172,11 +1402,11 @@ function render(data){
   const ID=D.ideias||{};
   h+='<section class="view wrap" id="v-ideias" hidden>'+fraseAba("ideias")
     +'<div class="seg" role="tablist">'
-    +'<button data-i="jogadas" aria-selected="true" onclick="showIdeia(\'jogadas\')">🤝 Jogadas</button>'
+    +'<button data-i="pautas" aria-selected="true" onclick="showIdeia(\'pautas\')">📚 Pautas</button>'
     +'<button data-i="alta" aria-selected="false" onclick="showIdeia(\'alta\')">🔥 Em alta</button>'
-    +'<button data-i="pautas" aria-selected="false" onclick="showIdeia(\'pautas\')">📚 Pautas</button></div>';
+    +'<button data-i="jogadas" aria-selected="false" onclick="showIdeia(\'jogadas\')">🤝 Jogadas</button></div>';
   // 1 · JOGADAS: grade 2 colunas, card compacto que abre no toque
-  h+='<div class="subi" id="i-jogadas">'
+  h+='<div class="subi" id="i-jogadas" hidden>'
     +'<p class=sub-h>cruzamento de agenda, marcas e dado real · toque para abrir'+(ID.at?' · leva de '+esc(fmtAbs(ID.at)):'')+(ID.stale?' <span class="age">⚠ leva antiga</span>':'')+'</p>';
   if(ID.proativas&&ID.proativas.length){
     h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
@@ -1209,49 +1439,26 @@ function render(data){
   }
   h+='</div>';
   // 3 · PAUTAS
-  h+='<div class="subi" id="i-pautas" hidden>'
-    +'<p class=sub-h>casos com prova documentada e o seu banco de ideias · tudo abre no Trello</p>';
-  if(ID.pautas&&ID.pautas.length){
-    h+='<div class="card"><span class="k">📚 do acervo (prova documentada)</span>'
-      +ID.pautas.map(p=>'<div class="linha"><span>'+lk(p.url,esc(p.t),'golink')+'</span></div>').join('')+'</div>';
-  }
+  h+='<div class="subi" id="i-pautas">'
+    +'<p class=sub-h>as ideias mais novas do board e o acervo com prova documentada · tudo abre no Trello</p>';
   if(ID.banco&&ID.banco.length){
-    h+='<div class="card"><span class="k">🧠 banco de ideias ('+ID.banco.length+' mais recentes)</span>'
+    h+='<div class="card"><span class="k">🧠 as '+ID.banco.length+' ideias mais novas do board</span>'
       +ID.banco.map(p=>'<div class="linha"><span>'+lk(p.url,esc(p.t),'golink')+'</span></div>').join('')+'</div>';
   }
-  h+='<div class="card sm" style="line-height:1.6">🎪 '+esc(ID.quadros_nota||'')+(ID.planilha?' · '+lk(ID.planilha,'abrir a planilha ↗','golink'):'')+'</div>'
+  h+=verm("o acervo com prova documentada"+((ID.pautas&&ID.pautas.length)?" ("+ID.pautas.length+")":""),
+    ((ID.pautas&&ID.pautas.length)?'<div class="card"><span class="k">📚 do acervo (prova documentada)</span>'
+      +ID.pautas.map(p=>'<div class="linha"><span>'+lk(p.url,esc(p.t),'golink')+'</span></div>').join('')+'</div>':"")
+    +'<div class="card sm" style="line-height:1.6">🎪 '+esc(ID.quadros_nota||'')+(ID.planilha?' · '+lk(ID.planilha,'abrir a planilha ↗','golink'):'')+'</div>')
   +'</div>'
-  +(D.comentar?'<div class="card sm" style="line-height:1.6">💬 <b>Quer mudar algo aqui?</b> Comenta no card e eu leio: '+lk(D.comentar,'abrir o card de comentários ↗','golink')+'</div>':'')
+  +'<p class="sm" style="margin:8px 2px"><button class="tercop" onclick="showView(\'terca\');return false">quer mudar algo aqui? escreva na aba TERÇA e eu levo para o card da semana</button></p>'
   +'</section>';
 
-  h+='<section class="view wrap" id="v-fila" hidden>'+fraseAba("fila");
-  if(F){
-    const grp=(emoji,nome,f)=>'<div class="card grp"><div class="hd"><span class="k">'+emoji+" "+nome+'</span><span class="n num">'+f.n+"</span></div>"
-      +(f.antigo?'<div class="sm" style="margin-top:4px">mais antigo: '+lk(f.antigo.url,esc(f.antigo.t),"golink")+" · desde "+esc(f.antigo.desde)
-        +((D.acao&&/^https:\/\/trello\.com\/c\//.test(f.antigo.url||""))?' <button class="agirb" data-card="'+esc((f.antigo.url||"").split("/").filter(Boolean).pop())+'" data-tit="'+esc(f.antigo.t)+'" data-ctx="'+esc(nome.toLowerCase())+'">⚡ agir</button>':"")
-        +"</div>":'<div class="sm" style="margin-top:4px">vazia</div>')+"</div>";
-    h+='<h2>🗂 A fila '+ageChip(S,"trello")+"</h2><p class=sub-h>o que está te travando · aprovar é sempre seu</p>"
-      +grp("👀","Aprovar",F.aprovar)+grp("🎬","Gravar",F.gravar)+grp("♻️","Reaproveitar",F.repurpose)
-      +"<h2>💡 Pautas · de onde começar</h2><div class=card>"
-      +((D.pautas&&D.pautas.length)?D.pautas.map(p=>'<div class="linha"><span>'+lk(p.url,esc(p.t),"golink")+"</span><span></span></div>").join(""):'<div class="sm">lista Ideias vazia</div>')
-      +((D.learning&&D.learning.action_valida)?'<div class="sm" style="margin-top:4px"><b>por quê agora:</b> '+esc(D.learning.action_valida)+"</div>":"")
-      +'<div class="sm" style="margin-top:4px">'+lk(F.ideias.link,"lista Ideias ↗","golink")+' · '+F.ideias.n+' pautas vivas · o dinheiro mudou para a aba <a class="golink" href="#" onclick="showView(\'negocio\');return false">R$</a></div>'
-      +"</div>";
-  } else {
-    h+='<div class="card"><span class="age stale">Trello sem dado nesta rodada</span></div>';
-  }
-  const NOMES={posts:"Instagram · posts",stories:"Instagram · stories",trello:"Trello (fila/agenda)",crm:"CRM (pipeline)",learning:"Leitura da semana",insights:"Leituras (análises)",tiktok:"TikTok",linkedin:"LinkedIn",events:"Eventos (agenda)",blog:"Blog",formatos:"Formatos (espelho da planilha)"};
-  h+='<h2 id="atualizacoes">🕐 Atualizações</h2><p class=sub-h>quando cada dado chegou · o ↻ lá em cima pede uma rodada nova (fica pronta em ~2 min)</p><div class="card">'
-    +Object.keys(NOMES).filter(k=>S[k]).map(k=>{
-      const st=S[k]; const dias=st.at?(Date.now()-new Date(String(st.at).slice(0,10)+"T12:00:00").getTime())/864e5:99;
-      const ok=st.ok&&dias<=(LIMITES[k]??9);
-      if(!st.at) return '<div class="linha"><span>'+esc(NOMES[k])+'</span><span class="sm num">'+(st.ok?"conferido nesta rodada":"sem dado")+"</span></div>";
-      return '<div class="linha"><span>'+esc(NOMES[k])+'</span><span class="sm num" style="font-weight:600;color:'+(ok?"var(--sub)":"var(--age)")+'">'+fmtAbs(st.at)+(ok?"":" · parado")+"</span></div>";
-    }).join("")+"</div>";
-  h+="<footer>"+gruposDeLinks()
-    +(D.comentar?'<div style="margin-top:10px">💬 '+lk(D.comentar,"comentar a Central (eu leio) ↗","golink")+"</div>":"")
-    +'<div style="margin-top:10px" class="num">Central @mispace v3 · montado '+esc(fmtAbs(D.meta.built_at||""))
-    +"</div></footer></section>";
+  // A aba FILA foi dissolvida em 10/11/2026: tinha 0,57 tela de conteúdo de cara e, das
+  // 7 partes, 3 eram separador, 1 era duplicata (o rodapé de 11 links, que a folha de
+  // ajuda já renderiza) e 2 pertenciam a outras abas. As 3 fichas de grupo foram para
+  // HOJE, as pautas para a sub-aba Pautas de IDEIAS, e «quando cada dado chegou» para a
+  // folha de ajuda, que já é o lugar do «como ler esta central». Assim o menu continua
+  // com 8 botões e o alvo de toque de cada um não cai de 46,9 para 41,6 px no 375.
 
   $("#app").innerHTML=h; $("#skel").hidden=true; $("#app").hidden=false; $("#nav").hidden=false;
   ligaSwipe();
@@ -1354,18 +1561,20 @@ function render(data){
     n.addEventListener("click",()=>stAbre(n.dataset.si));
     n.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); stAbre(n.dataset.si); } });
   });
-  $("#carimbo").addEventListener("click",()=>{showView("fila");setTimeout(()=>{const a=document.getElementById("atualizacoes");if(a){const y=a.getBoundingClientRect().top+scrollY-(parseInt(getComputedStyle(document.documentElement).getPropertyValue("--hdr"))||92)-8;scrollTo({top:y,behavior:"smooth"});}},80);});
+  $("#carimbo").addEventListener("click",()=>$("#ajuda").click());
+  const vj=document.getElementById("vaiajuda");
+  if(vj) vj.addEventListener("click",()=>$("#ajuda").click());
   $("#ajuda").addEventListener("click",()=>{
     let ov=document.getElementById("guia");
     if(ov){ov.remove();return;}
     ov=document.createElement("div");ov.id="guia";
     ov.style.cssText="position:fixed;inset:0;z-index:120;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:20px";
-    const G=[["hoje","🌞","HOJE","o que fazer agora · 1 principal, no máximo 2 extras"],
-      ["agenda","📅","AGENDA","a semana e os eventos · só os próximos 7 dias"],
+    const G=[["terca","🗓️","TERÇA","o que mudou, o que espera por você, o que eu devo · e onde você escreve"],
+      ["hoje","🌞","HOJE","o que fazer agora · 1 principal, no máximo 2 extras"],
+      ["agenda","📅","AGENDA","o que tem data pela frente, dia por dia"],
       ["posts","🖼","POSTS","o que saiu · cada post ganha nota D+7 uma semana depois"],
       ["analise","📊","ANÁLISE","saúde, formatos e canais"],
       ["negocio","💰","R$","placar do mês, funil com nomes, quem cobrar"],
-      ["fila","📋","FILA","aprovar e gravar, pautas, e quando cada dado chegou"],
       ["ideias","💡","IDEIAS","o que gravar, o que está em alta e a jogada de parceria"],
       ["radar","📡","RADAR","quem chegou na semana, de onde veio e quem vale um oi"]];
     ov.innerHTML='<div style="background:#fff;border-radius:16px;max-width:400px;width:100%;padding:18px 16px;box-shadow:0 20px 60px rgba(15,23,42,.3)">'
@@ -1395,7 +1604,10 @@ function render(data){
       +"</div></details>"
       +'<button id="imprimir" style="margin-top:10px;width:100%;height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;font:700 13px Inter,sans-serif;cursor:pointer">🖨 salvar/imprimir 1 página</button>'
       +'<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b style="font:800 13px Inter,sans-serif">🔗 Seus links</b>'+gruposDeLinks()+"</div>"
-      +'<div style="font:400 13px Inter,sans-serif;color:var(--sub);margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">toque no “montado há…” lá em cima para ver quando cada dado chegou · o ↻ pede uma rodada nova e avisa quando ela fica pronta</div>'
+      +'<details style="margin-top:12px"><summary style="font:700 13px Inter,sans-serif;cursor:pointer">🕐 quando cada dado chegou</summary><div style="margin-top:4px">'+atualizacoesHtml()+"</div></details>"
+      +((D.meta.marcha&&D.meta.marcha.value)?'<div class="sm" style="margin-top:8px">🎚 marcha do mês: <b>'+esc(D.meta.marcha.value)+"</b>"+(D.meta.marcha.ok?"":" (padrão)")+" · "+lk(D.meta.marcha.link,"trocar no board ↗","golink")+"</div>":"")
+      +(D.comentar?'<div class="sm" style="margin-top:6px">💬 '+lk(D.comentar,"comentar a Central (eu leio) ↗","golink")+"</div>":"")
+      +'<div style="font:400 13px Inter,sans-serif;color:var(--sub);margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">o ↻ pede uma rodada nova e avisa quando ela fica pronta · Central @mispace v3, montada '+esc(fmtAbs(D.meta.built_at||""))+"</div>"
       +'<button id="guiafecha" style="margin-top:12px;width:100%;height:44px;border:0;border-radius:13px;background:var(--grad);color:#fff;font:700 13px Inter,sans-serif;cursor:pointer">entendi</button></div>';
     ov.addEventListener("click",e=>{
       if(e.target.id==="imprimir"){
@@ -1432,15 +1644,25 @@ function render(data){
     const b=$("#refresh"); b.textContent="✓"; b.disabled=true;
     const av=$("#banner");
     const msg='pedido enviado · atualiza: Instagram (se o dado tiver 2h ou mais), Trello, funil e blog · TikTok, LinkedIn e YouTube só entram quando a Mesa coleta numa sessão · pronta em ~2 min, depois recarregue';
-    if(av){ av.textContent=msg; } else { const d=document.createElement("div"); d.id="banner"; d.textContent=msg; $("#v-hoje").prepend(d); }
+    // o ↻ aparece em toda aba: o recado vai na aba ABERTA, senão ela toca na TERÇA e o
+    // texto é escrito numa seção escondida · só o botão virando ✓ não explica nada
+    const alvo=document.getElementById("v-"+ATUAL)||$("#v-hoje");
+    if(av){ av.textContent=msg; } else { const d=document.createElement("div"); d.id="banner"; d.className="larga"; d.textContent=msg; alvo.prepend(d); }
   });
-  $("#cprev").addEventListener("click",()=>moveCal(-1));
-  $("#cnext").addEventListener("click",()=>moveCal(1));
-  const now=new Date(); calY=now.getFullYear(); calM=now.getMonth();
-  renderCal();
+  terGC(((D.terca||{}).registrados)||[]);
+  ligaTerca();
+  // de terça o primeiro toque dela já cai no lugar certo; nos outros dias abre em HOJE
+  if(new Date().getDay()!==2) showView("hoje");
+  renderAgenda();
+  addEventListener("resize",()=>{const wk=document.getElementById("wkbox");
+    if(wk&&!wk.innerHTML&&matchMedia("(min-width:1100px)").matches) renderAgenda();});
   const hash=(location.hash||"").slice(1);
   if(hash){ const [hv,hs]=hash.split("/"); if(document.getElementById("v-"+hv)){ showView(hv); if(hs) showSub(hs); } }
   document.addEventListener("click", ev => {
+    const tb = ev.target.closest(".tercab");
+    if(tb){ aprovaCard(tb.dataset.card, tb.dataset.tit); return; }
+    const cp = ev.target.closest("[data-cop]");
+    if(cp){ terCopia(); return; }
     const b = ev.target.closest(".agirb");
     if(b) agir(b.dataset.card, b.dataset.tit, b.dataset.ctx);
   });
@@ -1498,98 +1720,100 @@ function showSub(s){
   document.querySelectorAll(".subv").forEach(el=>el.hidden=(el.id!=="s-"+s));
 }
 
-function calData(){
-  const posts={}, stories={}, dues={}, evs={};
-  (D.posts.all||[]).forEach(p=>{ if(p.ts){ (posts[p.ts]=posts[p.ts]||[]).push(p); } });
-  ((D.stories||{}).items||[]).forEach(x=>{ if(x.ts){ (stories[x.ts]=stories[x.ts]||[]).push(x); } });
-  ((D.fila||{}).agenda||[]).forEach(a=>{ if(a.due){ (dues[a.due]=dues[a.due]||[]).push(a); } });
-  ((D.fila||{}).eventos||[]).forEach(e=>{ if(e.date){ (evs[e.date]=evs[e.date]||[]).push(e); } });
-  return {posts,stories,dues,evs};
+// ===================== AGENDA · a lista de dias =====================
+// A pergunta dela é «o que tem nos próximos dias e o que eu tenho que fazer». A lista
+// responde isso; a grade de mês não respondia. Dia sem nada não ganha linha, e um
+// intervalo vazio vira UMA linha.
+const zz=n=>String(n).padStart(2,"0");
+const isoDe=d=>d.getFullYear()+"-"+zz(d.getMonth()+1)+"-"+zz(d.getDate());
+const maisDias=(iso,n)=>{const d=new Date(iso+"T12:00:00");d.setDate(d.getDate()+n);return isoDe(d);};
+const ICO={dinheiro:"💰",prazo:"⏰",evento:"🎤",comemorativa:"🎉"};
+
+function agDados(){
+  const hoje=isoDe(new Date()), dias={};
+  const push=(iso,o)=>{ if(iso){ (dias[iso]=dias[iso]||[]).push(o); } };
+  (((D.fila||{}).agenda)||[]).forEach(a=>push(a.due,{
+    ic:ICO[a.tipo]||"⏰", t:a.t, url:a.url,
+    card:/^https:\/\/trello\.com\/c\//.test(a.url||"")&&!a.fixo,
+    sub:(a.idade?("escrito há "+a.idade+(a.idade===1?" dia":" dias")+", não confirmado")
+        :a.board?("no board "+a.board)
+        :a.tipo==="comemorativa"?"data comemorativa"
+        :"evento para acompanhar")}));
+  ((D.posts||{}).all||[]).forEach(p=>{ if((p.ts||"")>=hoje) push(p.ts,{ic:"📷",t:p.t||"post publicado",url:p.url,sub:"post publicado"}); });
+  ((D.stories||{}).items||[]).forEach(x=>{ if((x.ts||"")>=hoje) push(x.ts,{ic:"📱",t:"story",sub:"gancho "+(x.gancho??"—")}); });
+  return dias;
 }
-function renderCal(){
-  const {posts,stories,dues,evs}=calData();
-  const MH=D.melhor_hora||{};
-  const DOW={"seg":0,"ter":1,"qua":2,"qui":3,"sex":4,"sáb":5,"dom":6};
-  const RENDE={por:{},max:0};
-  (MH.dias||[]).forEach(x=>{const i=DOW[x.nome];if(i===undefined)return;
-    const v=parseFloat(String(x.er).replace(",","."))||0;
-    RENDE.por[i]={er:v,n:x.n,txt:x.er};if(v>RENDE.max)RENDE.max=v;});
-  if(!selDay){   // abre já no dia de hoje, ou no próximo dia que tem algo (nunca calendário mudo)
-    const hj=new Date(), z=n=>String(n).padStart(2,"0");
-    const hoje=hj.getFullYear()+"-"+z(hj.getMonth()+1)+"-"+z(hj.getDate());
-    const temAlgo=d=>(posts[d]||[]).length||(stories[d]||[]).length||(dues[d]||[]).length||(evs[d]||[]).length;
-    if(temAlgo(hoje)) selDay=hoje;
-    else{
-      const fut=Object.keys(Object.assign({},posts,stories,dues,evs)).filter(d=>d>=hoje).sort();
-      selDay=fut[0]||hoje;
-    }
-  }
-  $("#cmes").textContent=MESES[calM]+" "+calY;
-  const first=new Date(calY,calM,1);
-  const off=(first.getDay()+6)%7;
-  const nd=new Date(calY,calM+1,0).getDate();
-  const today=new Date(); const tIso=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0");
-  let h="";
-  for(let i=0;i<off;i++) h+='<div class="cd out"></div>';
-  for(let d=1;d<=nd;d++){
-    const iso=calY+"-"+String(calM+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
-    const wd=(new Date(calY,calM,d).getDay()+6)%7;
-    const hasP=posts[iso], hasS=stories[iso], hasD=dues[iso], hasE=evs[iso];
-    const img=hasP?IMGMAP[hasP[0].url]:null;
-    let inner='<span class="dn num">'+d+"</span>";
-    if(img) inner+='<img class="th" src="'+img+'" alt="">';
-    const dots=[];
-    if(hasP&&!img) dots.push("d-post");
-    if(hasS) dots.push("d-story");
-    if(hasD) dots.push("d-due");
-    if(hasE) dots.push("d-ev");
-    if(dots.length) inner+='<div class="dots">'+dots.slice(0,3).map(c=>'<span class="dot '+c+'"></span>').join("")+"</div>";
-    // fundo = o que rende naquele dia da semana (camada 1 do "melhor horário", padrão Metricool)
-    let bg="";
-    if(RENDE.max>0&&RENDE.por[wd]&&RENDE.por[wd].n>0&&iso>=tIso){
-      const f=RENDE.por[wd].er/RENDE.max;
-      if(f>0){const a=(0.03+f*0.09).toFixed(3);
-        bg=';background-image:linear-gradient(rgba(124,58,237,'+a+'),rgba(124,58,237,'+a+'))';}
-      if(RENDE.por[wd].er===RENDE.max) inner+='<span class="best" aria-label="seu melhor dia">★</span>';
-    }
-    h+='<div class="cd'+(wd>=5?" wknd":"")+(iso===tIso?" today":"")+(iso===selDay?" sel":"")+'" data-d="'+iso+'" style="position:relative'+bg+'" role="button" tabindex="0">'+inner+"</div>";
-  }
-  $("#cal").innerHTML=h;
-  const lg=document.getElementById("callegenda");
-  if(lg) lg.innerHTML=(RENDE.max>0)
-    ? "⏰ o fundo roxo mostra o que rende em cada dia da semana (ER médio dos seus posts) · ★ = seu melhor dia · só nos dias que ainda vão acontecer"
-    : "";
-  document.querySelectorAll(".cd[data-d]").forEach(c=>{
-    c.addEventListener("click",()=>pickDay(c.dataset.d));
-    c.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); pickDay(c.dataset.d); } });
-  });
-  if(selDay) dayPanel(selDay);
-}
-function moveCal(dir){ calM+=dir; if(calM<0){calM=11;calY--;} if(calM>11){calM=0;calY++;} renderCal(); }
-function pickDay(iso){ selDay=iso; renderCal(); dayPanel(iso); $("#daypanel").scrollIntoView(); }
-function dayPanel(iso){
-  const {posts,stories,dues,evs}=calData();
+function linhaDoDia(iso,itens){
+  const hoje=isoDe(new Date()), d=new Date(iso+"T12:00:00"), wd=(d.getDay()+6)%7;
   const dd=iso.slice(8,10)+"/"+iso.slice(5,7);
-  let rows="";
-  (posts[iso]||[]).forEach(p=>{
-    const img=IMGMAP[p.url];
-    rows+='<div class="dp">'+(img?'<img src="'+img+'" alt="">':"")
-      +'<div><div class="tt">'+esc(p.t||"post")+'</div><div class="sm">'+tag(p.pilar)+' <span class="num">'+(p.er===null?"sem medida":"ER "+esc(p.er)+"% · envios "+esc(p.sends)+"%")+"</span></div></div>"
-      +'<span style="margin-left:auto">'+lk(p.url,"abrir ↗","golink")+"</span></div>";
-  });
-  (stories[iso]||[]).forEach(x=>{
-    rows+='<div class="dp"><div><div class="tt">'+x.type+' story</div><div class="sm num">gancho '+(x.gancho??"—")+" · alcance "+(x.reach??"—")+"</div></div></div>";
-  });
-  (dues[iso]||[]).forEach(a=>{
-    rows+='<div class="dp"><div><div class="tt">⏰ '+esc(a.t)+'</div><div class="sm">prazo no board'+(a.ef?" · data comemorativa":"")
-      +((D.acao&&/^https:\/\/trello\.com\/c\//.test(a.url||""))?' <button class="agirb" data-card="'+esc((a.url||"").split("/").filter(Boolean).pop())+'" data-tit="'+esc(a.t)+'" data-ctx="agenda">⚡ agir</button>':"")+"</div></div>"
-      +'<span style="margin-left:auto">'+lk(a.url,"abrir ↗","golink")+"</span></div>";
-  });
-  (evs[iso]||[]).forEach(e=>{
-    rows+='<div class="dp"><div><div class="tt">🎤 '+esc(e.t)+'</div><div class="sm">'+(e.origem==="Trello DATAS"?"data da lista DATAS do board":"evento na agenda")+'</div></div>'
-      +'<span style="margin-left:auto">'+lk(e.url||e.gcal,"abrir ↗","golink")+"</span></div>";
-  });
-  $("#daypanel").innerHTML='<span class="k">'+dd+"</span>"+(rows||'<div class="sm" style="margin-top:6px">nada neste dia</div>');
+  const rot=(iso===hoje?"hoje":iso===maisDias(hoje,1)?"amanhã":DIAS[wd].slice(0,3)+" "+dd);
+  return '<div class="dia'+(wd>=5?" fds":"")+'">'+esc(rot)
+    +((iso===hoje||iso===maisDias(hoje,1))?' <span class="q">'+DIAS[wd].slice(0,3)+" "+dd+"</span>":"")
+    +(wd>=5?' <span class="q">· seu</span>':"")+"</div>"
+    +itens.map(i=>'<div class="dp"><span class="ic">'+i.ic+'</span><div style="flex:1;min-width:0">'
+      +'<div class="tt">'+esc(i.t)+'</div><div class="sm">'+esc(i.sub)+"</div></div>"
+      +'<span style="white-space:nowrap;flex:0 0 auto">'+(i.url?lk(i.url,"abrir ↗","golink"):"")
+      +((i.card&&D.acao)?' <button class="agirb" data-card="'+esc((i.url||"").split("/").filter(Boolean).pop())+'" data-tit="'+esc(i.t)+'" data-ctx="agenda">⚡</button>':"")
+      +"</span></div>").join("");
+}
+function blocoDias(dias,de,ate,pula,maxItens){
+  // devolve [html, quantos itens entraram]. «pula» descarta os primeiros N itens, que são
+  // os que já estão à vista: bloco de «ver mais» que repete o que está em cima engorda a
+  // tela sem dizer nada novo.
+  let out="", vazio=null, n=0, p=(pula||0);
+  const fecha=(fim)=>{ if(vazio&&vazio!==fim){ out+='<div class="vago">de '+vazio.slice(8,10)+"/"+vazio.slice(5,7)+" a "+fim.slice(8,10)+"/"+fim.slice(5,7)+", nada marcado</div>"; }
+    else if(vazio){ out+='<div class="vago">'+vazio.slice(8,10)+"/"+vazio.slice(5,7)+", nada marcado</div>"; } vazio=null; };
+  for(let k=de;k<=ate;k++){
+    const iso=maisDias(isoDe(new Date()),k);
+    const tinha=(dias[iso]||[]).length>0;
+    let it=dias[iso]||[];
+    if(p>0&&it.length){ const corta=Math.min(p,it.length); p-=corta; it=it.slice(corta); }
+    if(!it.length){ if(!vazio&&!tinha) vazio=iso; continue; }   // dia que já está à vista não é dia vazio
+    if(maxItens&&n>=maxItens){ if(!vazio) vazio=iso; continue; }
+    if(maxItens) it=it.slice(0,maxItens-n);
+    if(vazio) fecha(maisDias(iso,-1));
+    out+=linhaDoDia(iso,it); n+=it.length;
+  }
+  return [out,n];
+}
+function faixaHtml(dias){
+  // a faixa só existe no computador: 3 semanas, hoje na primeira coluna. O véu roxo é o
+  // ER médio daquele dia da semana, que é a informação que o fundo roxo já carregava.
+  const MH=D.melhor_hora||{}, por={}; let max=0;
+  (MH.dias||[]).forEach(x=>{ const v=parseFloat(String(x.er).replace(",","."))||0;
+    por[x.nome]={er:v,n:x.n}; if(v>max) max=v; });
+  const hoje=isoDe(new Date());
+  let out='<div class="wk">';
+  for(let k=0;k<21;k++){
+    const iso=maisDias(hoje,k), d=new Date(iso+"T12:00:00"), wd=(d.getDay()+6)%7;
+    const nome=DIAS[wd].slice(0,3), r=por[nome];
+    let bg="";
+    if(max>0&&r&&r.n>0){ const a=(0.03+r.er/max*0.09).toFixed(3);
+      bg=";background-image:linear-gradient(rgba(124,58,237,"+a+"),rgba(124,58,237,"+a+"))"; }
+    out+='<div class="wd'+(iso===hoje?" hoje":"")+'" style="'+bg.slice(1)+'" title="'+esc(nome+" "+iso.slice(8,10)+"/"+iso.slice(5,7)+(r?" · ER médio "+r.er.toFixed(1).replace(".",",")+"% em "+r.n+" posts":""))+'">'
+      +'<div class="dl">'+nome+((max>0&&r&&r.er===max)?" ★":"")+"</div>"
+      +'<div class="dn num">'+iso.slice(8,10)+"</div>"
+      +'<div class="mk">'+((dias[iso]||[]).length?"•":"")+"</div></div>";
+  }
+  return out+"</div>"
+    +'<div class="sm" style="margin:4px 2px">3 semanas · o fundo roxo é o que rende em cada dia da semana (ER médio dos seus posts) · ★ o seu melhor dia · • tem algo marcado</div>';
+}
+function renderAgenda(){
+  const dias=agDados();
+  const [h1,n1]=blocoDias(dias,0,6,0,5);
+  const b1=document.getElementById("agl1");
+  if(b1) b1.innerHTML=h1||'<div class="vago">nada marcado nos próximos 7 dias</div>';
+  // o que não cabe nos 5 à vista cai no primeiro «ver mais», junto das 3 semanas
+  const [h2,n2]=blocoDias(dias,0,27,n1,0);
+  const d2=document.getElementById("agd2"), b2=document.getElementById("agl2");
+  if(b2) b2.innerHTML=h2||'<div class="vago">nada marcado nessas 3 semanas</div>';
+  if(d2) d2.querySelector("summary").textContent="⌄ o resto desta semana e as próximas 3 ("+n2+")";
+  const [h3,n3]=blocoDias(dias,28,119,0,0);
+  const d3=document.getElementById("agd3"), b3=document.getElementById("agl3");
+  if(b3) b3.innerHTML=h3||'<div class="vago">nada marcado daqui a um mês</div>';
+  if(d3) d3.querySelector("summary").textContent="⌄ mais para frente ("+n3+")";
+  const wk=document.getElementById("wkbox");
+  if(wk&&matchMedia("(min-width:1100px)").matches){ wk.innerHTML=faixaHtml(dias); wk.hidden=false; }
 }
 
 let FILTRO=null;
@@ -1611,8 +1835,8 @@ function aplicaFiltro(){
     f.textContent="filtrando por "+FILTRO+" · tocar para ver tudo";
   } else if(f){ f.remove(); }
 }
-const ABAS=["hoje","agenda","posts","analise","negocio","fila","ideias","radar"];
-let ATUAL="hoje";
+const ABAS=["terca","hoje","agenda","posts","analise","negocio","ideias","radar"];
+let ATUAL="terca";
 function ligaSwipe(){
   if(window.__swipe) return; window.__swipe=true;
   let x0=null,y0=null;
@@ -1629,6 +1853,210 @@ function ligaSwipe(){
   },{passive:true});
 }
 
+
+// ====================== TERÇA · o rascunho dela ======================
+// A Central é página estática e cifrada: não existe servidor que receba escrita. O destino
+// do que ela escreve é COMENTÁRIO no card do Trello, postado pela própria página com
+// trello(). O armazenamento do navegador é rascunho enquanto ela digita e rede de
+// segurança se o envio falhar ou se o token não estiver colado · nunca destino final.
+const TK="cv3t1:";   // a versão do formato vive no prefixo: mudou o formato, vira cv3t2
+function terLe(k){ try{ const v=localStorage.getItem(TK+k); return v?JSON.parse(v):null; }catch(e){ return null; } }
+function terChaves(){ const o=[];
+  try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.indexOf(TK)===0) o.push(k.slice(TK.length)); } }catch(e){}
+  return o; }
+function terGrava(k,txt,enviado){
+  try{
+    const a=terLe(k)||{};
+    let env=(enviado!==undefined?enviado:(a.enviado||null));
+    // texto mexido depois do envio volta a ser rascunho: senão a tela diz «enviado ✓»
+    // para um texto que nunca foi, e a linha dos atrasados não o enxerga
+    if(enviado===undefined && env && txt!==a.t) env=null;
+    const o={t:txt,at:new Date().toISOString().slice(0,16),enviado:env};
+    if(!txt&&!o.enviado){ localStorage.removeItem(TK+k); return; }
+    localStorage.setItem(TK+k,JSON.stringify(o));
+    terQuota();
+  }catch(e){}   // o acessador estoura em janela privada e com dados do site bloqueados
+}
+function terQuota(){
+  // no máximo 50 chaves · cai a mais antiga pelo at, e só o que JÁ foi enviado.
+  // Rascunho nunca enviado não é descartado por trava nenhuma.
+  try{
+    if(terChaves().length<=50) return;
+    const env=terChaves().map(k=>[k,terLe(k)]).filter(x=>x[1]&&x[1].enviado)
+      .sort((a,b)=>String(a[1].at).localeCompare(String(b[1].at)));
+    for(let i=0;i<env.length&&terChaves().length>50;i++) localStorage.removeItem(TK+env[i][0]);
+  }catch(e){}
+}
+function terGC(reg){
+  // a FONTE é que manda apagar: id já fechado na fonte perde o rascunho, e por isso a
+  // limpeza se regenera sozinha a cada rodada
+  try{ (reg||[]).forEach(id=>localStorage.removeItem(TK+id)); }catch(e){}
+}
+function terTipo(k){ const i=k.indexOf(":"); return [k.slice(0,i),k.slice(i+1)]; }
+function terPref(k){
+  const [tipo,id]=terTipo(k);
+  if(tipo==="resp") return id;                       // já vem como mesa.* ou caixa.*
+  if(tipo==="card"||tipo==="peca") return "card."+id;
+  if(tipo==="gosto") return "gosto."+id.split(":")[0];
+  return tipo+"."+id;
+}
+function terCard(k){ const [tipo,id]=terTipo(k); return (tipo==="card"||tipo==="peca")?id:null; }
+function terEstado(k){
+  const el=document.querySelector('[data-st="'+k+'"]'); if(!el) return;
+  const o=terLe(k);
+  if(!o||(!o.t&&!o.enviado)){ el.innerHTML=""; return; }
+  if(o.enviado&&o.enviado.url)
+    el.innerHTML='<b style="color:var(--up)">enviado ✓</b> '+lk(o.enviado.url,"ver o comentário ↗","golink")
+      +((o.enviado.nota)?' · <span style="color:var(--age)">'+esc(o.enviado.nota)+"</span>":"");
+  else if(o.erro)
+    el.innerHTML='<b style="color:var(--down)">não enviado</b> · '+esc(o.erro)
+      +' · <button class="tercop" data-cop="1">copiar tudo</button>';
+  else
+    el.innerHTML="<b>rascunho salvo</b> · fica só neste aparelho até você enviar ou copiar";
+}
+function terBloco(){
+  // monta o bloco de forma SINCRONA: nada de await antes de copiar, senão o iOS perde o
+  // gesto e a cópia falha calada
+  // o comentário sai com o token DELA: sem dizer de quem é, a resposta dela a uma
+  // decisão da Mesa (que não tem card próprio) podia ser lida como saída de robô
+  const T=D.terca||{}, L=["💬 Michelle na Central · TERÇA "+(T.hoje||"")], envs=[];
+  let jaFoi=0;
+  document.querySelectorAll("#v-terca textarea[data-tk]").forEach(ta=>{
+    const k=ta.dataset.tk, v=(ta.value||"").trim(); if(!v) return;
+    const st=terLe(k); if(st&&st.enviado&&st.t===v){ jaFoi++; return; }   // já foi: não reenvia
+    if(terTipo(k)[0]==="pergunta"){ L.push("= pergunta minha: "+v); envs.push({k:k,txt:v,card:null}); return; }
+    L.push("#"+terPref(k)+" = "+v);
+    envs.push({k:k,txt:v,card:terCard(k)});
+  });
+  terChaves().forEach(k=>{
+    if(document.querySelector('[data-tk="'+k+'"]')) return;      // esse já entrou acima
+    const o=terLe(k); if(!o||!o.t||o.enviado) return;
+    const v=o.t+" (atrasado)";
+    if(terTipo(k)[0]==="pergunta") L.push("= pergunta minha: "+v);
+    else L.push("#"+terPref(k)+" = "+v);
+    envs.push({k:k,txt:v,card:terCard(k)});
+  });
+  return {txt:L.join("\n"),envs:envs,n:L.length-1,jaFoi:jaFoi};
+}
+function copiaFallback(txt){
+  // a receita que funciona no Safari do iPhone: readonly para o teclado não subir,
+  // contentEditable porque o iOS só seleciona campo editável, 16px para a tela não dar
+  // zoom, seleção por Range e só então o execCommand
+  try{
+    const ta=document.createElement("textarea");
+    ta.value=txt; ta.readOnly=true; ta.contentEditable="true";
+    ta.style.cssText="position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px";
+    document.body.appendChild(ta);
+    const r=document.createRange(); r.selectNodeContents(ta);
+    const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    ta.setSelectionRange(0,999999);
+    const ok=document.execCommand("copy");
+    sel.removeAllRanges(); ta.remove();
+    return ok;
+  }catch(e){ return false; }
+}
+function folhaTexto(txt){
+  const sh=sheet('<div style="font:800 15px Inter,sans-serif">selecione e copie à mão</div>'
+    +'<textarea readonly style="width:100%;height:40vh;margin-top:10px;font:400 16px/1.5 Inter,sans-serif;padding:10px;border:1.5px solid var(--line);border-radius:10px;-webkit-appearance:none"></textarea>');
+  const ta=sh.querySelector("textarea"); ta.value=txt; ta.focus(); ta.setSelectionRange(0,999999);
+}
+function terCopia(){
+  const b=terBloco();
+  if(!b.n){ const a=aviso(b.jaFoi?"tudo que está escrito já foi enviado":"não tem nada escrito ainda"); setTimeout(()=>a.remove(),2500); return; }
+  const ok=()=>{ const a=aviso("copiado ✓"); setTimeout(()=>a.remove(),2500); };
+  try{
+    if(window.isSecureContext&&navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(b.txt).then(ok).catch(()=>{ if(copiaFallback(b.txt)) ok(); else folhaTexto(b.txt); });
+      return;
+    }
+  }catch(e){}
+  if(copiaFallback(b.txt)) ok();
+  else { aviso("não deu para copiar · selecione o texto à mão","#B91C1C"); folhaTexto(b.txt); }
+}
+async function terEnvia(){
+  const T=D.terca||{}, b=terBloco();
+  if(!b.n){ const a=aviso(b.jaFoi?"tudo que está escrito já foi enviado":"não tem nada escrito ainda"); setTimeout(()=>a.remove(),2500); return; }
+  if(!T.semana||!T.semana.card){ aviso("não achei o card da semana · use o copiar","#B91C1C"); return; }
+  const btn=document.getElementById("terenvia");
+  if(btn){ btn.disabled=true; btn.textContent="enviando…"; }
+  const carregando=aviso("⏳ enviando para o card da semana…");
+  const volta=()=>{ if(btn){ btn.disabled=false; btn.textContent="📨 Enviar para o card da semana"; } };
+  let urlSemana=null;
+  try{
+    // o card da semana PRIMEIRO: ele é o registro de tudo, então se os envios por card
+    // falharem depois, nada se perde
+    const r=await trello("POST","/cards/"+T.semana.card+"/actions/comments",{text:b.txt});
+    if(!(r&&r.id)) throw new Error("o Trello não devolveu o comentário");
+    urlSemana="https://trello.com/c/"+T.semana.card+"#comment-"+r.id;
+  }catch(e){
+    carregando.remove(); volta();
+    // o texto vai junto: se ela tocar em Enviar antes dos 400ms do rascunho, terLe volta
+    // nulo e um {erro} sem t apagava o que ela escreveu no recarregamento
+    b.envs.forEach(x=>{ try{ const o=terLe(x.k)||{}; o.t=x.txt; o.erro=e.message; localStorage.setItem(TK+x.k,JSON.stringify(o)); }catch(_){} terEstado(x.k); });
+    aviso("⚠ "+e.message+" · nada foi enviado · use o copiar","#B91C1C");
+    return;
+  }
+  for(const x of b.envs){
+    let u=urlSemana, nota=null;
+    if(x.card){
+      try{
+        const r2=await trello("POST","/cards/"+x.card+"/actions/comments",{text:x.txt});
+        if(r2&&r2.id) u="https://trello.com/c/"+x.card+"#comment-"+r2.id;
+      }catch(e){ nota="não enviado para o card · o texto está no bloco da semana"; }
+    }
+    terGrava(x.k,x.txt,{at:new Date().toISOString().slice(0,16),url:u,nota:nota});
+  }
+  carregando.remove(); volta();
+  document.querySelectorAll("#v-terca textarea[data-tk]").forEach(ta=>terEstado(ta.dataset.tk));
+  terAtrasados();
+  const a=aviso("✓ enviado para o card da semana"); setTimeout(()=>a.remove(),4000);
+  setTimeout(pedeRodada,800);
+}
+function terAtrasados(){
+  const el=document.getElementById("teratras"); if(!el) return;
+  const fora=terChaves().filter(k=>!document.querySelector('[data-tk="'+k+'"]'))
+    .map(k=>terLe(k)).filter(o=>o&&o.t&&!o.enviado);
+  el.innerHTML=fora.length?(fora.length+(fora.length===1?" resposta sua ainda não registrada":" respostas suas ainda não registradas")
+    +' · <button class="tercop" data-cop="1">copiar</button>'):"";
+}
+async function terToken(){
+  const el=document.getElementById("tertoken"), b=document.getElementById("terenvia");
+  if(!el) return;
+  let tem=false;
+  try{ tem=!!((D.acao||{}).key)&&!!(await leToken()); }catch(e){}
+  if(b) b.hidden=!tem;
+  el.innerHTML=tem?"":'<button class="tercop" id="tercolar">cole o seu código do Trello uma vez</button>';
+  const c=document.getElementById("tercolar"); if(c) c.addEventListener("click",pedeToken);
+}
+function ligaTerca(){
+  document.querySelectorAll("#v-terca textarea[data-tk]").forEach(ta=>{
+    const k=ta.dataset.tk, o=terLe(k);
+    // já enviado NÃO volta para o campo: a chave fixa «pergunta:x» reabria na terça
+    // seguinte com a pergunta da semana passada, e ela mandava de novo
+    if(o&&o.t&&!o.enviado){ ta.value=o.t; const dt=ta.closest("details"); if(dt) dt.open=true; }
+    terEstado(k);
+    let tmr=null;
+    ta.addEventListener("input",()=>{ clearTimeout(tmr);
+      tmr=setTimeout(()=>{ terGrava(k,(ta.value||"").trim()); terEstado(k); terAtrasados(); },400); });
+  });
+  const cp=document.getElementById("tercopia"); if(cp) cp.addEventListener("click",terCopia);
+  const en=document.getElementById("terenvia"); if(en) en.addEventListener("click",terEnvia);
+  terAtrasados(); terToken();
+}
+async function aprovaCard(cardId,titulo){
+  const A=D.acao||{}, L=A.listas||{};
+  if(!A.key){ aviso("esta rodada saiu sem a chave do Trello · tente na próxima"); return; }
+  if(!(await leToken())) return pedeToken();
+  if(!L.publicar){ aviso("não achei a lista Publicar nesta rodada","#B91C1C"); return; }
+  const carregando=aviso("⏳ aprovando…");
+  try{
+    const antes=await trello("GET","/cards/"+cardId,{fields:"idList"});
+    await trello("PUT","/cards/"+cardId,{idList:L.publicar});
+    carregando.remove();
+    avisoComUndo("✓ aprovado · foi para a lista Publicar",()=>trello("PUT","/cards/"+cardId,{idList:antes.idList}));
+    setTimeout(pedeRodada,800);
+  }catch(e){ carregando.remove(); aviso("⚠ "+e.message+" · o card não mudou","#B91C1C"); }
+}
 
 // ====================== AGIR DE DENTRO ======================
 // A página escreve no Trello direto do navegador (a API responde com CORS liberado,
@@ -1693,14 +2121,16 @@ function sheet(html){
   scrim.style.cssText = "position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:100";
   const sh = document.createElement("div");
   sh.id = "sheet";
-  sh.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:101;background:#fff;border-radius:18px 18px 0 0;padding:16px 16px calc(24px + env(safe-area-inset-bottom,0px));max-width:640px;margin:0 auto;box-shadow:0 -8px 32px rgba(15,23,42,.2);max-height:88vh;max-height:88svh;overflow:auto";
+  sh.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:101;background:#fff;border-radius:18px 18px 0 0;padding:16px calc(16px + env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) calc(16px + env(safe-area-inset-left,0px));max-width:640px;margin:0 auto;box-shadow:0 -8px 32px rgba(15,23,42,.2);max-height:88vh;max-height:88svh;overflow:auto;overscroll-behavior:contain;touch-action:pan-y";
   sh.innerHTML = '<div style="width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px"></div>' + html;
   scrim.onclick = fechaSheet;
   document.body.appendChild(scrim); document.body.appendChild(sh);
+  document.body.style.overflow = "hidden";   // senão a página rola atrás da folha
   return sh;
 }
 function fechaSheet(){
   ["scrim","sheet"].forEach(id => { const e = document.getElementById(id); if(e) e.remove(); });
+  document.body.style.overflow = "";
 }
 function aviso(txt, cor){
   const a = document.createElement("div");
@@ -1758,7 +2188,10 @@ async function agir(cardId, titulo, contexto){
   if(!(await leToken())){ return pedeToken(); }
   const L = A.listas || {};
   const acoes = [];
-  if(L.publicar && contexto !== "publicar")
+  // «Aprovar» move para a lista Publicar do board CONTEÚDO, e o ⚡ agora aparece também
+  // em card do Operação: um toque mandaria um card de dinheiro para o board de conteúdo.
+  // O verbo fica só nas três filas que, por construção, são listas do Conteúdo.
+  if(L.publicar && ["aprovar","gravar","reaproveitar"].indexOf(contexto) >= 0)
     acoes.push({id:"aprovar", ico:"✅", rot:"Aprovar", frase:"mover para a lista Publicar",
       faz: () => trello("PUT", "/cards/" + cardId, {idList: L.publicar})});
   acoes.push({id:"concluir", ico:"✓", rot:"Concluir o prazo", frase:"marcar o prazo como concluído",
@@ -1779,13 +2212,9 @@ async function agir(cardId, titulo, contexto){
     + acoes.map(a => '<button data-a="' + a.id + '" style="display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:13px;padding:12px;margin-bottom:8px;font:700 13px Inter,sans-serif;cursor:pointer;min-height:48px"><span style="font-size:20px">' + a.ico + '</span><span>' + a.rot + '<br><span class="sm" style="font-weight:400">' + a.frase + "</span></span></button>").join("")
     + '<div class="sm" style="margin-top:6px">arquivar e apagar não existem aqui · isso é sempre no board</div>');
 
-  acoes.forEach(a => {
-    sh.querySelector('[data-a="' + a.id + '"]').onclick = async () => {
-      let txt = null;
-      if(a.pedeTexto){
-        txt = prompt("o que escrever no card?");
-        if(!txt) return;
-      }
+  // o prompt() do iOS pode ser bloqueado, não tem campo de 16px e perde o texto se ela
+  // sair: o comentário passa a ser escrito numa folha, com o mesmo campo da TERÇA
+  const executa = async (a, txt) => {
       fechaSheet();
       const carregando = aviso("⏳ " + a.rot.toLowerCase() + "…");
       try{
@@ -1806,6 +2235,19 @@ async function agir(cardId, titulo, contexto){
         carregando.remove();
         aviso("⚠ " + e.message + " · o card não mudou", "#B91C1C");
       }
+  };
+  acoes.forEach(a => {
+    sh.querySelector('[data-a="' + a.id + '"]').onclick = () => {
+      if(!a.pedeTexto) return executa(a, null);
+      const s2 = sheet('<div style="font:800 15px Inter,sans-serif">Comentar no card</div>'
+        + '<div class="sm" style="margin:4px 0 8px">' + esc(titulo) + "</div>"
+        + '<textarea id="cmtx" rows="4" autocapitalize="sentences" autocorrect="on" spellcheck="true" style="width:100%;font:400 16px/1.45 Inter,sans-serif;padding:10px;border:1.5px solid var(--line);border-radius:10px;-webkit-appearance:none"></textarea>'
+        + '<button id="cmtok" style="margin-top:10px;width:100%;height:48px;border:0;border-radius:13px;background:var(--grad);color:#fff;font:700 13px Inter,sans-serif;cursor:pointer">enviar o comentário</button>');
+      const ta = s2.querySelector("#cmtx"); ta.focus();
+      s2.querySelector("#cmtok").onclick = () => {
+        const v = (ta.value || "").trim();
+        if(v) executa(a, v);
+      };
     };
   });
 }
