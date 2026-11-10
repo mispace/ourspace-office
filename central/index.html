@@ -123,7 +123,10 @@ details .body{font-size:13px;color:var(--sub);padding:6px 0 2px;line-height:1.55
 #top .row{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
 #top .nome{flex:1 1 auto;min-width:0}
 #top .ava,#top #ajuda,#top #refresh{flex:0 0 auto}
-#top .ava{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--gold-pale);border:2px solid transparent;background-image:linear-gradient(#fff,#fff),var(--grad);background-origin:border-box;background-clip:content-box,border-box}
+#top .ava{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font:800 15px 'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:.02em;color:var(--brand);
+  background:var(--off);border:2px solid transparent;
+  background-image:linear-gradient(var(--off),var(--off)),var(--grad);background-origin:border-box;background-clip:content-box,border-box}
 #top .oi{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;line-height:1.05}
 #top .dt{font-size:11.5px;color:var(--sub)}
 .marcha{min-height:44px;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;
@@ -156,6 +159,16 @@ details .body{font-size:13px;color:var(--sub);padding:6px 0 2px;line-height:1.55
 @media(max-width:420px){ /* 8 abas no 375: menos ar no icone e fonte 10px, sem cortar toque */
   #nav button{font-size:10px;letter-spacing:.02em}
   #nav button svg{padding:3px 7px}
+}
+/* 8 abas em 375px dão 46,9px por botão e «NÚMEROS» pedia 52,3: a tela mostrava
+   «STORIESNÚMEROS», colado. Medido no DOM: 9px ainda encosta; com 8,5px e sem
+   espaçamento de letra os oito nomes cabem com 3,6px de folga, em 375 e em 360. */
+@media(max-width:400px){
+  #nav button{font-size:8.5px;letter-spacing:0}
+}
+/* em 360px o botão cai para 45px e «NÚMEROS» ficava com 1,7px de sobra: 8px devolve 4,2 */
+@media(max-width:370px){
+  #nav button{font-size:8px}
 }
 #nav button[aria-selected="true"] svg{background:var(--gold-pale);color:var(--gold-deep)}
 #nav button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
@@ -240,16 +253,24 @@ body::before{content:"";position:fixed;inset:0 0 auto 0;height:230px;z-index:-1;
 /* auditoria mobile 04/08: alvo de toque mínimo (link de 19px era metade do recomendado) */
 /* alvo de toque sem quebrar a quebra de linha: padding vertical em elemento inline
    aumenta a área clicável e deixa o texto continuar quebrando (inline-flex não deixava) */
-.golink,a.golink{display:inline;padding:14px 0;overflow-wrap:break-word}
+/* 10/11/2026 · «padding:14px 0» dava altura e largura nenhuma: em 375px o «abrir ↗»
+   media 29,4px, contra 44 de alvo mínimo. O padding lateral resolve 70 dos 90 casos. */
+.golink,a.golink{display:inline;padding:14px 8px;overflow-wrap:break-word}
 /* a receita da casa: padding vertical em elemento inline aumenta a área de toque e deixa o
    texto continuar quebrando · 14px porque com 11 o «abrir ↗» da agenda media 38 px */
-.linha a,.dp a,.agl a{display:inline;padding:15px 0}
+/* 10/11/2026 · esta regra vem depois da .golink e zerava o padding lateral dela: o
+   «abrir ↗» de HOJE e da agenda media 29,4px de largura, contra 44 de alvo mínimo */
+.linha a,.dp a,.agl a{display:inline;padding:15px 8px}
+/* a coluna da tabela de POSTS tem 47px: aqui o link ocupa a célula inteira, senão o
+   padding lateral o deixaria em 37px de alvo */
+#tabelaposts td a.golink{display:block;min-width:44px;box-sizing:border-box;padding:15px 2px;text-align:center}
 /* o ⚡ NÃO entra na regra de cima: «.dp button» vencia «.agirb», zerava o padding lateral
    e, por display:inline, ignorava o min-height · media 14x45,5px, e é o que escreve. */
 .dp button.agirb{display:inline-flex;align-items:center;justify-content:center;
                  padding:7px 11px;min-width:44px;min-height:44px}
 summary{min-height:44px;display:flex;align-items:center;gap:6px}
-.d7p{padding:14px 0;min-height:44px;display:inline-block}
+/* 10/11/2026 · tinha altura de alvo (44) e largura nenhuma: media 33px no DOM */
+.d7p{padding:14px 6px;min-height:44px;min-width:44px;box-sizing:border-box;text-align:center;display:inline-block}
 /* escala tipográfica: 4 degraus com contraste real, no lugar de 7 quase iguais */
 .sm{font-size:11.5px}
 .k{font-size:11.5px;letter-spacing:.05em;display:flex;align-items:center;gap:6px;font-weight:800;
@@ -277,8 +298,15 @@ summary{min-height:44px;display:flex;align-items:center;gap:6px}
 /* KPI cards */
 .spark{display:block;width:100%;height:34px}
 .spark-fol{height:52px;margin:8px 0 4px}
-.iBtn{min-width:34px;min-height:34px;position:absolute;top:9px;right:9px;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);
-      background:var(--off);color:var(--gold-deep);font:600 11.5px 'Inter',sans-serif;cursor:pointer}
+/* o botao «i» tinha caixa de 34x34 (o min vencia) com display:block e padding 0: a letra
+   encostava no topo e SUMIA atras da borda do circulo, e no print era uma bolha branca
+   vazia enquanto a linha de apoio mandava ela tocar nele. Agora o alvo de toque tem os
+   44 px da regra da casa e o circulo visivel e desenhado pelo ::after, centrado. */
+.iBtn{position:absolute;top:1px;right:1px;width:44px;height:44px;display:flex;align-items:center;
+      justify-content:center;border:0;background:none;padding:0;cursor:pointer}
+.iBtn::after{content:"i";display:flex;align-items:center;justify-content:center;width:26px;height:26px;
+      border-radius:50%;border:1px solid var(--line);background:var(--off);color:var(--gold-deep);
+      font:700 13px 'Inter',sans-serif;line-height:1}
 /* pilares / gráficos */
 .chart .row{display:grid;grid-template-columns:96px 1fr 44px;gap:8px;align-items:center;padding:5px 0}
 .bar{height:10px;border-radius:999px;background:var(--mid-bg);overflow:hidden;position:relative}
@@ -290,6 +318,11 @@ summary{min-height:44px;display:flex;align-items:center;gap:6px}
 .prow .meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--sub)}
 .prow .er{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.01em;line-height:1.05;color:var(--ink)}
 .filtro-on{outline:2px solid var(--gold);outline-offset:1px}
+/* caixa de reserva de imagem (regra E0.3): quando o arquivo nao vem, ou vem menor do que
+   a caixa, desenha-se uma caixa tracejada da MESMA proporcao com o icone do formato, e
+   nunca <img src=undefined> nem gradiente cinza com um numero solto por cima. */
+.resv{display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--line);
+  border-radius:12px;background:var(--off);color:var(--faint);font-size:19px;flex:0 0 auto}
 /* posts */
 .hscroll{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px 2px 4px}
 .post{position:relative;flex:0 0 152px;aspect-ratio:4/5;scroll-snap-align:start;border-radius:13px;overflow:hidden;
@@ -305,7 +338,7 @@ summary{min-height:44px;display:flex;align-items:center;gap:6px}
 .stt .ov{position:absolute;inset:auto 0 0 0;padding:22px 8px 7px;color:#fff;background:linear-gradient(180deg,transparent,rgba(15,23,42,.85))}
 .stt .g{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.01em;line-height:1.05}
 .stt .d{font-size:11.5px;opacity:.92}
-.stt .iBtn{min-width:34px;min-height:34px;position:absolute;top:6px;right:6px;background:rgba(255,255,255,.94)}
+.stt .iBtn::after{background:rgba(255,255,255,.96)}
 .stt.sel{outline:2.5px solid var(--brand);outline-offset:-2px}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;color:var(--faint);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;padding:6px 5px 4px}
@@ -320,7 +353,6 @@ td{padding:5px;border-top:1px solid var(--line2)}
 .agl .vago{font-size:11.5px;color:var(--faint);padding:7px 0;border-top:1px solid var(--line2)}
 .dp{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line2);min-height:44px}
 .dp:first-of-type{border-top:0}
-.dp img{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:0 0 auto}
 .dp .ic{flex:0 0 auto;font-size:14px;line-height:1.55}
 .dp .tt{font-size:13px;font-weight:600;line-height:1.35}
 /* faixa de 3 semanas (só no computador): o véu roxo continua sendo o ER do dia da semana */
@@ -394,10 +426,10 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,[
   <button data-v="hoje" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>HOJE</button>
   <button data-v="agenda" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>AGENDA</button>
   <button data-v="posts" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>POSTS</button>
-  <button data-v="analise" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>ANÁLISE</button>
+  <button data-v="stories" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M3.5 7v10M20.5 7v10"/></svg>STORIES</button>
+  <button data-v="analise" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>NÚMEROS</button>
   <button data-v="negocio" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 2v20M16.5 6.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3 2 3 4.5 3 4.5 1.3 4.5 3-2 3-4.5 3-4.5-1.3-4.5-3"/></svg>R$</button>
-  <button data-v="ideias" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.6 1 1.4 1 2.5h6c0-1.1.3-1.9 1-2.5A6 6 0 0 0 12 3z"/></svg>IDEIAS</button>
-  <button data-v="radar" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 12L20 6"/><circle cx="12" cy="12" r="8"/></svg>RADAR</button>
+  <button data-v="radar" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 12L20 6"/><circle cx="12" cy="12" r="8"/></svg>PÚBLICO</button>
 </div></nav>
 
 <script>
@@ -490,7 +522,7 @@ function barraJanela(){
     + '<span class="datas"><input type="date" id="jde" aria-label="de"><input type="date" id="jate" aria-label="até">'
     + '<button data-j="livre" aria-selected="false">aplicar</button></span></div>'
     + '<div id="janaviso" hidden></div><div class="sm" id="janvazio" hidden style="background:var(--off);border-radius:12px;padding:12px 14px;margin:6px 0"></div>'
-    + '<div class="sm" style="margin:2px 2px 0">esta barra muda só os blocos desta aba · a ANÁLISE lê sempre '+esc(D.janela||"")+'</div>';
+    + '<div class="sm" style="margin:2px 2px 0">esta barra muda só os blocos desta aba · a aba NÚMEROS lê sempre '+esc(D.janela||"")+'</div>';
 }
 
 function aplicaJanela(){
@@ -550,9 +582,31 @@ function ligaJanela(){
   aplicaJanela();
 }
 
+// UMA conta de idade para a página inteira, de meia-noite a meia-noite. Eram três, e
+// duas arredondavam hora fracionária: a MESMA data saía «há 27d» no crachá e «há 28d»
+// no item, e «98 dias» em cima com «99 dias» embaixo (10/11/2026).
+function diasDe(iso){
+  if(!iso) return null;
+  const a=new Date(String(iso).slice(0,10)+"T00:00:00");
+  if(isNaN(a.getTime())) return null;
+  const hj=new Date();
+  return Math.round((new Date(hj.getFullYear(),hj.getMonth(),hj.getDate())-a)/864e5);
+}
 function fmtAge(iso){
   if(!iso) return null;
-  const d=new Date(String(iso).slice(0,16).length>10?iso:iso+"T12:00:00");
+  const t=String(iso);
+  // 10/11/2026: quando o dado traz SO A DATA, o codigo montava iso+"T12:00:00" e
+  // inventava meio-dia. TikTok, LinkedIn e YouTube, colhidos as 15h13 e 15h50, saiam
+  // como «há 4h» as 16h25, quando a idade real era de 35 a 70 minutos. Sem hora no
+  // dado, a resposta e em dias: «hoje», «ontem», «há N dias».
+  if(t.length<=10){
+    const dd=diasDe(t);
+    if(dd==null) return null;
+    if(dd<=0) return "hoje";
+    if(dd===1) return "ontem";
+    return "há "+dd+"d";
+  }
+  const d=new Date(t);
   const h=(Date.now()-d.getTime())/36e5;
   if(!isFinite(h)) return null;
   if(h<1.5) return "agora há pouco";
@@ -590,9 +644,11 @@ function ageChip(S,key){
   const s=S[key]; if(!s) return "";
   if(!s.ok) return '<span class="age stale">sem dado</span>';
   const rel=fmtAge(s.at); if(!rel) return "";
-  const dias=(Date.now()-new Date(String(s.at).slice(0,10)+"T12:00:00").getTime())/864e5;
-  const stale=dias>(LIMITES[key]??9);
-  return '<span class="age'+(stale?" stale":"")+'">'+(stale?"parado ":"")+rel+"</span>";
+  const dias=diasDe(s.at);
+  const stale=dias!=null&&dias>(LIMITES[key]??9);
+  // o crachá dizia «há 3h» sem dizer que é a hora em que a Central LEU o Instagram,
+  // grudado na data de publicação do post. Agora diz, como já dizia em «parado».
+  return '<span class="age'+(stale?" stale":"")+'">'+(stale?"parado ":"lido ")+rel+"</span>";
 }
 function pillHtml(p){
   if(!p) return "";
@@ -619,39 +675,47 @@ function sparkSvg(vals,h,datas,cls){
     +'<polyline points="'+pts.join(" ")+'" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round"/></svg>';
 }
 
-let D=null, IMGMAP={}, TERCA={};
+let D=null, IMGMAP={}, IMGDIM={}, TERCA={};
 
 function render(data){
   D=data;
   avisaPaginaVelha();
   const S=D.sources||{};
-  IMGMAP={};
-  [].concat(D.posts.top3||[],D.posts.recentes||[],D.posts.all||[]).forEach(p=>{ if(p.img&&p.url) IMGMAP[p.url]=p.img; });
+  IMGMAP={}; IMGDIM={};
+  // IMGDIM guarda a medida NATURAL da miniatura: imagem menor que a caixa nao vira
+  // imagem, cai na caixa de reserva. Era assim que duas miniaturas de 44 px apareciam
+  // ampliadas 2,22 vezes, como borrao, numa celula de 98 px.
+  [].concat(D.posts.top3||[],D.posts.all||[]).forEach(p=>{ if(p.img&&p.url){ IMGMAP[p.url]=p.img; if(p.iw) IMGDIM[p.url]=[p.iw,p.ih]; } });
   const hoje=new Date();
   const m=D.meta.marcha||{};
-  const ava=(D.posts.top3[0]&&D.posts.top3[0].img)||"";
+  // 10/11/2026: o avatar lia a capa do post campeao (posts.top3[0].img) e TROCAVA
+  // sozinho quando trocava o melhor post da semana, gastando 12,6 KB de imagem para um
+  // circulo de 44 px. Identidade nao depende de metrica: virou monograma em CSS.
 
   // cabeçalho padrão de bloco: título-conclusão · janela do dado · carimbo de frescor
   const cab=(titulo,janela,fonte)=>'<div class="cabblk"><span class="k">'+titulo+"</span>"
     +'<div class="sm num" style="margin-top:2px">'+(janela?esc(janela):"")
-    +(fonte&&S[fonte]?" · "+ageChip(S,fonte):"")+"</div></div>";
+    // sem « · » antes do crachá: a pílula tem fundo próprio e o ponto ficava solto
+    +(fonte&&S[fonte]?" "+ageChip(S,fonte):"")+"</div></div>";
   // frase em verbo no topo da aba (o que faço com isto)
   const fraseAba=k=>{const f=(D.frases_aba||{})[k];return f?'<p style="font:700 14px/1.45 Inter,sans-serif;margin:2px 2px 10px">💡 '+esc(f)+"</p>":"";};
   let h='<div id="top"><div class="wrap"><div class="row">'
-    +(ava?'<img class="ava" src="'+ava+'" alt="">':'<span class="ava"></span>')
+    +'<span class="ava" aria-hidden="true">MD</span>'
     +'<div class="nome"><div class="oi">Oi, Michelle</div><div class="dt onel" id="carimbo" style="cursor:pointer" title="toque para ver quando cada dado chegou">'
     +'<span class="dsem">'+DIAS[(hoje.getDay()+6)%7]+'</span><span class="dsem3">'+DIAS[(hoje.getDay()+6)%7].slice(0,3)+"</span>"+", "
     +hoje.getDate()+" de "+MESES[hoje.getMonth()].slice(0,3)+" · "+esc(fmtAge(D.meta.built_at)||"")+"</div></div>"
     +lk(m.link,"🎚 "+esc(m.value||"Normal")+(m.ok?"":" (padrão)"),"marcha")
     +'<button id="ajuda" title="como ler esta central" aria-label="como ler" style="width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font:700 15px Inter,sans-serif;cursor:pointer;margin-right:6px">?</button>'
-    +'<button id="refresh" title="atualiza agora: Instagram (posts, stories, seguidores, demografia · se o dado tiver 2h ou mais), Trello, funil e blog · TikTok, LinkedIn e YouTube só entram quando a Mesa coleta numa sessão (não é automático) · ideias novas nos dias 5 e 19" aria-label="atualizar agora" style="width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font-size:15px;cursor:pointer">↻</button>'
+    +'<button id="refresh" title="atualiza agora: Instagram (posts, stories, seguidores, demografia · se o dado tiver 2h ou mais), Trello, funil e blog · TikTok, LinkedIn e YouTube só entram quando a Mesa coleta numa sessão (não é automático) · ideias novas a cada quinze dias" aria-label="atualizar agora" style="width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--gold-deep);font-size:15px;cursor:pointer">↻</button>'
     +"</div></div></div>";
 
   // ---------- «ver mais»: nada é apagado; o que sai de cara diz o que tem dentro ----------
   const verm=(rot,inner)=>inner?'<details class="verm larga"><summary>⌄ '+esc(rot)+"</summary><div>"+inner+"</div></details>":"";
   // ficha de grupo da fila (veio da aba FILA, dissolvida em 10/11: é visão de hoje)
   const grp=(emoji,nome,f)=>!f?"":'<div class="card grp"><div class="hd"><span class="k">'+emoji+" "+nome+'</span><span class="n num">'+f.n+"</span></div>"
-      +(f.antigo?'<div class="sm" style="margin-top:4px">mais antigo: '+lk(f.antigo.url,esc(f.antigo.t),"golink")+" · desde "+esc(f.antigo.desde)
+      +(f.antigo?'<div class="sm" style="margin-top:4px">o que espera há mais tempo: '+lk(f.antigo.url,esc(f.antigo.t),"golink")
+        +" · "+esc(f.antigo.desde)+(f.antigo.dias!=null?" ("+f.antigo.dias+(f.antigo.dias===1?" dia":" dias")+")":"")
+        +(f.antigo.porque?'<br><span class="sm">'+esc(f.antigo.porque)+"</span>":"")
         +((D.acao&&/^https:\/\/trello\.com\/c\//.test(f.antigo.url||""))?' <button class="agirb" data-card="'+esc((f.antigo.url||"").split("/").filter(Boolean).pop())+'" data-tit="'+esc(f.antigo.t)+'" data-ctx="'+esc(nome.toLowerCase())+'">⚡ agir</button>':"")
         +"</div>":'<div class="sm" style="margin-top:4px">vazia</div>')+"</div>";
 
@@ -670,14 +734,14 @@ function render(data){
     +'<p class="sub-h larga">'+esc((D.frases_aba||{}).terca||"")+"</p>"
     // 1 · o que mudou (só fato com número, no máximo 4 linhas)
     +((TE.mudou||[]).length
-      ?'<p class="larga" style="font:500 13px/1.6 Inter,sans-serif;margin:6px 2px"><b>📊 desde '+esc(TE.desde||"o último retrato")+":</b> "+esc(TE.mudou[0])+"</p>"
+      ?'<p class="larga" style="font:500 13px/1.6 Inter,sans-serif;margin:6px 2px"><b>📊 de '+esc(TE.desde||"o último retrato")+" para hoje "+esc(TE.ate||"")+":</b> "+esc(TE.mudou[0])+"</p>"
         +(TE.mudou.length>1?verm((TE.mudou.length-1)+(TE.mudou.length===2?" outra linha do que mudou":" outras linhas do que mudou"),
           TE.mudou.slice(1).map(x=>'<div class="terl">· '+esc(x)+"</div>").join("")):"")
       :'<p class="sm larga" style="margin:6px 2px">'+esc(TE.mudou_vazio||"")+"</p>")
     // 2 · precisa de você (no máximo 3, 1 por fonte)
     +(function(){
       const PR=TE.precisa||[];
-      if(!PR.length) return '<div class="card"><span class="k">🙋 Precisa de você</span><div class="sm" style="margin-top:6px">'+esc(TE.precisa_vazio||"")+"</div></div>";
+      if(!PR.length) return '<div class="card"><span class="k">🙋 O que espera por você</span><div class="sm" style="margin-top:6px">'+esc(TE.precisa_vazio||"")+"</div></div>";
       // «semJogo»: atrás do «ver mais» o resumo JÁ é a frase inteira, e repeti-la
       // dentro fazia ela ler a mesma coisa duas vezes
       const card=(it,semJogo)=>'<div class="card">'
@@ -691,8 +755,11 @@ function render(data){
         +"</div>";
       // 2 à vista e o terceiro atrás de um resumo que já diz o que ele é: o que fez ela
       // parar de abrir a Mesa foi a tela cheia, não a falta de item
-      return '<h2 class="larga">🙋 Precisa de você</h2>'+PR.slice(0,2).map(it=>card(it)).join("")
-        +(PR.length>2?PR.slice(2).map(it=>verm(it.jogo,card(it,true))).join(""):"");
+      // 3 à vista e o resto atrás de UMA porta, com a contagem real no rótulo: antes
+      // cada item extra abria a sua própria porta roxa, uma embaixo da outra
+      return '<h2 class="larga">🙋 O que espera por você</h2>'+PR.slice(0,2).map(it=>card(it)).join("")
+        +(PR.length>2?verm("ver "+(PR.length-2===1?"o outro que espera":"os outros "+(PR.length-2)+" que esperam"),
+          PR.slice(2,8).map(it=>card(it,true)).join("")):"");
     })()
     // 3 · o que eu te devo · dívida minha, não decisão dela: fica atrás de «ver mais»,
     // com a conta e a data mais antiga no próprio resumo
@@ -749,8 +816,8 @@ function render(data){
     // 2 · pulso: 3 números que explicam a escolha, sem virar painel
     +'<div class="pulso">'
     +[[(RTh.frase||"").replace(/^Ritmo: /,""),"📆","ritmo"],
-      [esc(NUh.v||"—"),"♡",esc(NUh.traducao||"interações por alcance")],
-      [((D.followers&&D.followers.delta)?esc(String(D.followers.delta).replace("-","−")):"—")+" seguidores","👤",
+      [esc(NUh.v||"·"),"♡",esc(NUh.traducao||"interações por alcance")],
+      [((D.followers&&D.followers.delta)?esc(String(D.followers.delta).replace("-","−")):"·")+" seguidores","👤",
        ((D.followers&&D.followers.ref)?esc(D.followers.ref):"na semana")]]
       .map(x=>'<div class="pz"><div class="pi">'+x[1]+'</div><div class="pv'+(String(x[0]).trim().length<=9?"":" txt")+'">'+x[0]+'</div><div class="pl">'+x[2]+"</div></div>").join("")
     +"</div>"
@@ -758,7 +825,7 @@ function render(data){
     +(FI?'<div class="card">'+cab("📥 A fila","o que está te travando · aprovar é sempre seu","trello")
       +'<div class="jrow" style="margin-top:8px">'
       +[["👀","Aprovar",FI.aprovar],["🎬","Gravar",FI.gravar],["♻️","Reaproveitar",FI.repurpose]]
-        .map(x=>'<div class="jtile"><div class="sm">'+x[0]+" "+x[1]+'</div><div class="num">'+((x[2]||{}).n??"—")+"</div></div>").join("")
+        .map(x=>'<div class="jtile"><div class="sm">'+x[0]+" "+x[1]+'</div><div class="num">'+((x[2]||{}).n??"·")+"</div></div>").join("")
       +"</div></div>"
       +verm("ver o mais antigo de cada fila",grp("👀","Aprovar",FI.aprovar)+grp("🎬","Gravar",FI.gravar)+grp("♻️","Reaproveitar",FI.repurpose)):"")
     // 3 · a semana em 7 quadradinhos (veio da FILA: é visão de hoje, não de fila)
@@ -771,15 +838,15 @@ function render(data){
           +'<div style="font:800 11px Inter,sans-serif;text-transform:uppercase">'+esc(x.dow)+"</div>"
           +'<div style="font:700 13px Inter,sans-serif">'+esc(x.d.slice(0,2))+"</div>"
           +'<div style="font-size:13px;line-height:1">'+(x.publicado?"✓":(x.cards.length&&!x.passou)?"•":x.passou?"○":"+")+"</div></div>";}).join("")+"</div>"
-      +'<div class="sm" style="margin-top:7px">✓ publicou · • já tem card · + dia livre · ○ passou sem post</div></div>':"")
+      +'<div class="sm" style="margin-top:7px">✓ publicou · • já tem card · + sem post marcado · ○ passou sem post</div>'
+      +'<div class="sm" style="margin-top:3px">esta faixa só olha card de post: compromisso seu não entra nela</div></div>':"")
     // 4 · o que vem: evento e story do dia, com um toque cada
-    +'<div class="card">'+cab("⏭ O que vem",(_ev1repetido?"depois do compromisso de amanhã":"próximo compromisso")+" e o story de hoje","events")
+    +'<div class="card">'+cab("⏭ O que vem",(_ev1repetido?"depois do compromisso de amanhã":"próximo compromisso"),"events")
     +(ev1?'<div class="linha"><span>'+lk(ev1.url,esc(ev1.t)+(ev1.url?" ↗":""))
         +(ev1.idade?'<br><span class="sm">escrito há '+ev1.idade+(ev1.idade===1?" dia":" dias")+", não confirmado</span>":"")
         +'</span><span class="sm num">'+esc(ev1.d)+"</span></div>"
         :(_ev1repetido?'<div class="sm">depois do compromisso de amanhã, nada marcado</div>'
           :'<div class="sm">nenhum compromisso marcado nos próximos dias</div>'))
-    +'<div class="linha"><span>📱 Story de hoje · '+lk(D.fila&&D.fila.ideias?D.fila.ideias.link:null,"pautas ↗","golink")+'</span><span class="sm">'+esc((D.stories||{}).template||"")+"</span></div>"
     +"</div>"
     // 5 · as secundárias, atrás de «ver mais»
     +verm("se sobrar tempo ("+(t.secondary||[]).length+")",((t.secondary||[]).length
@@ -792,18 +859,21 @@ function render(data){
 
   // ---------- AGENDA ----------
   h+='<section class="view wrap" id="v-agenda" hidden>'+fraseAba("agenda")
+    // de onde esta agenda vem · quando a Google Agenda ligar, a mesma linha passa a
+    // dizer que lê as duas, sem ninguém reescrever nada
+    +(((D.fila||{}).proc)?'<p class="sm larga" style="margin:0 2px 8px;line-height:1.55">📍 '+esc(D.fila.proc)+"</p>":"")
     // lista de dias, só dos dias que têm algo. A grade de mês saiu em 10/11/2026: gastava
     // 505 px (36 células, navegação e legendas) para mostrar 8 dias com conteúdo, e
     // dezembro e janeiro abriam vazios porque o DADO parava em 7 dias, não a navegação.
     +'<div class="agcol"><div class="agl" id="agl1"></div>'
-    +((D.fila&&D.fila.vencidos&&D.fila.vencidos.n)?'<div class="card sm" style="line-height:1.55"><b style="color:var(--down)">'+D.fila.vencidos.n+(D.fila.vencidos.n===1?" card passou":" cards passaram")+" do prazo"+(D.fila.vencidos.frase?" · "+esc(D.fila.vencidos.frase):"")+".</b> Nada muda sozinho: são tarefas antigas com data vencida. "+((D.fila.vencidos.links||[]).map(x=>lk(x.url,"Abrir o "+esc(x.b)+" ↗","golink")).join(" · "))+" e escolher: nova data ou concluir."
-      +(D.comentar?'<div style="margin-top:8px"><a class="golink" href="'+esc(D.comentar)+'" target="_blank" rel="noopener" style="display:inline-block;background:var(--brand);color:#fff;border-radius:10px;padding:9px 14px;font:700 13px Inter,sans-serif;min-height:44px">↪ reagendar vencidos em lote</a><span class="sm" style="display:block;margin-top:5px">abre o card de comentários · escreva ali "reagenda os vencidos" e a triagem do dia move cada um para o próximo dia útil e responde o que mudou</span></div>':"")+"</div>":"")
+    +((D.fila&&D.fila.vencidos&&D.fila.vencidos.n)?'<div class="card sm" style="line-height:1.55"><b style="color:var(--down)">'+D.fila.vencidos.n+(D.fila.vencidos.n===1?" card passou":" cards passaram")+" do prazo"+(D.fila.vencidos.frase?" · "+esc(D.fila.vencidos.frase):"")+".</b> "+(D.fila.vencidos.boards?esc(D.fila.vencidos.boards)+". ":"")+"Nada muda sozinho: são tarefas antigas com data vencida. "+((D.fila.vencidos.links||[]).map(x=>lk(x.url,"Abrir o "+esc(x.b)+" ↗","golink")).join(" · "))+" e escolher: nova data ou concluir."
+      +(D.comentar?'<div style="margin-top:8px"><a class="golink" href="'+esc(D.comentar)+'" target="_blank" rel="noopener" style="display:inline-block;background:var(--brand);color:#fff;border-radius:10px;padding:9px 14px;font:700 13px Inter,sans-serif;min-height:44px">↪ reagendar vencidos em lote</a><span class="sm" style="display:block;margin-top:5px">escreva "reagenda os vencidos" no card e a triagem do dia move cada um para o próximo dia útil</span></div>':"")+"</div>":"")
     +"</div>"
     +'<div class="agcol2">'
     +'<details class="verm" id="agd2"><summary>⌄ o resto desta semana e as próximas 3</summary><div class="agl" id="agl2"></div></details>'
     +'<details class="verm" id="agd3"><summary>⌄ mais para frente</summary><div class="agl" id="agl3"></div></details>'
     +'<div id="wkbox" hidden></div>'
-    +'<details class="verm"><summary>⌄ o que cada ícone quer dizer</summary><div class="sm" style="line-height:1.9">💰 dinheiro · ⏰ prazo de tarefa · 🎤 evento para acompanhar · 🎉 data comemorativa · 📷 post publicado · 📱 story</div></details>'
+    +'<details class="verm"><summary>⌄ o que cada ícone quer dizer</summary><div class="sm" style="line-height:1.9">💰 dinheiro · ⏰ prazo de tarefa · 🎤 evento para acompanhar · 🎉 data comemorativa · 📷 post publicado</div></details>'
     +"</div>"
     +"</section>";
 
@@ -813,6 +883,35 @@ function render(data){
   const semDado=(titulo,falta,onde,quando,ico)=>'<div class="card" style="border:1.5px dashed var(--line)">'
     +'<span class="k">'+(ico||"⏳")+" "+esc(titulo)+'</span><div class="sm" style="margin-top:5px;line-height:1.6">'
     +"<b>falta:</b> "+esc(falta)+"<br><b>de onde vem:</b> "+esc(onde)+"<br><b>quando chega:</b> "+esc(quando)+"</div></div>";
+  // ---------- imagem: a caixa respeita a forma do ARQUIVO, e imagem menor que a caixa
+  // não vira imagem. Até 10/11/2026 a página punha retrato 3:4 e 9:16 em caixa quadrada
+  // (corte de até 44% da altura) e ampliava miniatura de 44 px numa célula de 98 px,
+  // 2,22 vezes, que saía como borrão. Agora: w/h vêm do build, e abaixo de 0,9 da
+  // largura da caixa desenha-se a caixa de reserva, tracejada, com o ícone do formato.
+  const thumbBox=(url,w,h,ico,extra)=>{
+    const im=IMGMAP[url], dim=IMGDIM[url];
+    const cai=!im||(dim&&dim[0]<w*0.9);
+    const box="width:"+w+"px;height:"+h+"px;border-radius:12px;flex:0 0 auto;"+(extra||"");
+    if(cai) return '<span class="resv" style="'+box+'">'+(ico||"🖼")+"</span>";
+    const an=(dim&&dim[1])?dim[0]/dim[1]:(w/h), ab=w/h;
+    const fit=(Math.abs(an-ab)/ab>0.12)?"contain":"cover";
+    return '<img src="'+im+'" alt="" style="'+box+';background:var(--off);object-fit:'+fit+';object-position:center '+(fit==="cover"?"25%":"center")+'">';
+  };
+  // referência de ficha de formato: a caixa segue a forma do arquivo (3:4 vira 84x112,
+  // 9:16 vira 68x120), em vez de quadrado forçado com corte de 25% a 44%
+  const refBox=(r,ico)=>{
+    if(!r||!r.img) return '<span class="resv" style="width:84px;height:112px">'+(ico||"🎬")+"</span>";
+    const w=r.iw||84, hh=r.ih||112, alto=(hh/w)>1.5;
+    const cw=alto?68:84, ch=alto?120:112;
+    return '<img src="'+r.img+'" alt="" style="width:'+cw+'px;height:'+ch+'px;object-fit:cover;object-position:center 25%;border-radius:12px;flex:0 0 auto">';
+  };
+  const linkifica=(t)=>esc(String(t||"")).replace(
+    /(https?:\/\/[^\s]+|\bdocs\.google\.com\/[^\s]+|\btrello\.com\/[^\s]+)/g,
+    (m)=>{ const u=/^https?:/.test(m)?m:("https://"+m);
+      const rot=/docs\.google\.com\/spreadsheets/.test(m)?"abrir a planilha ↗"
+        :/trello\.com/.test(m)?"abrir o card ↗"
+        :/docs\.google\.com\/document/.test(m)?"abrir o documento ↗":"abrir ↗";
+      return '<a class="golink" href="'+u+'" target="_blank" rel="noopener">'+rot+"</a>"; });
   const d7pill=(p,tocavel)=>{const d=p.d7;if(tocavel===undefined)tocavel=true;if(!d)return "";if(d.pend)return '<span class="sm num">D+7 '+esc(d.pend)+"</span>";const c=d.nota==="alta"?"#047857":d.nota==="baixa"?"#B91C1C":"var(--sub)";const y=d.nota==="alta"?"▲":d.nota==="baixa"?"▼":"▬";if(!tocavel) return '<span class="sm num" style="color:'+c+';font-weight:800">'+y+" D+7</span>";
     return '<span class="sm num d7p" role="button" tabindex="0" title="'+esc(d.txt||"")+'" data-d7="'+esc(d.txt||"")+'" style="color:'+c+';font-weight:800;cursor:pointer;border-bottom:1px dotted currentColor">'+y+" D+7</span>";};
   const _pColabs=((D.colabs&&D.colabs.length)?D.colabs.map(c=>'<div class="card" style="border-left:3px solid #EC4899">'
@@ -842,24 +941,33 @@ function render(data){
         +'<div class="sm" style="margin-top:6px">'+esc(T.nota)
         +(T.fora?"<br>"+esc(T.fora):"")+"</div></div>";})();
   const _pUltimo=(function(){const U=(D.saude||{}).ultimo;if(!U)return "";
-      const f={img:IMGMAP[U.url]};
+      // const f={img:...} era objeto literal, SEMPRE verdadeiro: o if(f) nunca era falso
+      // e, sem miniatura, a página emitia <img src="undefined">. 13 dos 20 posts não têm
+      // miniatura: era armadilha armada esperando a semana em que o melhor post não tivesse.
       const cor=U.pos==="acima"?"#047857":U.pos==="abaixo"?"#B91C1C":"var(--sub)";
       const sim=U.pos==="acima"?"▲":U.pos==="abaixo"?"▼":"▬";
       return '<div class="card">'+cab("🖼 Seu último post "+esc(U.veredito),"publicado "+esc(U.quando)+" · "+esc(U.d),"posts")
         +'<div style="display:flex;gap:12px;align-items:flex-start;margin-top:4px">'
-        +(f?'<a href="'+esc(U.url)+'" target="_blank" rel="noopener" aria-label="abrir o último post" style="flex:0 0 104px"><img src="'+f.img+'" style="width:104px;height:104px;object-fit:cover;border-radius:12px" alt=""></a>':"")
+        +'<a href="'+esc(U.url)+'" target="_blank" rel="noopener" aria-label="abrir o último post" style="flex:0 0 96px;display:block">'
+        +thumbBox(U.url,96,128,(U.fmt==="Reel"?"🎬":"🖼"))+"</a>"
         +'<div style="flex:1;min-width:0">'
         +'<div style="display:flex;align-items:baseline;gap:8px"><span class="num" style="font-size:26px;font-weight:800">'+esc(U.er)+'%</span><span class="sm num" style="color:'+cor+';font-weight:800">'+sim+" "+esc(U.pos)+" do normal</span></div>"
         +'<div style="position:relative;height:12px;border-radius:6px;background:var(--mid-bg);margin:9px 0 4px">'
         +'<div style="position:absolute;left:'+U.faixa_ini+'%;width:'+Math.max(2,U.faixa_fim-U.faixa_ini)+'%;top:0;bottom:0;background:#CBD5E1;border-radius:6px"></div>'
         +'<div style="position:absolute;left:'+U.rel+'%;top:-3px;width:4px;height:18px;border-radius:2px;background:'+cor+';transform:translateX(-2px)"></div></div>'
-        +'<div class="sm num">cinza = seu normal ('+esc(U.lo)+"% a "+esc(U.hi)+"%, sobre "+U.n+" posts) · barra = este post</div>"
+        +'<div class="sm num">cinza = seu normal, sobre '+U.n+" posts · barra = este post</div>"
         +(U.base?'<div class="sm">'+esc(U.base)+"</div>":"")
         +(U.rank?'<div class="sm" style="margin-top:3px">'+esc(U.rank)+"</div>":"")
         +'<div class="sm" style="margin-top:4px">'+tag(U.pilar)+" "+lk(U.url,"abrir ↗","golink")+"</div>"
         +"</div></div></div>";})();
-  const _pMedidos='<div class="card"><span class="k">Mais recentes</span>'
-    +P.recentes.map(p=>'<div class="linha" data-pilar="'+esc(p.pilar)+'" data-pts="'+esc(p.ts||"")+'"><span>'+lk(p.url,esc(p.t||p.d))
+  // «Mais recentes» deriva de posts.all por data, sem excluir ninguém. A lista antiga
+  // vinha do dado (posts.recentes) e EXCLUÍA de propósito quem estava no top3, então o
+  // post de 08/11, que era o melhor da janela, ficava fora e a tela anunciava 30/10 e
+  // 27/10 como os mais recentes. Era também uma segunda definição de «recente».
+  const _pRecentes=((D.posts||{}).all||[]).filter(p=>p.url).slice()
+    .sort((a,b)=>String(b.ts||"").localeCompare(String(a.ts||""))).slice(0,2);
+  const _pMedidos='<div class="card"><span class="k">Os '+_pRecentes.length+' mais recentes</span>'
+    +_pRecentes.map(p=>'<div class="linha" data-pilar="'+esc(p.pilar)+'" data-pts="'+esc(p.ts||"")+'"><span>'+lk(p.url,esc(p.t||p.d))
       +' <span class="sm num">'+esc(p.d)+"</span> "+tag(p.pilar)
       +(p.d7&&p.d7.txt?'<br><span class="sm num">'+d7pill(p,false)+" · "+esc(p.d7.txt)+"</span>":(p.d7&&p.d7.pend?"<br>"+d7pill(p):""))
       +'</span><span class="n num">'+(p.er===null?'<span class="sm">sem medida</span>':esc(p.er)+"%")+"</span></div>").join("")
@@ -872,42 +980,127 @@ function render(data){
     +P.all.map(p=>'<tr data-pilar="'+esc(p.pilar)+'" data-pts="'+esc(p.ts||"")+'"><td class="num">'+esc(p.d)+"</td><td>"+esc(p.fmt)+"</td><td>"+tag(p.pilar)
       +'</td><td class="num"><b>'+(p.er===null?'<span class="sm">sem medida</span>':esc(p.er)+"%")+'</b></td><td class="num">'+(p.sends===null?"·":esc(p.sends)+"%")+"</td><td>"+d7pill(p)+"</td><td>"+lk(p.url,"abrir ↗","golink")+"</td></tr>").join("")
     +"</table></div>"
-    +'<p class="sm" style="margin-top:6px">D+7 = a nota do post uma semana depois de publicado, contra a mediana da janela · ▲ acima ▬ na média ▼ abaixo · a leitura completa aparece nos Mais recentes</p>'
+    +'<p class="sm" style="margin-top:6px">D+7 = a nota do post uma semana depois de publicado, contra a mediana da janela · ▲ acima ▬ na média ▼ abaixo · a leitura completa aparece nos mais recentes</p>'
     +"</details></div>";
-  let _pStories="", _pSemana="";
-  if(st.items&&st.items.length)
-    _pStories="<h2>"+LOGOS.ig+"Stories "+ageChip(S,"stories")+"</h2>"
-      +'<p class="sub-h">o motor da conta · toque num story (ou no i) para a mini-análise</p>'
-      +'<div class="hscroll">'+st.items.map((x,i)=>'<div class="stt" data-si="'+i+'" role="button" tabindex="0" aria-label="ver a leitura deste story">'
-        +(x.img?'<img src="'+x.img+'" alt="">':"")
-        +'<span class="iBtn" aria-hidden="true">i</span>'
-        +'<span class="ov"><span class="g num">'+(x.gancho??"—")+'</span><br><span class="d num">'+esc(x.d)+" "+x.type+"</span></span></div>").join("")+"</div>"
-      +'<div class="card" id="stinfo"><span class="sm">toque num story para ver a leitura dele</span></div>';
-  if(st.items&&st.items.length)
-    _pSemana='<div class="card"><div class="linha"><span>na última semana</span><span class="n num">'+(st.n7??"—")+"</span></div>"
-      +'<div class="linha"><span>gancho médio</span><span class="n num">'+esc(st.gancho??"—")+"</span></div>"
-      +'<div class="linha"><span>saída na 1ª tela</span><span class="n num">'+esc(st.saida??"—")+"</span></div></div>";
   const C=D.canais||{}, tk=C.tiktok||{}, li=C.linkedin||{};
-  // os 6 mais recentes em grade de 3 por 2 · a grade completa dos 20 medidos fica no «ver mais»
-  const _pGrade6=(function(){
-    const ps=((D.posts||{}).all||[]).filter(p=>p.url).slice().sort((a,b)=>String(b.ts||"").localeCompare(String(a.ts||""))).slice(0,6);
-    if(!ps.length) return "";
-    return '<div class="card">'+cab("🖼 Os 6 mais recentes","toque para abrir no Instagram","posts")
-      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px">'
-      +ps.map(p=>'<a class="post" href="'+esc(p.url)+'" target="_blank" rel="noopener" style="flex:none;aspect-ratio:1/1">'
-        +(IMGMAP[p.url]?'<img src="'+IMGMAP[p.url]+'" alt="">':"")
-        +'<span class="ov" style="padding:16px 6px 5px"><span class="er" style="font-size:14px">'+(p.er===null?"·":esc(p.er)+"%")+'</span><br><span class="m">'+esc(p.d||"")+"</span></span></a>").join("")
-      +"</div></div>";})();
+  // ---------- o que vinha da aba IDEIAS, que se dissolveu aqui em 10/11/2026 ----------
+  // A aba tinha 3 sub-abas, nenhuma idade na tela (em 8 abas era a única assim) e
+  // respondia a mesma pergunta de POSTS: o que gravar em seguida. Dois blocos dela não
+  // vieram: «tópicos quentes» (tendências de maquiagem, fora do assunto dela, com 67
+  // dias: é conserto de fonte, não de tela) e «alta.topicos» (que nenhuma tag lia).
+  const ID=D.ideias||{};
+  const _iGravar=((ID.banco||[]).length
+    ?'<div class="card">'+cab("🧠 O que gravar","as "+ID.banco.length+" ideias mais novas do board","ideias")
+      +(ID.banco||[]).slice(0,5).map(p=>'<div class="linha"><span>· '+lk(p.url,esc(p.t),"golink")+"</span></div>").join("")
+      +"</div>"
+    :semDado("O que gravar","ideia nova no board","a lista 💡 Ideias do board Conteúdo","assim que você criar um card lá","🧠"));
+  const _iJogadas=((ID.proativas||[]).length
+    ?'<div class="card">'+cab("🤝 Jogadas de parceria","cruzamento de agenda, marcas e dado real","ideias")
+      +(ID.proativas||[]).map(i=>'<details style="margin-top:9px;padding-top:9px;border-top:1px solid var(--line2)">'
+        +'<summary style="font:700 13.5px/1.4 Inter,sans-serif;cursor:pointer">'+esc(i.t)+"</summary>"
+        +((i.t_cheio&&i.t_cheio!==i.t)?'<div class="sm" style="margin-top:6px;line-height:1.5"><b>'+esc(i.t_cheio)+"</b></div>":"")
+        +'<div class="sm" style="margin-top:6px;line-height:1.5">'+esc(i.pq)+"</div>"
+        +'<div class="sm" style="margin-top:5px"><b>→ '+esc(i.passo)+"</b></div>"
+        +'<div class="sm" style="margin-top:5px">'+lk(i.url,"abrir ↗","golink")+"</div></details>").join("")
+      +((ID.proativas_fora||0)?'<div class="sm" style="margin-top:8px">'+ID.proativas_fora
+        +(ID.proativas_fora===1?" outra jogada ficou fora":" outras jogadas ficaram fora")
+        +": data já passada, ou sem link</div>":"")
+      +"</div>"
+    :'<div class="card sm">a primeira leva de jogadas sai na próxima rodada quinzenal</div>');
+  const _iAcervo=((ID.pautas||[]).length?'<div class="card">'+cab("📚 Do acervo","com prova documentada","ideias")
+      +(ID.pautas||[]).slice(0,4).map(p=>'<div class="linha"><span>'+lk(p.url,esc(p.t),"golink")+"</span></div>").join("")+"</div>":"")
+    +'<div class="card sm" style="line-height:1.6">🎪 '+esc(ID.quadros_nota||"")
+      +(ID.planilha?" · "+lk(ID.planilha,"abrir a planilha ↗","golink"):"")+"</div>";
+  const AL=ID.alta||{};
+  const _iBusca=((AL.busca||[]).length?'<div class="card">'+cab("🧭 A busca pública do TikTok","o que as pessoas digitam no seu assunto"+(AL.busca_at?" · dado de "+esc(fmtAbs(AL.busca_at)):""),null)
+      +(AL.busca||[]).slice(0,4).map(b=>'<div style="margin-top:7px"><b style="font-size:13px">'+esc(b.q)+'</b><div class="sm">'+esc(b.veredito)+"</div></div>").join("")+"</div>":"")
+    // bloco vazio não vira buraco: vira uma linha honesta, com a data da coleta
+    +((AL.termos||[]).length?'<div class="card">'+cab("🔍 Buscaram e te acharam",(AL.termos_at?"dado de "+esc(fmtAbs(AL.termos_at)):"termos reais digitados"),null)
+      +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">'
+      +(AL.termos||[]).slice(0,8).map(t=>'<span class="sm" style="background:#EDE9FE;color:#5B21B6;padding:4px 10px;border-radius:12px">'+esc(t)+"</span>").join("")+"</div>"
+      +'<div class="sm" style="margin-top:8px">gente digitou isso e chegou em você · responder em vídeo é pauta pronta</div></div>'
+      :'<div class="card sm" style="line-height:1.6">🔍 <b>Buscaram e te acharam:</b> o Instagram e o TikTok não devolveram nenhum termo de busca'
+        +(AL.termos_at?" na coleta de "+esc(fmtAbs(AL.termos_at)):" nesta coleta")+". Volta na próxima leitura do TikTok Studio.</div>");
   h+='<section class="view wrap" id="v-posts" hidden>'+fraseAba("posts")
-    +_pUltimo+_pStories+_pGrade6
-    +verm("escolher outro período",_pJanela)
-    +verm("ver os "+(((D.posts||{}).all||[]).length)+" medidos, em lista e em tabela",_pMedidos)
-    +verm("quantas pessoas os posts trouxeram",_pTrouxe)
-    +verm("em conjunto"+((D.colabs&&D.colabs.length)?" ("+D.colabs.length+")":""),_pColabs)
-    +verm("a semana de stories",_pSemana)
+    +_pUltimo
+    +_iGravar
+    +_iJogadas
+    +verm("ver o acervo e onde se escreve pauta"+((ID.pautas||[]).length?" ("+Math.min(4,ID.pautas.length)+")":""),_iAcervo)
+    +verm("ver a busca que leva até você"+((AL.busca||[]).length?" ("+Math.min(4,AL.busca.length)+")":""),_iBusca)
+    +verm("ver os "+(((D.posts||{}).all||[]).length)+" medidos, e quem eles trouxeram",
+      _pJanela+_pMedidos+_pTrouxe+_pColabs)
+    +"</section>";
+
+  // ---------- STORIES ----------
+  // Correção dela de 03/11/2026: «acho que stories é uma coisa e público é outra coisa».
+  // Story estava repartido entre HOJE, POSTS e ANÁLISE e não tinha lugar. Toda conta
+  // desta aba se faz sobre o ARQUIVO INTEIRO (40 registros), nunca sobre os 8 da tira:
+  // a amostra de 8 chegava a inverter o veredito de alcance entre foto e vídeo.
+  const SW=st.semana||{}, STP=st.tipo||{};
+  const _stCapas=((st.items||[]).length
+    // sem rótulo, a tira parecia ser «a semana»: ela lia «6 stories» e contava 8
+    // miniaturas, duas de fora da semana. O rótulo sai do próprio dado.
+    ?'<p class="sub-h larga">as '+st.items.length+' últimas registradas · a mais antiga é de '
+      +esc((st.items[st.items.length-1]||{}).d||"")+'</p>'
+      +'<div class="hscroll">'+st.items.map((x,i)=>'<div class="stt" data-si="'+i+'" role="button" tabindex="0" aria-label="ver a leitura deste story">'
+        +(x.img?'<img src="'+x.img+'" alt="">'
+          // sem capa guardada: caixa de reserva com o ícone do formato, como lista e não
+          // como defeito. O build embarca capa só nos 4 primeiros (peso).
+          :'<span class="resv" style="position:absolute;inset:0;border:0;border-radius:0;background:var(--off);font-size:26px">'+(x.type==="🎬"?"🎬":"📷")+"</span>")
+        +'<span class="iBtn" aria-hidden="true"></span>'
+        +'<span class="ov"><span class="g num">'+(x.gancho??"·")+'</span><br><span class="d num">'+esc(x.d)+" "+x.type+"</span></span></div>").join("")+"</div>"
+      +'<div class="card" id="stinfo"><span class="sm">toque num story para ver a leitura dele</span></div>':"");
+  const _stSemana=(SW.n!=null?'<div class="card">'+cab("📅 A semana de "+esc(SW.de||"")+" a "+esc(SW.ate||""),"contra a semana anterior ("+esc(SW.de_ant||"")+" a "+esc(SW.ate_ant||"")+")","stories")
+      +'<div class="jrow" style="margin-top:8px">'
+      +[["📱 stories",SW.n,(SW.n_ant!=null?SW.n_ant+" antes":"")],
+        ["♡ gancho",(SW.gancho!=null?SW.gancho+"%":"·"),(SW.gancho_ant!=null?SW.gancho_ant+"% antes":"")],
+        ["↩ saída na 1ª tela",(SW.saida!=null?SW.saida+"%":"·"),(SW.saida_ant!=null?SW.saida_ant+"% antes":"")]]
+        .map(x=>'<div class="jtile"><div class="sm">'+x[0]+'</div><div class="num">'+x[1]+'</div><div class="sm">'+esc(x[2])+"</div></div>").join("")
+      +"</div>"
+      +(SW.leitura?leit(esc(SW.leitura),""):"")
+      +(((SW.buracos||[]).length&&!SW.buracos_dito)?'<div class="sm" style="margin-top:6px">sem registro em '+SW.buracos.map(esc).join(" · ")
+        +' · a coleta não separa «não postei» de «não coletei»</div>':"")
+      +"</div>":"");
+  const _stTipo=(STP.veredito?'<div class="card">'+cab("📖 Foto × vídeo","sobre os "+STP.n+" do arquivo, não os 8 da tira","stories")
+      +'<div style="display:flex;gap:8px;margin:10px 0 4px">'
+      +[["FOTO",STP.foto||{}],["VÍDEO",STP.video||{}]].map(x=>'<div style="flex:1;text-align:center;background:var(--off);border:1px solid var(--brand-pale);border-radius:12px;padding:11px 4px">'
+          +'<div class="sm">'+x[0]+'</div><div class="num" style="font-size:21px;font-weight:800">gancho '+(x[1].gancho??"·")+'%</div>'
+          +'<div class="sm">'+(x[1].n??0)+" stories · alcance médio "+(x[1].reach??"·")+"</div></div>").join("")+"</div>"
+      +leit(esc(STP.veredito),"")
+      +(STP.ok?"":'<div class="sm" style="margin-top:5px">▬ menos de 5 de um dos dois tipos na amostra · pista, ainda sem regra</div>')
+      +"</div>":"");
+  const _stDia=((st.dia||[]).length?'<div class="card">'+cab("📆 Por dia da semana","gancho médio sobre os "+(STP.n||0)+" stories","stories")
+      +(function(){const mx=Math.max.apply(null,(st.dia||[]).map(d=>d.gancho||0).concat([1]));
+        return (st.dia||[]).map(d=>'<div style="display:flex;align-items:center;gap:8px;margin:5px 0"><span class="sm" style="width:30px;font-weight:700">'+esc(d.nome)+'</span>'
+          +'<div class="bar" style="flex:1"><div class="fill" style="width:'+((d.gancho||0)/mx*100).toFixed(0)+'%'+(d.fraco?";opacity:.45":"")+'"></div></div>'
+          +'<span class="sm num" style="width:104px;text-align:right">'+(d.gancho??"·")+"% · "+(d.fraco?("só "+d.n+(d.n===1?" story":" stories")):(d.n+" stories"))+"</span></div>").join("");})()
+      +(st.dia_leitura?leit(esc(st.dia_leitura),""):"")
+      +'<div class="sm" style="margin-top:5px">dia com menos de 5 stories fica mais claro e não entra na leitura</div></div>':"");
+  const _stSeq=((st.seq||[]).length?'<div class="card">'+cab("🧵 Tamanho da sequência","quantos stories no mesmo dia","stories")
+      +(st.seq||[]).map(q=>'<div class="linha"><span>'+esc(q.faixa)+'<br><span class="sm">'+q.dias+(q.dias===1?" dia":" dias")+' medidos</span></span>'
+        +'<span class="sm num" style="text-align:right">gancho '+(q.gancho??"·")+"<br>alcance "+(q.reach??"·")+"</span></div>").join("")
+      +(st.seq_leitura?leit(esc(st.seq_leitura),""):"")+"</div>":"");
+  const _stNaoSei=((st.nao_sei||[]).length?'<div class="card" style="border:1.5px dashed var(--line)">'
+      +'<span class="k">❓ O que eu não sei dos seus stories</span>'
+      +'<div class="sm" style="margin-top:6px;line-height:1.7">'+(st.nao_sei||[]).map(x=>"· "+esc(x)).join("<br>")+"</div>"
+      // o resto é consulta: vai para trás de uma porta com a contagem no rótulo
+      +((st.nao_sei_resto||[]).length
+        ?'<details class="verm" style="margin-top:6px"><summary>⌄ ver os outros '+st.nao_sei_resto.length
+          +" buracos da coleta</summary>"
+          +'<div class="sm" style="line-height:1.7">'+st.nao_sei_resto.map(x=>"· "+esc(x)).join("<br>")+"</div></details>"
+        :"")+"</div>":"");
+  h+='<section class="view wrap" id="v-stories" hidden>'+fraseAba("stories")
+    +((st.items||[]).length
+      ?'<h2 class="larga">'+LOGOS.ig+"Stories "+ageChip(S,"stories")+"</h2>"
+        +_stSemana+_stCapas+_stTipo
+        +verm("ver por dia da semana ("+(st.dia||[]).length+")",_stDia)
+        +verm("ver o tamanho da sequência ("+(st.seq||[]).length+")",_stSeq)
+        +_stNaoSei
+      :semDado("Stories","medida de story nesta coleta","a leitura do Instagram que a Central faz todo dia","na próxima rodada","📱"))
     +"</section>";
 
   // ---------- ANÁLISE ----------
+
   h+='<section class="view wrap" id="v-analise" hidden>'
     +'<div class="seg" role="tablist">'
     +'<button data-s="saude" aria-selected="true">💚 Saúde</button>'
@@ -926,17 +1119,52 @@ function render(data){
         +(RP.fecho.mudar?"<b>Mudar:</b> "+esc(RP.fecho.mudar)+"<br>":"")
         +(RP.fecho.testar?"<b>Testar:</b> "+esc(RP.fecho.testar):"")+"</div></details>":"")
       +"</div>";
+  // 🔍 Leituras · o bloco passa a se policiar (10/11/2026). O insights.json é texto
+  // escrito por sessão, e apodreceu: 27 dias contra uma régua de 21, com um item cuja
+  // premissa a própria página desmentia («26 dias sem post», num dia em que o último
+  // post tinha 2). O build confere cada item contra o dado vivo e derruba o que não
+  // passa; aqui a tela mostra o que sobrou, com link clicável, e DIZ o que caiu e por
+  // quê, para o bloco não encolher em silêncio. Bloco vazio não vira buraco: vira uma
+  // linha honesta com o link do card.
   const INS=(D.insights&&D.insights.itens)||[];
+  const _IN=D.insights||{};
+  const _insChip=(d)=>{ if(!d) return "";
+    const dd=diasDe(d);
+    if(dd==null) return "";
+    return '<span class="age'+(dd>(LIMITES.insights??21)?" stale":"")+'">'+(dd>(LIMITES.insights??21)?"parado ":"")+"há "+dd+"d</span>"; };
   if(INS.length)
-    h+='<div class="card"><span class="k">🔍 Leituras '+ageChip(S,"insights")+"</span>"
-      +'<div class="sm">o que a gente descobriu olhando os dados. não é coleta: é conclusão, e por isso tem data.</div>'
-      +INS.map(function(i){return '<details style="margin-top:7px"><summary>'+esc(i.t||"")
-        +' <span class="sm">· '+esc(fmtAbs(i.d||""))+'</span></summary><div class="body">'
+    // o bloco inteiro vai para trás de uma porta, com a conta e a data no rótulo: é
+    // conclusão escrita por sessão e lida só quando ela quer, não a leitura do dia.
+    // Aberto, somava 80 das 290 palavras da aba, que tem teto de 250.
+    h+=verm("ver "+(INS.length===1?"a leitura nossa":"as "+INS.length+" leituras nossas")
+        +(_IN.data_unica?", de "+_IN.data_unica:""),
+      '<div class="card"><span class="k">🔍 Leituras '+ageChip(S,"insights")+"</span>"
+      // com UMA leitura, «As 1 leitura é da mesma data» não concordava e não queria
+      // dizer nada: a data entra na primeira frase. Com duas ou mais, segue no plural.
+      +'<div class="sm">isto é conclusão nossa'
+      +((_IN.data_unica&&INS.length===1)?", escrita em "+esc(_IN.data_unica)+"."
+        :", com a data do dia em que foi escrita."
+          +(_IN.data_unica?" As "+INS.length+" leituras são da mesma data, "+esc(_IN.data_unica)+".":""))
+      +"</div>"
+      +INS.map(function(i){
+        const _fon=String(i.fonte||"");
+        const _ehLink=/^https?:/.test(_fon);
+        return '<details style="margin-top:7px"><summary>'+esc(i.t||"")
+        +(_IN.data_unica?"":' <span class="sm" style="white-space:nowrap">· '+esc(fmtAbs(i.d||""))+"</span>")
+        +" "+_insChip(i.d)+'</summary><div class="body">'
+        +(i.t_cheio?'<div class="sm" style="margin-bottom:5px">'+esc(i.t_cheio)+"</div>":"")
         +esc(i.txt||"")
-        +(i.acao?'<div style="margin-top:5px"><b>o que fazer:</b> '+esc(i.acao)+"</div>":"")
-        +(i.fonte?'<div class="sm" style="margin-top:4px">fonte: '+esc(i.fonte)+"</div>":"")
+        +(i.nota?'<div class="sm" style="margin-top:5px;color:var(--age)">⚠ '+esc(i.nota)+"</div>":"")
+        +(i.acao?'<div style="margin-top:5px"><b>o que fazer:</b> '+linkifica(i.acao)+"</div>":"")
+        +(_ehLink?'<div class="sm" style="margin-top:4px">'+lk(_fon,"abrir a fonte ↗","golink")+"</div>":"")
         +"</div></details>";}).join("")
-      +"</div>";
+      +(_IN.fora_frase?'<details class="verm" style="margin-top:8px"><summary>⌄ '+(_IN.fora||0)
+        +((_IN.fora||0)===1?" leitura ficou":" leituras ficaram")+' de fora</summary>'
+        +'<div class="sm" style="line-height:1.6">'+esc(_IN.fora_frase)+"</div></details>":"")
+      +"</div>");
+  else if(_IN.vazio)
+    h+='<div class="card sm" style="line-height:1.6">🔍 <b>Leituras:</b> '+esc(_IN.vazio)
+      +(_IN.fora_frase?" "+esc(_IN.fora_frase):"")+"</div>";
 
   const NU=SA.numero||{}, RT=SA.ritmo||{}, SG=SA.seg||{}, fs=D.followers||{}, ser=fs.series||[];
   h+='<div class="card" id="mbox">'+cab("📈 Como você está",esc(D.janela||"")+" · toque na métrica","posts")
@@ -952,8 +1180,8 @@ function render(data){
   if(PS)
     h+='<div class="card"><span class="k">🏆 Melhor post '+(SA.janela?esc(SA.janela):"da janela")+(PS.d?' · '+esc(PS.d):'')+'</span>'
       +'<div style="display:flex;gap:12px;margin-top:8px;align-items:flex-start">'
-      +(function(){const f={img:IMGMAP[PS.url]};
-        return f?'<a href="'+esc(PS.url)+'" target="_blank" rel="noopener" aria-label="abrir o post da semana no Instagram" style="flex:0 0 96px"><img src="'+f.img+'" style="width:96px;height:96px;object-fit:cover;border-radius:12px" alt=""></a>':"";})()
+      +'<a href="'+esc(PS.url)+'" target="_blank" rel="noopener" aria-label="abrir o post da semana no Instagram" style="flex:0 0 90px;display:block">'
+      +thumbBox(PS.url,90,120,"🏆")+"</a>"
       +'<div style="flex:1;min-width:0">'+d7pill(PS)+' <span class="num" style="font-weight:800">'+esc(PS.er)+'% ER</span>'
       +'<div class="sm" style="margin-top:4px">'+esc(PS.frase||"")+"</div>"
       +'<div class="sm" style="margin-top:4px">'+lk(PS.url,"abrir o post ↗","golink")+' · <a class="golink" href="#" onclick="showView(\'posts\');return false">ver os posts da janela ↗</a></div>'
@@ -979,33 +1207,28 @@ function render(data){
           +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(v/maxE*100).toFixed(0)+'%"></div></div>'
           +'<span class="sm num" style="width:74px;text-align:right">'+esc(f.er)+"% · "+f.n+" post"+(f.n>1?"s":"")+"</span></div>";}).join("")
       +"</div>"
-      +((MH.dias||[]).length?'<details style="margin-top:4px"><summary>por dia da semana</summary><div class="body num">'
-        +MH.dias.map(d=>esc(d.nome)+": "+esc(d.er)+"% ("+d.n+")").join(" · ")+"</div></details>":"")
+      // dia com menos de 3 posts não vira leitura de dia: as duas sextas da janela eram
+      // justamente os dois reels sem interação, um deles visto por 11 contas, e a tela
+      // mostrava «sex: 0,0% (2)» com a seta «agende no horário que paga mais»
+      +(function(){const ds=(MH.dias||[]).filter(d=>d.n>=3);
+        const fora=(MH.dias||[]).length-ds.length;
+        if(!ds.length) return '<div class="sm" style="margin-top:4px">nenhum dia da semana tem 3 posts medidos ainda</div>';
+        return '<details style="margin-top:4px"><summary>por dia da semana ('+ds.length+')</summary><div class="body num">'
+        +ds.map(d=>esc(d.nome)+": "+esc(d.er)+"% em "+d.n+" posts").join(" · ")
+        +(fora?'<div class="sm" style="margin-top:4px">'+fora+(fora===1?" dia ficou":" dias ficaram")+" fora: menos de 3 posts medidos</div>":"")
+        +"</div></details>";})()
       +(function(){const va=(MH.faixas||[]).filter(f=>f.n>=3);
         if(va.length<2) return '<div class="sm" style="margin-top:4px">ER médio por faixa do dia · só conta post com hora conhecida</div>';
         const top=va.slice().sort((a,b)=>nn(b.er)-nn(a.er))[0], base=va.slice().sort((a,b)=>nn(a.er)-nn(b.er))[0];
-        const dia=(MH.dias||[]).slice().sort((a,b)=>nn(b.er)-nn(a.er))[0];
+        const dia=(MH.dias||[]).filter(d=>d.n>=3).slice().sort((a,b)=>nn(b.er)-nn(a.er))[0];
         return leit("Publicar de "+esc(top.nome)+" rende <b>"+vg(nn(top.er)-nn(base.er))+" pontos</b> a mais que de "+esc(base.nome)+" ("+esc(top.er)+"% contra "+esc(base.er)+"%)",
           "agende no horário que paga mais"+(dia?" · "+esc(dia.nome)+" lidera entre os dias ("+esc(dia.er)+"% em "+dia.n+" posts)":""));})()
       +"</div>";
   }
-  h+=(function(){ // stories: foto segura mais gente na 1ª tela? (amostra minima: 3 fotos + 1 video)
-    const IT=(D.stories||{}).items||[];
-    const fotos=IT.filter(x=>x.type==="📷"&&x.gancho!=null), vids=IT.filter(x=>x.type==="🎬"&&x.gancho!=null);
-    if(fotos.length<3||vids.length<1) return "";
-    const avg=(a,k)=>Math.round(a.reduce((s,x)=>s+(x[k]||0),0)/a.length);
-    const gf=avg(fotos,"gancho"), gv=avg(vids,"gancho"), rf=avg(fotos,"reach"), rv=avg(vids,"reach");
-    return '<div class="card">'+cab("📖 Foto × vídeo nos stories","últimos "+IT.length+" stories","stories")
-      +'<div style="display:flex;gap:8px;margin:10px 0 4px">'
-      +[["FOTO","gancho "+gf+"%",fotos.length+" stories · alcance médio "+rf],
-        ["VÍDEO","gancho "+gv+"%",vids.length+(vids.length===1?" story":" stories")+" · alcance médio "+rv]]
-        .map(x=>'<div style="flex:1;text-align:center;background:var(--off);border:1px solid var(--brand-pale);border-radius:12px;padding:11px 4px">'
-          +'<div class="sm">'+x[0]+'</div><div class="num" style="font-size:21px;font-weight:800">'+x[1]+'</div>'
-          +'<div class="sm">'+x[2]+"</div></div>").join("")+"</div>"
-      +leit("Foto segura <b>"+gf+" de cada 100</b> na 1ª tela e alcança "+rf+" · vídeo segura "+gv+" e alcança "+rv,
-        "abra a sequência do dia com foto · o vídeo rende melhor no meio")
-      +(vids.length<3?'<div class="sm" style="margin-top:5px">▬ só '+vids.length+(vids.length===1?" vídeo":" vídeos")+" na amostra · pista, ainda sem regra</div>":"")
-      +"</div>";})();
+  // O cartão «📖 Foto × vídeo nos stories» saiu daqui em 10/11/2026 e virou bloco da aba
+  // STORIES. Dois defeitos morreram no caminho: a conta usava os 8 stories da tira
+  // quando o arquivo tem 40 (e a amostra de 8 INVERTIA o veredito de alcance), e a
+  // conclusão era uma frase fixa que contradizia os números mostrados logo acima.
   if(SA.crm_linha)
     h+='<div class="card"><div class="linha"><span>💰 '+esc(SA.crm_linha.t)+"</span><span>"+lk(SA.crm_linha.url,"abrir ↗","golink")+"</span></div></div>";
   const _os=(SA.outros||[]).map(o=>esc(o.nome.split(" (")[0])+" "+esc(o.v)).slice(0,3).join(" · ");
@@ -1021,7 +1244,7 @@ function render(data){
     +"</details>";
   h+='<p class="sm" style="margin:8px 2px">'+esc(D.meta.limiar_nota||"")+"</p>";
   const _saOut=h; h=_hSa;
-  h+=verm("os outros 6 cartões: melhor post, melhor horário, foto contra vídeo, funil, outros sinais e metas",_saOut)+"</div>";
+  h+=verm("ver os outros 5 cartões: melhor post, melhor horário, funil, outros sinais e metas",_saOut)+"</div>";
 
   const L=D.learning||{};
   const maxEr=Math.max(...D.pilares.map(p=>parseFloat(String(p.er).replace(",","."))||0),1);
@@ -1073,7 +1296,8 @@ function render(data){
     const avg=(a,k)=>Math.round(a.reduce((s,x)=>s+x[k],0)/a.length);
     const fe=med(F,"er"), re=med(R,"er"), fs2=med(F,"sends"), rs=med(R,"sends"), fr=avg(F,"reach"), rr=avg(R,"reach");
     const razao=rr/Math.max(1,fr);
-    return '<div class="card">'+cab("🎬 Reel alcança · feed engaja",esc(D.janela||"")+" · "+(F.length+R.length)+" posts medidos","posts")
+    const _fora=((D.posts.all||[]).length)-(F.length+R.length);
+    return '<div class="card">'+cab("🎬 Reel alcança · feed engaja",esc(D.janela||"")+" · "+(F.length+R.length)+" de "+((D.posts.all||[]).length)+" peças"+(_fora>0?" (fora: "+_fora+" sem interação medida)":""),"posts")
       +'<div style="display:flex;gap:8px;margin:10px 0 4px">'
       +[["REELS","alcança "+vg(razao)+"×","alcance médio "+fmtMil(rr)],
         ["FEED","ER "+vg(fe)+"%","mediana em "+F.length+" posts"]]
@@ -1092,8 +1316,9 @@ function render(data){
     h+='<div class="card sm" style="line-height:1.6">🧩 pilar → 🎬 formato → 📱 conteúdo real · cada card traz um print de post SEU como referência · o texto completo (abertura, setup, 2 ideias por formato) vive na '+lk(FS.planilha,"planilha ↗","golink")+' · editou lá, a sexta traz para cá</div>';
     (FS.novos||[]).forEach(f=>{
       h+='<div class="card"><div style="display:flex;gap:12px;align-items:flex-start">'
-        +(f.refs&&f.refs.length&&f.refs[0].img?'<a href="'+esc(f.refs[0].url)+'" target="_blank" rel="noopener" aria-label="ver exemplo real deste formato" style="flex:0 0 84px"><img src="'+f.refs[0].img+'" alt="" style="width:84px;height:84px;object-fit:cover;border-radius:12px"></a>'
-          :'<div style="flex:0 0 84px;height:84px;border:2px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">🎬</div>')
+        +((f.refs&&f.refs.length&&f.refs[0].img)
+          ?'<a href="'+esc(f.refs[0].url)+'" target="_blank" rel="noopener" aria-label="ver exemplo real deste formato" style="flex:0 0 auto;display:block">'+refBox(f.refs[0],"🎬")+"</a>"
+          :refBox(null,"🎬"))
         +'<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="font:800 13px Inter,sans-serif">'+esc(f.n)+'</span><span class="sm num" style="background:#EDE9FE;color:#5B21B6;padding:2px 8px;border-radius:10px;max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.status)+"</span></div>"
         +'<div class="sm" style="margin-top:3px">'+esc(f.como)+"</div>"
         +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">'+(f.pilares||[]).map(p=>tag(p)).join("")+"</div>"
@@ -1101,7 +1326,7 @@ function render(data){
         +((f.refs||[]).length?'<div class="sm" style="margin-top:5px">'+f.refs.map((r,i)=>lk(r.url,"abrir exemplo "+(i+1)+" ↗","golink")).join(" · ")+"</div>":"")
         +(f.mais?'<details style="margin-top:6px"><summary>mais ideias · por quê · como fazer</summary><div class="body">'
           +(f.mais.abre?"<b>Abre assim:</b> "+esc(f.mais.abre)+"<br>":"")
-          +"<b>Como fazer:</b> "+esc(f.como)+(f.mais.dur&&f.mais.dur!=="—"?" · "+esc(f.mais.dur):"")+"<br>"
+          +"<b>Como fazer:</b> "+esc(f.como)+(f.mais.dur&&f.mais.dur.replace(/[\u2013\u2014\u00b7]/g,"").trim()?" · "+esc(f.mais.dur):"")+"<br>"
           +(f.mais.pq?"<b>Por quê funciona:</b> "+esc(f.mais.pq)+"<br>":"")
           +((f.mais.ideias||[]).length?"<b>Ideias prontas:</b><br>"+f.mais.ideias.map(i=>"· "+esc(i)).join("<br>"):"")
           +"</div></details>":"")
@@ -1109,7 +1334,9 @@ function render(data){
     });
     const FA=FS.falados||{};
     h+='<div class="card"><div style="display:flex;gap:12px;align-items:flex-start">'
-      +(FA.refs&&FA.refs.length&&FA.refs[0].img?'<a href="'+esc(FA.refs[0].url)+'" target="_blank" rel="noopener" aria-label="ver exemplo real de formato falado" style="flex:0 0 84px"><img src="'+FA.refs[0].img+'" alt="" style="width:84px;height:84px;object-fit:cover;border-radius:12px"></a>':"")
+      +((FA.refs&&FA.refs.length&&FA.refs[0].img)
+        ?'<a href="'+esc(FA.refs[0].url)+'" target="_blank" rel="noopener" aria-label="ver exemplo real de formato falado" style="flex:0 0 auto;display:block">'+refBox(FA.refs[0],"🎙")+"</a>"
+        :refBox(null,"🎙"))
       +'<div style="flex:1;min-width:0"><span style="font:800 13px Inter,sans-serif">Os 9 falados</span>'
       +'<div class="sm" style="margin-top:3px">'+(FA.top||[]).join(" · ")+" e mais 5 · abertura pronta, setup e 2 ideias ancoradas cada um</div>"
       +'<div class="sm" style="margin-top:5px">'+lk(FS.planilha,"ver os 9 na planilha ↗","golink")+((FA.refs||[]).length?" · "+lk(FA.refs[0].url,"exemplo real ↗","golink"):"")+"</div>"
@@ -1141,8 +1368,8 @@ function render(data){
           esc(mn.n)+" guarda "+mn.pct+"% da base · 1 repost por semana lá custa pouco");})()
       +"</div>";})():"")
     +'<div class="card"><span class="k">'+LOGOS.ig+"Instagram @mispace</span>"
-    +'<div class="linha"><span>ER por alcance</span><span class="n num">'+esc((D.kpis[0]||{}).v||"—")+"</span></div>"
-    +'<div class="linha"><span>seguidores</span><span class="n num">'+(ser.length?String(ser[ser.length-1].v).replace(/\B(?=(\d{3})+(?!\d))/g,"."):"—")+"</span></div>"
+    +'<div class="linha"><span>ER por alcance</span><span class="n num">'+esc((D.kpis[0]||{}).v||"·")+"</span></div>"
+    +'<div class="linha"><span>seguidores</span><span class="n num">'+(ser.length?String(ser[ser.length-1].v).replace(/\B(?=(\d{3})+(?!\d))/g,"."):"·")+"</span></div>"
     +'<div class="sm" style="margin-top:4px">'+lk("https://www.instagram.com/mispace/","abrir o perfil ↗","golink")+"</div></div>"
     +(function(){const I=D.intencao;if(!I)return "";
       return '<div class="card" style="border-left:3px solid #7C3AED">'
@@ -1153,8 +1380,8 @@ function render(data){
         +'<div class="sm" style="margin-top:3px">'+esc(I.nota)+" "+lk(I.link,"virar pauta no board ↗","golink")+"</div></div>";})()
     +verm("os outros 5 canais: TikTok, LinkedIn, YouTube, blog e o que falta",
     '<div class="card"><span class="k">'+LOGOS.tt+"TikTok "+ageChip(S,"tiktok")+"</span>"
-    +'<div class="linha"><span>views (7d na coleta)</span><span class="n num">'+esc(tk.views||"—")+"</span></div>"
-    +'<div class="linha"><span>chega por busca</span><span class="n num">'+esc(tk.busca_pct||"—")+"</span></div>"
+    +'<div class="linha"><span>views (7d na coleta)</span><span class="n num">'+esc(tk.views||"·")+"</span></div>"
+    +'<div class="linha"><span>chega por busca</span><span class="n num">'+esc(tk.busca_pct||"·")+"</span></div>"
     +(tk.termos&&tk.termos.length?'<details><summary>o que buscaram para te achar</summary><div class="body">'
       +tk.termos.map(x=>"· "+esc(x)).join("<br>")+"</div></details>":"")
     +(function(){const vs=(tk.posts||[]).map(p=>p.views).filter(v=>v!=null);
@@ -1164,21 +1391,24 @@ function render(data){
         (tk.busca_pct?tk.busca_pct+" do alcance vem de busca · o termo buscado vira a primeira frase do título":""));})()
     +'<div class="sm" style="margin-top:4px">'+lk(tk.url,"abrir TikTok ↗","golink")+"</div></div>"
     +'<div class="card"><span class="k">'+LOGOS.li+"LinkedIn "+ageChip(S,"linkedin")+"</span>"
-    +'<div class="linha"><span>seguidores</span><span class="n num">'+esc(li.followers??"—")+"</span></div>"
-    +'<div class="linha"><span>posts na semana da coleta</span><span class="n num">'+esc(li.posts_week??"—")+"</span></div>"
+    +'<div class="linha"><span>seguidores</span><span class="n num">'+(li.followers!=null?fmtMil(li.followers):"·")+"</span></div>"
+    +'<div class="linha"><span>posts na semana da coleta</span><span class="n num">'+esc(li.posts_week??"·")+"</span></div>"
     +((li.posts&&li.posts.length)?'<div class="linha"><span>último: '+esc(li.posts[0].cap)+'</span><span class="sm num">'+esc(li.posts[0].d)+"</span></div>"
-      +(li.posts[0].views!=null?'<div class="sm" style="margin-top:3px">'+esc(String(li.posts[0].views))+' impressões na leitura de '+esc((D.sources.linkedin||{}).at?fmtAbs(D.sources.linkedin.at):"")+"</div>":""):"")
-    +(function(){const m=/([+−-]\d+)%/.exec(String(li.views_perfil||""));
-      if(!m||!li.posts_week) return "";
-      return leit("visitas ao perfil <b>"+esc(m[1]).replace("-","−")+"%</b> em 90 dias com "+li.posts_week+" post por semana",
-        "maior retorno por esforço entre os canais · o repost do carrossel da semana mantém a curva");})()
-    +'<div class="sm" style="margin-top:4px">'+esc(li.views_perfil||"")+"</div></div>"
+      +(li.posts[0].views!=null?'<div class="sm" style="margin-top:3px">esse post foi visto '+fmtMil(li.posts[0].views)+' vezes, na leitura de '+esc((D.sources.linkedin||{}).at?fmtAbs(D.sources.linkedin.at):"")+"</div>":""):"")
+    // a variação só entra se a base aparecer: «+59% vs semana anterior» sem a semana
+    // anterior não é medida, é impressão
+    +(function(){const v=String(li.views_perfil||"");
+      const base=/^(\d[\d.]*)/.exec(v);
+      if(!base) return "";
+      return '<div class="linha"><span>visitas ao seu perfil<br><span class="sm">nos últimos 90 dias</span></span>'
+        +'<span class="n num">'+esc(base[1])+"</span></div>";})()
+    +"</div>"
     +(yt?'<div class="card"><span class="k">'+LOGOS.yt+"YouTube "+ageChip(S,"youtube")+"</span>"
-      +'<div class="linha"><span>inscritos</span><span class="n num">'+String(yt.subscribers||"—").replace(/\B(?=(\d{3})+(?!\d))/g,".")+"</span></div>"
+      +'<div class="linha"><span>inscritos</span><span class="n num">'+String(yt.subscribers||"·").replace(/\B(?=(\d{3})+(?!\d))/g,".")+"</span></div>"
       +((yt.posts&&yt.posts.length)?'<div class="linha"><span>último: '+esc(yt.posts[0].cap)+'</span><span class="sm num">'+esc(yt.posts[0].d)+"</span></div>":"")
       +(function(){const vs=(yt.posts||[]).map(p=>p.views).filter(v=>v!=null);
         if(!vs.length) return "";
-        return leit("<b>"+fmtMil(yt.subscribers||0)+"</b> inscritos · os "+vs.length+" vídeos novos têm "+Math.max(...vs)+" views ou menos",
+        return leit("os "+vs.length+" vídeos novos têm <b>"+fmtMil(Math.max(...vs))+" visualizações</b> ou menos",
           "o valor aqui é acervo e busca · o título leva o termo que a busca do TikTok revelou");})()
       +'<div class="sm" style="margin-top:4px">'+lk(yt.url,"abrir o canal ↗","golink")+"</div></div>":"")
     +'<div class="card"><span class="k">'+LOGOS.blog+"Blog "+ageChip(S,"blog")+"</span>"
@@ -1193,7 +1423,7 @@ function render(data){
 
   // ---------- NEGÓCIO (aba R$ · pedido dela 03/08) ----------
   const FF=D.fila||{}, CR=FF.pipeline||null;
-  let _ngMes="",_ngPlacar="",_ngCobrar="",_ngFunil="",_ngCurso="",_ngStale="";
+  let _ngMes="",_ngCobrar="",_ngFunil="",_ngCurso="",_ngStale="";
   const _hNg=h; h="";
   h+=(function(){ // «O mês em uma tela» · todo número vem do build (data.mes), nenhuma conta aqui
     const M=D.mes; if(!M) return "";
@@ -1205,7 +1435,7 @@ function render(data){
       +'<div class="sm">'+sub+'</div></div>';
     s+='<div class="jrow" style="flex-wrap:wrap;margin:9px 0 2px">'
       +tile("Peças publicadas",M.pecas.n,"no ritmo de "+M.pecas.meta_sem+" por semana, seriam "+M.pecas.meta_ate_hoje+" até hoje"+(M.pecas.parcial?" · contagem parcial":""))
-      +tile("Recebido",esc(M.pagos.total_txt),(M.pagos.n?(M.pagos.n===1?"1 card marcado Pago":M.pagos.n+" cards marcados Pago"):"sem registro de pagamento no board de gestão de clientes")+(M.pagos.parcial?" · contagem parcial":""),true)
+      +tile("Recebido",esc(M.pagos.total_txt),(M.pagos.n?(M.pagos.n===1?"1 card marcado Pago":M.pagos.n+" cards marcados Pago"):"sem registro de pagamento no board de clientes")+(M.pagos.parcial?" · contagem parcial":""),true)
       +tile("A receber",esc(M.a_receber.total_txt),(M.a_receber.n?(M.a_receber.n===1?"1 card com pagamento em aberto":M.a_receber.n+" cards com pagamento em aberto"):"nenhum pagamento em aberto")+(M.a_receber.parcial?" · "+M.a_receber.parcial+" em Parcial, fora da soma":""),true)
       +tile("Seguidores",(M.seg?esc(M.seg.delta_txt):"sem dado"),(M.seg?"de "+esc(M.seg.de)+" a "+esc(M.seg.ate):"sem coleta neste mês"))
       +'</div>';
@@ -1226,25 +1456,24 @@ function render(data){
     s+='<div class="sm" style="margin-top:6px">peças = cards que entraram em 🌍 Publicado no board Conteúdo, por isso conta também LinkedIn, stories e blog, e não é o mesmo número da sua semana no Instagram · dinheiro só entra aqui quando o Status pagamento do card vira Pago</div>';
     return s+"</div>";})();
   _ngMes=h; h="";
-  if(CR&&CR.placar){
-    const pl=CR.placar, fmtR=v=>"R$"+String(Math.round(v||0)).replace(/\B(?=(\d{3})+(?!\d))/g,".");
-    const pct=Math.min(100,Math.round(((pl.ganho_conf||0)+(pl.ganho_est||0))/(pl.meta||25000)*100));
-    h+='<h2>🏆 Placar do mês · '+esc(pl.mes||"")+" "+ageChip(S,"crm")+'</h2><p class=sub-h>outra conta: o valor escrito no título do card ao chegar em Fechado, contra uma meta antiga do código · o dinheiro confirmado é o de cima, pelo campo Status pagamento</p>'
-      +'<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="num" style="font-size:26px;font-weight:800">'+fmtR(pl.ganho_conf)+'</span><span class="sm num">meta '+fmtR(pl.meta)+"</span></div>"
-      +(pl.ganho_est?'<div class="sm num">+ '+fmtR(pl.ganho_est)+" em estimativa (faixa do catálogo)</div>":"")
-      +'<div style="height:10px;border-radius:999px;background:var(--mid-bg);margin:8px 0 5px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--brand)"></div></div>'
-      +(pl.ritmo?'<div class="sm" style="margin-top:2px">'+esc(pl.ritmo)+"</div>":"")
-      +'<div class="sm num">'+((pl.n_fech_mes||0)===1?"1 negócio fechado se moveu":(pl.n_fech_mes||0)+" negócios fechados se moveram")+' este mês</div>'
-      +(pl.fech_mes&&pl.fech_mes.length?'<details><summary>ver quais</summary><div class="body">'+pl.fech_mes.map(f=>"· "+lk(f.url,esc(f.t))+(f.valor?' <span class="sm num">'+esc(f.valor)+(f.vtipo==="estimativa"?" est.":"")+"</span>":"")).join("<br>")+"</div></details>":"")
-      +'<div class="sm num" style="margin-top:4px">no funil (se tudo fechar): '+fmtR(pl.pipe_conf)+(pl.pipe_est?" + "+fmtR(pl.pipe_est)+" est.":"")+"</div>"
-      +"</div>";
-    _ngPlacar=h; h="";
+  if(CR){
+    // 10/11/2026 · o 🏆 Placar do mês saiu. A meta de R$ 25.000 estava escrita no
+    // código, de uma proposta de 31/07: número congelado, sem data na tela, e dois
+    // blocos abaixo a mesma aba dizia «Recebido R$ 160». Não existe lugar vivo de onde
+    // ler a meta, então não há placar; fica o recebido, que é medida.
     if(CR.cobrar&&CR.cobrar.length)
       h+='<div class="card" style="border-left:3px solid var(--down)"><span class="k">💬 Cobrar hoje</span>'
         +CR.cobrar.map(c=>'<div class="linha"><span>'+lk(c.url,esc(c.t),"golink")+(c.etapa?' <span class="sm">'+esc(c.etapa)+"</span>":"")+'</span><span class="sm num" style="color:var(--down);font-weight:700">'+c.dias+"d parado</span></div>").join("")
         +'<div class="sm" style="margin-top:4px">parado no funil sem resposta · 1 mensagem reativa</div></div>';
     _ngCobrar=h; h="";
-    h+="<h2>🔻 Funil · quem está onde</h2><p class=sub-h>cada nome abre o card no Trello</p>";
+    h+="<h2>🔻 Funil · quem está onde</h2><p class=sub-h>cada nome abre o card no Trello</p>"
+      // as 4 contagens que o dado do mês já traz: a tela mostrava 3 etapas e calava as
+      // outras duas, então «quem está onde» respondia metade da pergunta
+      +(((D.mes||{}).aberto)?'<div class="card"><div class="jrow" style="flex-wrap:wrap">'
+        +[["proposta enviada",D.mes.aberto.proposta],["em negociação",D.mes.aberto.negociacao],
+          ["em curso",D.mes.aberto.em_curso],["novos contatos",D.mes.aberto.novos]]
+          .map(x=>'<div class="jtile" style="flex:1 1 42%"><div class="sm">'+x[0]+'</div><div class="num">'+(x[1]??"·")+"</div></div>").join("")
+        +'</div><div class="sm" style="margin-top:6px">contagem de cards por lista no board de clientes</div></div>':"");
     (CR.etapas||[]).forEach(et=>{
       h+='<div class="card"><div class="hd" style="gap:10px"><span class="k">'+esc(et.nome)+'</span><span class="n num">'+et.n+"</span></div>"
         +et.cards.map(c=>'<div class="linha"><span>'+lk(c.url,esc(c.t),"golink")+'</span><span class="sm num">'+(c.valor?esc(c.valor)+(c.vtipo==="estimativa"?' est.':""):"sem valor ainda")+"</span></div>").join("")
@@ -1261,11 +1490,36 @@ function render(data){
     h+='<div class="card"><span class="age stale">CRM sem dado nesta rodada</span></div>';
   }
   _ngStale=h; h=_hNg;
+  // 💰 recebido no mês, com a ressalva do que entra na conta (RC8.6): o card
+  // «🎬 Josy Lyra · R$ 3.500 QUITADO» vive no board Operação e NÃO entra aqui, e a tela
+  // não dizia isso. Agora a conta diz de onde vem antes de dar o número.
+  const _ngRecebido=(((D.mes||{}).pagos)?'<div class="card" style="border-left:3px solid var(--brand)">'
+    +cab("💰 Recebido no mês","só conta card do board de clientes com o pagamento marcado como Pago","mes")
+    +'<div class="num" style="font-size:26px;font-weight:800;margin-top:4px">'+esc(D.mes.pagos.total_txt)+"</div>"
+    +'<div class="sm" style="margin-top:2px">'+(D.mes.pagos.n?(D.mes.pagos.n===1?"1 card marcado Pago":D.mes.pagos.n+" cards marcados Pago"):"nenhum card marcado Pago neste mês")+"</div>"
+    // a base vai escrita: esta conta e o «valor potencial» do funil contam coisas
+    // diferentes, na mesma aba, e nada dizia isso
+    +(((D.mes||{}).a_receber)?'<div class="sm" style="margin-top:6px"><b>a receber:</b> '+esc(D.mes.a_receber.total_txt)
+      +" em cards de cliente já fechados e ainda não pagos · "+(D.mes.a_receber.n?(D.mes.a_receber.n===1?"1 card em aberto":D.mes.a_receber.n+" cards em aberto"):"nenhum em aberto")+"</div>":"")
+    +'<div class="sm" style="margin-top:6px">dinheiro em card de outro board (como o de uma entrega marcada QUITADO no Operação) fica fora desta conta</div>'
+    +"</div>":"");
+  // 🎯 «De dentro de cliente» chegou de PÚBLICO em 10/11/2026: a frase do próprio cartão
+  // diz «o elo mais curto até contrato», então é funil, não público. E caiu de 14 nomes
+  // para 3, pela regra de três por vez.
+  const _ngCliente=((RD&&(RD.de_cliente||[]).length)?'<div class="card">'
+    +cab("🎯 De dentro de cliente","gente de casas que você conhece · o elo mais curto até contrato"
+      +(RD.at?" · dado de "+esc(fmtAbs(RD.at)):""),null)
+    +RD.de_cliente.map(f=>'<div class="linha"><span>'+lk(f.url,"@"+esc(f.user),"golink")
+      +(f.nome?'<br><span class="sm">'+esc(f.nome)+"</span>":"")
+      +(f.relacao?'<br><span class="sm" style="color:var(--brand);font-weight:600">'+esc(f.relacao)+"</span>":"")+"</span>"
+      +'<span class="sm num" style="white-space:nowrap;flex:0 0 auto;text-align:right"><b>'+esc(f.org)+"</b><br>"+esc(f.d)+"</span></div>").join("")
+    +((RD.n_cliente||0)>RD.de_cliente.length?'<div class="sm" style="margin-top:6px">são '+RD.n_cliente
+      +" no total · estes 3 são os mais recentes</div>":"")+"</div>":"");
   h+='<section class="view wrap" id="v-negocio" hidden>'+fraseAba("negocio")
-    +_ngCobrar+_ngPlacar+_ngStale
-    +verm("o mês em uma tela",_ngMes)
-    +verm("o funil em 3 etapas"+((CR&&(CR.etapas||[]).length)?" ("+CR.etapas.length+")":""),_ngFunil)
-    +verm("o curso e como isto atualiza",_ngCurso)
+    +_ngRecebido+_ngCobrar+_ngCliente+_ngStale
+    +verm("ver o mês em uma tela",_ngMes)
+    +verm("ver o funil"+((CR&&(CR.etapas||[]).length)?" ("+CR.etapas.length+" etapas com nome)":""),_ngFunil)
+    +verm("ver o curso e como isto atualiza",_ngCurso)
     +"</section>";
 
   // ===== RADAR · mesa de sinais (redesenho 07/08 · direção B + enxertos de A) =====
@@ -1297,36 +1551,30 @@ function render(data){
       const atual=FSer.length?FSer[FSer.length-1]:null;
       const S7=(D.janelas||[]).find(j=>j.dias===7)||{};
       const SAl=RD&&RD.saldo;
+      // P1 e P4 · UM número «agora» (13.066, a leitura de hoje) e UM delta, com as datas
+      // no rótulo. A tela mostrava 13.066 no número grande, 13.074 do export quatro
+      // linhas abaixo, e três deltas diferentes, nenhum dito. Os outros dois números de
+      // seguidor vivem agora no bloco «como essa conta é feita», cada um com a data.
+      const _dpz=(S7&&S7.de&&(S7.ate_fol||S7.ate))?(" · de "+esc(S7.de)+" a "+esc(S7.ate_fol||S7.ate)):" em 7 dias";
       if(atual||SAl) cg.push(sig({full:1,ic:"👤",lb:"Seguidores agora",
         n:atual?fmtMil(atual.v):esc(SAl.liquido),
-        pill:pillDelta(S7.seg,"em 7 dias"),
-        r:(SAl?("entraram <b>+"+SAl.chegaram+"</b> · saíram cerca de <b>"+SAl.sairam+"</b> · sobrou <b>"+esc(SAl.liquido)+"</b> · de "+esc(SAl.de)+" a "+esc(SAl.ate)):"")
-          +((RD&&RD.seguidores&&RD.seguidores.frase)?((SAl?"<br>":"")+esc(RD.seguidores.frase)):""),
-        spark:(FSer.length>2?sparkSvg(FSer.slice(-30).map(x=>x.v),52,FSer.slice(-30).map(x=>x.d),"spark-fol"):""),
-        abre:"como essa conta é feita ▾",
-        mais:'<div class="sm">os nomes de quem entrou vêm das suas notificações · o que sobrou vem da contagem oficial do Instagram · quantos saíram é conta (entraram menos o que sobrou), porque o Instagram nunca mostra quem deixa de seguir</div>',
-        dt:atual?("série até "+fmtAbs(atual.d)):("dado de "+fmtAbs(RD.at))}));
+        pill:pillDelta(S7.seg,_dpz),
+        r:(SAl?("entraram <b>+"+SAl.chegaram+"</b> · saíram cerca de <b>"+SAl.sairam+"</b> · sobrou <b>"+esc(SAl.liquido)+"</b> · de "+esc(SAl.de)+" a "+esc(SAl.ate)):""),
+        spark:(FSer.length>2?sparkSvg(FSer.slice(-60).map(x=>x.v),52,FSer.slice(-60).map(x=>x.d),"spark-fol"):""),
+        dt:atual?("leitura de "+fmtAbs(atual.d)):("dado de "+fmtAbs(RD.at))}));
       if(RD&&(RD.farois||[]).length){ const f0=RD.farois[0];
         cg.push(sig({ic:"⭐",lb:"Vale um oi",n:RD.farois.length,un:RD.farois.length===1?"perfil":"perfis",
           r:"maior: "+esc(f0.nome)+" · "+fmtMil(f0.seg)+" seguidores",
-          a:lk(f0.url,"dar oi no maior ↗","golink"),
+          // o convite carrega a idade: apontava para alguém que chegou há 98 dias sem dizer
+          a:lk(f0.url,"dar oi"+((f0.d)?" (chegou em "+esc(f0.d)+(f0.dias!=null?", há "+f0.dias+(f0.dias===1?" dia":" dias"):"")+")":"")+" ↗","golink"),
           abre:"ver os "+RD.farois.length+" ▾",
           mais:RD.farois.map(f=>'<div class="linha"><span>'+lk(f.url,"@"+esc(f.user),"golink")
             +(f.nome?" · <b>"+esc(f.nome)+"</b>":"")+'<br><span class="sm">'+esc(f.bio||"")+"</span></span>"
             +'<span class="sm num" style="white-space:nowrap;flex:0 0 auto">'+(f.dias!==null&&f.dias!==undefined?"há "+f.dias+"d":esc(f.d))+"</span></div>").join(""),
           dt:"dado de "+fmtAbs(RD.at)})); }
-      if(RD&&(RD.de_cliente||[]).length){
-        const dd=x=>{const p=String(x||"").split("/");return (parseInt(p[1],10)||0)*31+(parseInt(p[0],10)||0);};
-        const rec=RD.de_cliente.slice().sort((a,b)=>dd(b.d)-dd(a.d))[0];
-        cg.push(sig({ic:"🎯",lb:"De dentro de cliente",n:RD.n_cliente,un:"pessoas",
-          r:"gente de casas que você conhece · o elo mais curto até contrato",
-          a:lk(rec.url,"abrir o mais recente ↗","golink"),
-          abre:"ver quem ▾",
-          mais:RD.de_cliente.map(f=>'<div class="linha"><span>'+lk(f.url,"@"+esc(f.user),"golink")
-            +(f.nome?'<br><span class="sm">'+esc(f.nome)+"</span>":"")
-            +(f.relacao?'<br><span class="sm" style="color:var(--brand);font-weight:600">'+esc(f.relacao)+"</span>":"")+"</span>"
-            +'<span class="sm num" style="white-space:nowrap;flex:0 0 auto;text-align:right"><b>'+esc(f.org)+"</b><br>"+esc(f.d)+"</span></div>").join(""),
-          dt:"dado de "+fmtAbs(RD.at)})); }
+      // O cartão «🎯 De dentro de cliente» saiu desta aba em 10/11/2026 e foi para R$:
+      // a frase do próprio cartão dizia «o elo mais curto até contrato», então é funil,
+      // não público. A pergunta desta aba é quem já me segue e quem está chegando.
       if(RD&&RD.conc&&(RD.picos||[]).length){
         const maxp=Math.max(...RD.picos.map(p=>p.n),1), nEv=RD.picos.filter(p=>p.ctx).length;
         // leitura: média de pico contra dia comum (enxerto de A, o melhor insight das 3 propostas)
@@ -1341,8 +1589,8 @@ function render(data){
             +'<div class="bar" style="flex:1"><div class="fill" style="width:'+(p.n/maxp*100).toFixed(0)+'%"></div></div>'
             +'<span class="sm num" style="width:26px;text-align:right;flex:0 0 auto">'+p.n+"</span></div>"
             +(p.ctx?'<div class="sm" style="margin:-2px 0 6px 50px">'+esc(p.ctx)+"</div>":"")).join(""),
-          leitura:leit("dia de pico traz em média <b>"+mediaPico+" pessoas</b> · dia comum traz "+vg(mediaComum),
-            "evento presencial é o seu maior motor de chegada · post sozinho quase não traz gente nova"),
+          leitura:leit(((RD.prefixo||"")?esc(RD.prefixo):"")+"dia de pico traz em média <b>"+mediaPico+" pessoas</b> · dia comum traz "+vg(mediaComum),
+            ((RD.prefixo||"")?esc(RD.prefixo):"")+"evento presencial é o seu maior motor de chegada · post sozinho quase não traz gente nova"),
           dt:"dado de "+fmtAbs(RD.at)})); }
       if(RD&&(RD.tipos||[]).length){
         const CORT={"Marca ou loja":"#7C3AED","Serviço":"#6366F1","Agência":"#0284C7",
@@ -1363,13 +1611,13 @@ function render(data){
             +'<span class="sm num" style="width:78px;text-align:right;flex:0 0 auto;white-space:nowrap">'+x.v+" · "+vg(x.pct)+"%</span></div>").join("")
             +'<div class="sm" style="margin-top:6px">lido na bio pública de cada uma · quem nada diz na bio fica como "sem sinal"</div>',
           dt:"dado de "+fmtAbs(RD.at)})); }
+      // 10/11/2026 · A INVERSÃO desta aba. Os três blocos de HOJE (idade, cidade,
+      // Brasil × fora) estavam atrás de um «ver mais» chamado «quem já te segue (3)»,
+      // e os cinco blocos de 98 dias (os prints das notificações) ocupavam a frente em
+      // cartões grandes. O fresco vem na frente; o velho vai para trás de uma porta que
+      // diz a idade dele no próprio rótulo.
       if(cg.length){
-        t+="<h2>📡 Quem está chegando "+ageChip((S.radar&&S.radar.prints_at)?{radar:Object.assign({},S.radar,{at:S.radar.prints_at})}:S,"radar") /* 06/11: o bloco mostra os prints, então a idade é a dos prints e não a do export de seguidores */+'</h2><p class="sub-h">'
-          +(SAl?("números grandes de "+esc(SAl.de)+" a "+esc(SAl.ate)+" · "):"")
-          +(RD&&RD.cobertura?RD.cobertura.total+" pessoas com data":"")+"</p>"
-          +(RD&&RD.lembrete?'<div style="background:var(--age-bg);color:var(--age);border-radius:10px;padding:9px 12px;margin:6px 0 2px;font:600 12.5px/1.5 Inter,sans-serif">⏰ '+esc(RD.lembrete)+"</div>":"")
-          +'<div class="sgrid">'+cg.slice(0,4).join("")+"</div>"
-          +(cg.length>4?verm("ver os outros "+(cg.length-4)+" sinais de quem está chegando",'<div class="sgrid">'+cg.slice(4).join("")+"</div>"):"");
+        t+='<div class="sgrid">'+cg.slice(0,1).join("")+"</div>";
       }
       // --- grupo 2 · quem já te segue (idade em rosquinha + cidade + Brasil × fora) ---
       if(PB&&(PB.idades||[]).length){
@@ -1385,7 +1633,9 @@ function render(data){
         const pg=[];
         pg.push(sig({full:1,ic:"👤",lb:"Idade de quem te segue",txt:1,n:esc(PB.frase||""),
           anelx:'<div class="donutw">'+donutSvg(PB.idades,somaI,CORES)
-            +'<div class="dleg">'+PB.idades.map((x,i)=>'<div class="linha" style="padding:2px 0"><span class="sm"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+CORES[i%CORES.length]+';margin-right:6px"></i>'+esc(x.k)+' anos</span><span class="sm num">'+pctS(x.v,somaI)+"</span></div>").join("")+"</div></div>",
+            +'<div class="dleg">'+PB.idades.map((x,i)=>'<div class="linha" style="padding:2px 0"><span class="sm"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+CORES[i%CORES.length]+';margin-right:6px"></i>'+esc(x.k)+' anos</span><span class="sm num">'+pctS(x.v,somaI)+"</span></div>").join("")
+            +((PB.fora_faixa||0)?'<div class="sm" style="margin-top:6px">'+PB.fora_faixa+" pessoas o Instagram classificou numa faixa fora destas seis</div>":"")
+            +"</div></div>",
           dt:"dado de "+fmtAbs(PB.at)}));
         pg.push(sig({ic:"📍",lb:"Maior cidade",txt:1,n:esc(c0.k),
           r:fmtMil(c0.v)+" pessoas · "+pctS(c0.v,somaC)+" das "+fmtMil(somaC)+" localizadas",
@@ -1401,72 +1651,41 @@ function render(data){
           abre:"ver países ▾",
           mais:PB.paises.map(x=>'<div class="linha"><span class="sm">'+esc(NOMEP[x.k]||x.k)+'</span><span class="sm num">'+fmtMil(x.v)+" · "+pctS(x.v,somaP2)+"</span></div>").join(""),
           dt:"dado de "+fmtAbs(PB.at)}));
-        t+=verm("quem já te segue ("+pg.length+")",
-          '<p class="sub-h">contagem do próprio Instagram, sem nome de ninguém'+(PB.nota?" · "+esc(PB.nota):"")+"</p>"
-          +'<div class="sgrid">'+pg.join("")+"</div>");
+        t+='<h2 class="larga">👥 Quem já te segue '+ageChip(S,"publico")+"</h2>"
+          +'<p class="sub-h larga">'+esc(PB.nota||"contagem do próprio Instagram, sem nome de ninguém")+"</p>"
+          +'<div class="sgrid">'+pg.join("")+"</div>";
       }
-      if(RD&&RD.cobertura)
-        t+='<p class="sm" style="margin:8px 2px">lidos '+RD.cobertura.lidos+" de "+RD.cobertura.total+" perfis ("+RD.cobertura.pct+"%)"
-          +(RD.cobertura.nota?" · "+esc(RD.cobertura.nota):"")+" · nomes com data "+esc(RD.janela||"")+" · "+esc(RD.ressalva||"")+"</p>";
+      // «como essa conta é feita»: os três números de seguidor que a página tem, cada um
+      // com a data colada e a razão de diferirem. Antes a mesma tela mostrava 13.066,
+      // 13.070 e 13.074 sem uma palavra de explicação.
+      if(RD&&(RD.contas||[]).length)
+        t+=verm("ver como essa conta é feita ("+RD.contas.length+" números de seguidor)",
+          '<div class="card"><div class="sm" style="line-height:1.6">cada fonte conta num dia diferente, então os números não batem. O número grande desta aba é o primeiro.</div>'
+          +RD.contas.map(c=>'<div class="linha"><span>'+esc(c.rot)+'<br><span class="sm">'+esc(c.pq)+"</span></span>"
+            +'<span class="sm num" style="text-align:right;white-space:nowrap"><b>'+fmtMil(c.n)+"</b><br>"+esc(c.d)+"</span></div>").join("")
+          +(((RD.seguidores||{}).suspeito)?'<div class="sm" style="margin-top:8px;color:var(--down);line-height:1.6">⚠ '+esc(RD.seguidores.suspeito)+"</div>":"")
+          +(((RD.seguidores||{}).resumo)?'<div class="sm" style="margin-top:6px">no export: '+esc(RD.seguidores.resumo)+"</div>":"")
+          +"</div>");
+      // o grupo dos prints vai para trás de uma porta que diz a idade dele no rótulo
+      if(cg.length>1){
+        const _pid=(S.radar&&S.radar.prints_at)?S.radar.prints_at:null;
+        // a idade vem PRONTA do build (radar.idade), a mesma conta da frase do topo:
+        // a conta local no relógio do navegador mudava de valor ao longo do dia
+        const _pdias=(RD&&RD.idade!=null)?RD.idade:diasDe(_pid);
+        t+=verm("ver quem está chegando"+(_pid?", pelos prints de "+esc(fmtAbs(_pid))+(_pdias!=null?" (há "+_pdias+" dias)":""):""),
+          '<p class="sub-h">'+(SAl?("números grandes de "+esc(SAl.de)+" a "+esc(SAl.ate)+" · "):"")
+          +(RD&&RD.cobertura?RD.cobertura.total+" pessoas com data":"")+"</p>"
+          +'<div class="sgrid">'+cg.slice(1).join("")+"</div>"
+          +((RD&&RD.cobertura)?'<p class="sm" style="margin:8px 2px">lidos '+RD.cobertura.lidos+" de "+RD.cobertura.total+" perfis ("+RD.cobertura.pct+"%)"
+            +(RD.cobertura.nota?" · "+esc(RD.cobertura.nota):"")+" · nomes com data "+esc(RD.janela||"")+" · "+esc(RD.ressalva||"")+"</p>":""));
+      }
       return t;
     })()
     +"</section>";
 
-  // ---------- IDEIAS · v2 no feedback dela de 07/08 23h: sub-abas para não
-  // ficar longo + cards lado a lado (grade 2 colunas) ----
-  const ID=D.ideias||{};
-  h+='<section class="view wrap" id="v-ideias" hidden>'+fraseAba("ideias")
-    +'<div class="seg" role="tablist">'
-    +'<button data-i="pautas" aria-selected="true" onclick="showIdeia(\'pautas\')">📚 Pautas</button>'
-    +'<button data-i="alta" aria-selected="false" onclick="showIdeia(\'alta\')">🔥 Em alta</button>'
-    +'<button data-i="jogadas" aria-selected="false" onclick="showIdeia(\'jogadas\')">🤝 Jogadas</button></div>';
-  // 1 · JOGADAS: grade 2 colunas, card compacto que abre no toque
-  h+='<div class="subi" id="i-jogadas" hidden>'
-    +'<p class=sub-h>cruzamento de agenda, marcas e dado real · toque para abrir'+(ID.at?' · leva de '+esc(fmtAbs(ID.at)):'')+(ID.stale?' <span class="age">⚠ leva antiga</span>':'')+'</p>';
-  if(ID.proativas&&ID.proativas.length){
-    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-      +ID.proativas.map(i=>'<details class="card" style="border-left:3px solid var(--brand);margin:0">'
-        +'<summary style="font-weight:800;font-size:13px;line-height:1.35;cursor:pointer;list-style:none">'+esc(i.t)+'</summary>'
-        +'<div class="sm" style="margin-top:7px;line-height:1.5">'+esc(i.pq)+'</div>'
-        +'<div style="margin-top:7px;font-size:12.5px;font-weight:700">→ '+esc(i.passo)+'</div>'
-        +(i.fonte?'<div class="sm" style="margin-top:5px;color:var(--sub)">fonte: '+esc(i.fonte)+'</div>':'')
-        +(i.url?'<div class="sm" style="margin-top:4px">'+lk(i.url,'abrir ↗','golink')+'</div>':'')
-        +'</details>').join('')+'</div>';
-  } else h+='<div class="card sm">a primeira leva sai na rotina quinzenal · dias 5 e 19</div>';
-  h+='</div>';
-  // 2 · EM ALTA
-  const AL=ID.alta||{};
-  h+='<div class="subi" id="i-alta" hidden>'
-    +'<p class=sub-h>o que as pessoas buscam e o que está subindo · vira pauta antes de esfriar</p>';
-  if(AL.termos&&AL.termos.length){
-    h+='<div class="card"><span class="k">🔍 buscaram e te acharam'+(AL.termos_at?' <span class="sm">('+esc(fmtAbs(AL.termos_at))+')</span>':'')+'</span>'
-      +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">'
-      +AL.termos.map(t=>'<span class="sm" style="background:#EDE9FE;color:#5B21B6;padding:4px 10px;border-radius:12px">'+esc(t)+'</span>').join('')+'</div>'
-      +'<div class="sm" style="margin-top:8px">demanda real: gente digitou isso e chegou em você · responder em vídeo é pauta pronta</div></div>';
-  }
-  if(AL.ganchos&&AL.ganchos.length){
-    h+='<div class="card"><span class="k">📈 tópicos quentes → seu ângulo'+(AL.trends_at?' <span class="sm">('+esc(fmtAbs(AL.trends_at))+')</span>':'')+'</span>'
-      +AL.ganchos.map(g=>'<div style="margin-top:8px"><b style="font-size:13.5px">'+esc(g.tema)+'</b><div class="sm" style="line-height:1.5">'+esc(g.angulo)+'</div></div>').join('')+'</div>';
-  }
-  if(AL.busca&&AL.busca.length){
-    h+='<div class="card"><details><summary>🧭 o que a busca pública do TikTok mostrou'+(AL.busca_at?' ('+esc(fmtAbs(AL.busca_at))+')':'')+'</summary><div class="body">'
-      +AL.busca.map(b=>'<div style="margin-top:7px"><b>'+esc(b.q)+'</b><div class="sm">'+esc(b.veredito)+'</div></div>').join('')+'</div></details></div>';
-  }
-  h+='</div>';
-  // 3 · PAUTAS
-  h+='<div class="subi" id="i-pautas">'
-    +'<p class=sub-h>as ideias mais novas do board e o acervo com prova documentada · tudo abre no Trello</p>';
-  if(ID.banco&&ID.banco.length){
-    h+='<div class="card"><span class="k">🧠 as '+ID.banco.length+' ideias mais novas do board</span>'
-      +ID.banco.map(p=>'<div class="linha"><span>'+lk(p.url,esc(p.t),'golink')+'</span></div>').join('')+'</div>';
-  }
-  h+=verm("o acervo com prova documentada"+((ID.pautas&&ID.pautas.length)?" ("+ID.pautas.length+")":""),
-    ((ID.pautas&&ID.pautas.length)?'<div class="card"><span class="k">📚 do acervo (prova documentada)</span>'
-      +ID.pautas.map(p=>'<div class="linha"><span>'+lk(p.url,esc(p.t),'golink')+'</span></div>').join('')+'</div>':"")
-    +'<div class="card sm" style="line-height:1.6">🎪 '+esc(ID.quadros_nota||'')+(ID.planilha?' · '+lk(ID.planilha,'abrir a planilha ↗','golink'):'')+'</div>')
-  +'</div>'
-  +'<p class="sm" style="margin:8px 2px"><button class="tercop" onclick="showView(\'terca\');return false">quer mudar algo aqui? escreva na aba TERÇA e eu levo para o card da semana</button></p>'
-  +'</section>';
+  // A aba IDEIAS foi dissolvida em 10/11/2026 dentro de POSTS: respondia a mesma
+  // pergunta («o que gravar em seguida»), era a única das 8 sem nenhuma idade na tela,
+  // e tinha 3 sub-abas para 9 blocos. Sete blocos dela vivem agora em POSTS.
 
   // A aba FILA foi dissolvida em 10/11/2026: tinha 0,57 tela de conteúdo de cara e, das
   // 7 partes, 3 eram separador, 1 era duplicata (o rodapé de 11 links, que a folha de
@@ -1493,7 +1712,7 @@ function render(data){
     const fmtN=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,".");
     let t="";
     if(k==="er"){
-      t='<div style="display:flex;align-items:center;gap:12px"><span class="num" style="font-size:32px;font-weight:800">'+esc(NU.v||"—")+"</span>"
+      t='<div style="display:flex;align-items:center;gap:12px"><span class="num" style="font-size:32px;font-weight:800">'+esc(NU.v||"·")+"</span>"
         +(NU.serie&&NU.serie.length>1?sparkSvg(NU.serie,34):"")+"</div>"
         +'<div class="sm">'+esc(NU.traducao||"")+(NU.n?" · sobre "+NU.n+" posts ("+esc(D.janela||"")+")":"")+"</div>"
         +'<div class="sm num" style="margin-top:3px">'+esc(NU.regua||"")+" "+pillHtml(NU.pill)+"</div>"
@@ -1555,10 +1774,20 @@ function render(data){
     const g=$("#grade"); if(!g) return;
     const num=x=>parseFloat(String(x).replace(",","."))||0;
     const lista=(D.posts.all||[]).slice().sort((a,b)=>ord==="d"?String(b.d).split("/").reverse().join("").localeCompare(String(a.d).split("/").reverse().join("")):num(b[ord])-num(a[ord]));
-    g.innerHTML=lista.map(p=>{const im=IMGMAP[p.url];
+    g.innerHTML=lista.map(p=>{const im=IMGMAP[p.url], dim=IMGDIM[p.url];
+      // a célula é 4:5, como o .post do CSS: era aspect-ratio:1 e capa de reel perdia
+      // 44% da altura. E imagem com largura natural abaixo de 0,9 da célula não entra.
+      const ok=im&&!(dim&&dim[0]<79);
+      // 0,8 é a forma da célula (4:5). Acima de 12% de diferença a imagem entra INTEIRA
+      // (contain) sobre o fundo, em vez de perder 40% da altura no corte: era o que
+      // acontecia com capa de reel 9:16 numa grade uniforme.
+      const _an=(dim&&dim[1])?dim[0]/dim[1]:0.8;
+      const _desvia=Math.abs(_an-0.8)/0.8>0.12;
+      const _fit=_desvia?"contain":"cover";
+      const _ratio=_desvia?(Math.round(_an*1000)/1000):0.8;
       const val=ord==="d"?esc(p.d):(ord==="sends"?(p.sends===null?"·":esc(p.sends)+"%"):(p.er===null?"·":esc(p.er)+"%"));
-      return '<a href="'+esc(p.url)+'" target="_blank" rel="noopener" data-pts="'+esc(p.ts||"")+'" data-pilar="'+esc(p.pilar)+'" aria-label="abrir post de '+esc(p.d)+'" style="position:relative;aspect-ratio:1;border-radius:13px;overflow:hidden;background:var(--mid-bg)">'
-        +(im?'<img src="'+im+'" alt="" style="width:100%;height:100%;object-fit:cover">':'<span class="sm" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">'+esc(p.fmt||"")+"</span>")
+      return '<a href="'+esc(p.url)+'" target="_blank" rel="noopener" data-pts="'+esc(p.ts||"")+'" data-pilar="'+esc(p.pilar)+'" aria-label="abrir post de '+esc(p.d)+'" style="position:relative;align-self:start;aspect-ratio:'+_ratio+';border-radius:13px;overflow:hidden;background:var(--off);border:1.5px '+(ok?"solid":"dashed")+' var(--line)">'
+        +(ok?'<img src="'+im+'" alt="" style="width:100%;height:100%;object-fit:'+_fit+';object-position:center '+(_fit==="cover"?"25%":"center")+'">':'<span class="sm" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--faint)">'+esc(p.fmt||"🖼")+"</span>")
         +'<span class="num" style="position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(15,23,42,.78));color:#fff;font:800 11.5px Inter,sans-serif;padding:12px 5px 4px;text-align:right">'+val+"</span></a>";}).join("");
     aplicaJanela(); aplicaFiltro();
   }
@@ -1587,11 +1816,11 @@ function render(data){
     const G=[["terca","🗓️","TERÇA","o que mudou, o que espera por você, o que eu devo · e onde você escreve"],
       ["hoje","🌞","HOJE","o que fazer agora · 1 principal, no máximo 2 extras"],
       ["agenda","📅","AGENDA","o que tem data pela frente, dia por dia"],
-      ["posts","🖼","POSTS","o que saiu · cada post ganha nota D+7 uma semana depois"],
-      ["analise","📊","ANÁLISE","saúde, formatos e canais"],
-      ["negocio","💰","R$","placar do mês, funil com nomes, quem cobrar"],
-      ["ideias","💡","IDEIAS","o que gravar, o que está em alta e a jogada de parceria"],
-      ["radar","📡","RADAR","quem chegou na semana, de onde veio e quem vale um oi"]];
+      ["posts","🖼","POSTS","qual peça rendeu, e o que gravar em seguida"],
+      ["stories","📱","STORIES","os seus stories estão segurando gente?"],
+      ["analise","📊","NÚMEROS","como a conta está indo: saúde, séries e canais"],
+      ["negocio","💰","R$","quanto entrou, quanto está prometido, o que está parado"],
+      ["radar","📡","PÚBLICO","quem já te segue, e quem está chegando"]];
     ov.innerHTML='<div style="background:#fff;border-radius:16px;max-width:400px;width:100%;padding:18px 16px;box-shadow:0 20px 60px rgba(15,23,42,.3)">'
       +'<div style="font:800 15px Inter,sans-serif;margin-bottom:10px">Como ler esta central</div>'
       +G.map(g=>'<button data-go="'+g[0]+'" style="display:flex;gap:10px;width:100%;text-align:left;border:0;background:none;padding:8px 4px;border-radius:10px;cursor:pointer;align-items:baseline"><span>'+g[1]+'</span><span style="font:700 13px Inter,sans-serif;min-width:64px">'+g[2]+'</span><span style="font:400 13px Inter,sans-serif;color:var(--sub)">'+g[3]+"</span></button>").join("")
@@ -1735,10 +1964,6 @@ function ligaTooltipSeguidores(){
   }
 }
 
-function showIdeia(k){
-  document.querySelectorAll('#v-ideias .seg button[data-i]').forEach(b=>b.setAttribute("aria-selected",b.dataset.i===k));
-  document.querySelectorAll('#v-ideias .subi').forEach(el=>el.hidden=(el.id!=="i-"+k));
-}
 function showView(v){
   document.querySelectorAll("#nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));
   document.querySelectorAll(".view").forEach(s=>s.hidden=(s.id!=="v-"+v));
@@ -1764,14 +1989,16 @@ function agDados(){
   const hoje=isoDe(new Date()), dias={};
   const push=(iso,o)=>{ if(iso){ (dias[iso]=dias[iso]||[]).push(o); } };
   (((D.fila||{}).agenda)||[]).forEach(a=>push(a.due,{
-    ic:ICO[a.tipo]||"⏰", t:a.t, url:a.url,
+    ic:ICO[a.tipo]||"⏰", t:a.t, url:a.url, conta:a.conta, div:a.div,
     card:/^https:\/\/trello\.com\/c\//.test(a.url||"")&&!a.fixo,
-    sub:(a.idade?("escrito há "+a.idade+(a.idade===1?" dia":" dias")+", não confirmado")
+    // a procedência da OCORRÊNCIA vem na frente: «🔁 Ritual da semana · segunda e sexta»
+    // saía duas vezes, as duas dizendo «no board Operação», sem explicar o segundo dia
+    sub:(a.org==="recorrência escrita no nome do card"?"dia escrito no nome do card"
+        :a.idade?("escrito há "+a.idade+(a.idade===1?" dia":" dias")+", não confirmado")
         :a.board?("no board "+a.board)
         :a.tipo==="comemorativa"?"data comemorativa"
         :"evento para acompanhar")}));
   ((D.posts||{}).all||[]).forEach(p=>{ if((p.ts||"")>=hoje) push(p.ts,{ic:"📷",t:p.t||"post publicado",url:p.url,sub:"post publicado"}); });
-  ((D.stories||{}).items||[]).forEach(x=>{ if((x.ts||"")>=hoje) push(x.ts,{ic:"📱",t:"story",sub:"gancho "+(x.gancho??"—")}); });
   return dias;
 }
 function linhaDoDia(iso,itens){
@@ -1782,7 +2009,9 @@ function linhaDoDia(iso,itens){
     +((iso===hoje||iso===maisDias(hoje,1))?' <span class="q">'+DIAS[wd].slice(0,3)+" "+dd+"</span>":"")
     +(wd>=5?' <span class="q">· seu</span>':"")+"</div>"
     +itens.map(i=>'<div class="dp"><span class="ic">'+i.ic+'</span><div style="flex:1;min-width:0">'
-      +'<div class="tt">'+esc(i.t)+'</div><div class="sm">'+esc(i.sub)+"</div></div>"
+      +'<div class="tt">'+esc(i.t)+'</div><div class="sm">'+esc(i.sub)+"</div>"
+      +(i.conta?'<div class="sm" style="color:var(--down)">⚠ '+esc(i.conta)+"</div>":"")
+      +(i.div?'<div class="sm">⚠ a data está no nome do card · '+esc(i.div)+"</div>":"")+"</div>"
       +'<span style="white-space:nowrap;flex:0 0 auto">'+(i.url?lk(i.url,"abrir ↗","golink"):"")
       +((i.card&&D.acao)?' <button class="agirb" data-card="'+esc((i.url||"").split("/").filter(Boolean).pop())+'" data-tit="'+esc(i.t)+'" data-ctx="agenda">⚡</button>':"")
       +"</span></div>").join("");
@@ -1792,15 +2021,16 @@ function blocoDias(dias,de,ate,pula,maxItens){
   // os que já estão à vista: bloco de «ver mais» que repete o que está em cima engorda a
   // tela sem dizer nada novo.
   let out="", vazio=null, n=0, p=(pula||0);
-  const fecha=(fim)=>{ if(vazio&&vazio!==fim){ out+='<div class="vago">de '+vazio.slice(8,10)+"/"+vazio.slice(5,7)+" a "+fim.slice(8,10)+"/"+fim.slice(5,7)+", nada marcado</div>"; }
-    else if(vazio){ out+='<div class="vago">'+vazio.slice(8,10)+"/"+vazio.slice(5,7)+", nada marcado</div>"; } vazio=null; };
+  const _onde=" "+(((D.fila||{}).vago_suf)||"no Trello");
+  const fecha=(fim)=>{ if(vazio&&vazio!==fim){ out+='<div class="vago">de '+vazio.slice(8,10)+"/"+vazio.slice(5,7)+" a "+fim.slice(8,10)+"/"+fim.slice(5,7)+", nada marcado"+_onde+"</div>"; }
+    else if(vazio){ out+='<div class="vago">'+vazio.slice(8,10)+"/"+vazio.slice(5,7)+", nada marcado"+_onde+"</div>"; } vazio=null; };
   for(let k=de;k<=ate;k++){
     const iso=maisDias(isoDe(new Date()),k);
     const tinha=(dias[iso]||[]).length>0;
     let it=dias[iso]||[];
     if(p>0&&it.length){ const corta=Math.min(p,it.length); p-=corta; it=it.slice(corta); }
     if(!it.length){ if(!vazio&&!tinha) vazio=iso; continue; }   // dia que já está à vista não é dia vazio
-    if(maxItens&&n>=maxItens){ if(!vazio) vazio=iso; continue; }
+    if(maxItens&&n>=maxItens) break;   // dia com conteúdo nunca vira «nada marcado»
     if(maxItens) it=it.slice(0,maxItens-n);
     if(vazio) fecha(maisDias(iso,-1));
     out+=linhaDoDia(iso,it); n+=it.length;
@@ -1833,15 +2063,16 @@ function renderAgenda(){
   const dias=agDados();
   const [h1,n1]=blocoDias(dias,0,6,0,5);
   const b1=document.getElementById("agl1");
-  if(b1) b1.innerHTML=h1||'<div class="vago">nada marcado nos próximos 7 dias</div>';
+  const _vs=((D.fila||{}).vago_suf)||"no Trello";
+  if(b1) b1.innerHTML=h1||'<div class="vago">nada marcado '+_vs+' nos próximos 7 dias</div>';
   // o que não cabe nos 5 à vista cai no primeiro «ver mais», junto das 3 semanas
   const [h2,n2]=blocoDias(dias,0,27,n1,0);
   const d2=document.getElementById("agd2"), b2=document.getElementById("agl2");
-  if(b2) b2.innerHTML=h2||'<div class="vago">nada marcado nessas 3 semanas</div>';
+  if(b2) b2.innerHTML=h2||'<div class="vago">nada marcado '+_vs+' nessas 3 semanas</div>';
   if(d2) d2.querySelector("summary").textContent="⌄ o resto desta semana e as próximas 3 ("+n2+")";
   const [h3,n3]=blocoDias(dias,28,119,0,0);
   const d3=document.getElementById("agd3"), b3=document.getElementById("agl3");
-  if(b3) b3.innerHTML=h3||'<div class="vago">nada marcado daqui a um mês</div>';
+  if(b3) b3.innerHTML=h3||'<div class="vago">nada marcado '+_vs+' daqui a um mês</div>';
   if(d3) d3.querySelector("summary").textContent="⌄ mais para frente ("+n3+")";
   const wk=document.getElementById("wkbox");
   if(wk&&matchMedia("(min-width:1100px)").matches){ wk.innerHTML=faixaHtml(dias); wk.hidden=false; }
@@ -1870,8 +2101,8 @@ function aplicaFiltro(){
 // do data.json. Como o data e sempre buscado sem cache e a pagina pode ficar guardada no
 // aparelho (ela usa como aplicativo no iPhone, e o GitHub guarda por 10 minutos), e assim
 // que a propria pagina descobre que esta velha e se oferece para atualizar. 10/11/2026.
-const SHELL_V="2026-11-10-mesa-b";
-const ABAS=["terca","hoje","agenda","posts","analise","negocio","ideias","radar"];
+const SHELL_V="2026-11-10-stories-publico";
+const ABAS=["terca","hoje","agenda","posts","stories","analise","negocio","radar"];
 let ATUAL="terca";
 function ligaSwipe(){
   if(window.__swipe) return; window.__swipe=true;
