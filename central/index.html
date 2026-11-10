@@ -181,7 +181,21 @@ details .body{font-size:13px;color:var(--sub);padding:6px 0 2px;line-height:1.55
   /* a altura sobra: TERÇA, HOJE e AGENDA em 2 colunas */
   #v-terca,#v-hoje,#v-agenda{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 20px;align-items:start}
   #v-terca>.larga,#v-hoje>.larga,#v-agenda>.larga,#v-hoje>.acao,#v-hoje>#banner,#v-terca>h2,#v-agenda>h2{grid-column:1/-1}
+  /* 10/11/2026, reclamação dela com print do computador: a Mesa era um desenho de celular
+     esticado. Medido no 1440: quatro linhas fechadas ocupavam 1.012 px de largura por 64 px
+     de altura, cada uma com uma frase só, e a peça da semana ficava sozinha numa coluna com
+     496 px vazios ao lado. Fechada, a linha passa a ocupar uma coluna e a emparelhar com a
+     vizinha; aberta, volta a ocupar a largura inteira, que é onde o texto longo precisa estar. */
+  #v-terca>details.verm.larga:not([open]){grid-column:auto;margin:7px 0}
+  #v-terca>details.verm:not([open])>summary{padding:2px 0}
+  #v-terca>details.verm:not([open]){padding:9px 13px}
 }
+/* 10/11/2026: no 1800 o conteúdo ficava preso em 1.040 px dentro de uma área de 1.580, com
+   270 px de vão morto de cada lado, e a tela lia como desenho de celular esticado. A largura
+   passa a crescer com a janela, em dois degraus, e nunca passa de 1.460 para a linha de texto
+   não ficar longa demais de ler. */
+@media(min-width:1500px){ :root{--w:1280px} }
+@media(min-width:1760px){ :root{--w:1460px} }
 /* ============ HOJE ============ */
 #banner{border-radius:13px;background:var(--age-bg);color:var(--age);font-weight:500;font-size:13px;padding:10px 13px;margin:10px 0 0;line-height:1.5}
 /* degradê marca a coisa MAIS importante da tela, nunca vira textura: a ação do dia,
@@ -1856,7 +1870,7 @@ function aplicaFiltro(){
 // do data.json. Como o data e sempre buscado sem cache e a pagina pode ficar guardada no
 // aparelho (ela usa como aplicativo no iPhone, e o GitHub guarda por 10 minutos), e assim
 // que a propria pagina descobre que esta velha e se oferece para atualizar. 10/11/2026.
-const SHELL_V="2026-11-10-mesa";
+const SHELL_V="2026-11-10-mesa-b";
 const ABAS=["terca","hoje","agenda","posts","analise","negocio","ideias","radar"];
 let ATUAL="terca";
 function ligaSwipe(){
