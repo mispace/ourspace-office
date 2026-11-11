@@ -1693,6 +1693,11 @@ function render(data){
             // o endereço vai na própria frase: com a porta aberta esta linha fica a quase 3
             // telas do alto no celular, e mandar ela subir custava rolar a aba de volta
             +'os outros nomes, e as datas de todo mundo, estão na aba 👥 Me seguem da planilha '+_lkPlan+'</div>'
+            // 10/11/2026: o que o arquivo NÃO traz estava só em comentário de código, e por isso
+            // ela não entendia por que o radar antigo mostrava bio e número de seguidores e este
+            // não mostra. A frase passa a aparecer na tela, com o lugar onde a leitura antiga
+            // ainda está guardada (6 abas de 05/08 na mesma planilha, que não se atualizam mais).
+            +'<div class="sm" style="margin-top:6px;line-height:1.6">o arquivo do Instagram traz só a arroba, o link e a data · bio, número de seguidores e categoria ele não entrega, e é por isso que isto aqui é mais enxuto que o radar antigo · aquela leitura, de 05/08, continua guardada nas 6 abas antigas da mesma planilha</div>'
             +(SEG.chegaram_ressalva?'<div class="sm" style="margin-top:6px;line-height:1.6">'+esc(SEG.chegaram_ressalva)+"</div>":""));
       }
       // ➡️ o lado dela · 10/11/2026, pedido dela: «eu tbm sigo pessoas as vezes entao
@@ -2183,7 +2188,7 @@ function aplicaFiltro(){
 // do data.json. Como o data e sempre buscado sem cache e a pagina pode ficar guardada no
 // aparelho (ela usa como aplicativo no iPhone, e o GitHub guarda por 10 minutos), e assim
 // que a propria pagina descobre que esta velha e se oferece para atualizar. 10/11/2026.
-const SHELL_V="2026-11-10-lado-dela-e-aba-movimento";
+const SHELL_V="2026-11-11-o-que-o-arquivo-nao-traz";
 const ABAS=["terca","hoje","agenda","posts","stories","analise","negocio","radar"];
 let ATUAL="terca";
 function ligaSwipe(){
