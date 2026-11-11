@@ -1524,10 +1524,11 @@ function render(data){
 
   // ===== RADAR · mesa de sinais (redesenho 07/08 · direção B + enxertos de A) =====
   // 10/11/2026 · pedido dela: «quero ver quem que me deixou de seguir clicando direto ali
-  // na planilha». O endereço aparece na linha de quem saiu e dentro da porta de quem
-  // chegou, e em nenhum outro lugar. Uma terceira menção, no alto da aba, saiu em 10/11:
-  // repetia endereço e data da linha de quem saiu, e a aba fechada tinha ido de 250 para
-  // 274 palavras, mais do que ela lê de uma vez.
+  // na planilha». O endereço aparece três vezes nesta aba, e cada uma manda para uma ABA
+  // DIFERENTE da planilha, na pergunta em que ela está: quem chegou → 👥 Me seguem (dentro
+  // da porta), quem ela segue → ➡️ Eu sigo, quem saiu → 🔄 Movimento. Repetição seria o
+  // mesmo destino duas vezes; uma quarta menção, solta no alto da aba, saiu em 10/11 por
+  // isso: repetia endereço e data da linha de quem saiu.
   const SEG=(RD&&RD.seguidores)||{};
   const _planilha=(SEG.planilha&&SEG.planilha.url)?SEG.planilha.url:null;
   const _lkPlan=_planilha?lk(_planilha,"RADAR DE PÚBLICO","golink"):"RADAR DE PÚBLICO";
@@ -1694,18 +1695,29 @@ function render(data){
             +'os outros nomes, e as datas de todo mundo, estão na aba 👥 Me seguem da planilha '+_lkPlan+'</div>'
             +(SEG.chegaram_ressalva?'<div class="sm" style="margin-top:6px;line-height:1.6">'+esc(SEG.chegaram_ressalva)+"</div>":""));
       }
+      // ➡️ o lado dela · 10/11/2026, pedido dela: «eu tbm sigo pessoas as vezes entao
+      // precisa tudo bater na planilha». Os dois números já estavam no dado desde 06/11 e
+      // nenhuma tela os mostrava. O segundo é o acionável: é o que a aba ➡️ filtra.
+      if(typeof SEG.sigo==="number")
+        t+='<p class="sm larga" style="margin:10px 2px 0;line-height:1.6"><b>➡️ quem você segue:</b> '
+          +'<span class="num">'+fmtMil(SEG.sigo)+"</span> contas"
+          +(typeof SEG.sigo_nao_me_seguem==="number"
+            ?' · <span class="num">'+fmtMil(SEG.sigo_nao_me_seguem)+"</span> não te seguem de volta":"")
+          +' · a lista fica na aba ➡️ Eu sigo da planilha '+_lkPlan+"</p>";
       // 💔 quem saiu: com um arquivo só a lista não existe, e mostrar zero seria inventar
-      // medida. Ela vai clicar na planilha, então a linha diz o estado da aba 💔 (hoje
-      // vazia) e o passo que só ela pode dar. A versão anterior dizia que a lista não
-      // existe e no fim mandava clicar na aba, em inglês de ofício que a aba não explica.
+      // medida. Ela vai clicar na planilha, então a linha diz onde a lista nasce e o passo
+      // que só ela pode dar. O destino virou a aba 🔄 Movimento em 10/11/2026: a 💔, que
+      // esta linha citava, foi aposentada na refação da planilha do mesmo dia, e a frase
+      // mandava ela clicar numa aba que não existe mais.
       if(SEG.export_unico)
-        t+='<p class="sm larga" style="margin:10px 2px 0;line-height:1.6"><b>💔 quem deixou de seguir:</b> a aba 💔 da planilha '
-          +_lkPlan+' está vazia hoje · ela nasce quando você baixar o arquivo do Instagram outra vez'
-          +(SEG.at?", para comparar com o de "+esc(fmtAbs(SEG.at)):"")+"</p>";
+        t+='<p class="sm larga" style="margin:10px 2px 0;line-height:1.6"><b>💔 quem deixou de seguir:</b> com um arquivo só'
+          +(SEG.at?", o de "+esc(fmtAbs(SEG.at)):"")+", não dá para dizer · quando você baixar o próximo, "
+          +"quem saiu aparece na aba 🔄 Movimento da planilha "+_lkPlan
+          +", junto com quem chegou e com quem você passou a seguir ou deixou de seguir</p>";
       else if(SEG.saida)
         t+='<p class="sm larga" style="margin:10px 2px 0;line-height:1.6"><b>💔 quem deixou de seguir:</b> '
           +esc(SEG.saida)
-          +(_planilha?" · fica na aba 💔 da planilha "+lk(_planilha,"RADAR DE PÚBLICO","golink"):"")+"</p>";
+          +(_planilha?" · os nomes ficam na aba 🔄 Movimento da planilha "+lk(_planilha,"RADAR DE PÚBLICO","golink"):"")+"</p>";
       // «como essa conta é feita»: os três números de seguidor que a página tem, cada um
       // com a data colada e a razão de diferirem. Antes a mesma tela mostrava 13.066,
       // 13.070 e 13.074 sem uma palavra de explicação.
@@ -1715,7 +1727,11 @@ function render(data){
           +RD.contas.map(c=>'<div class="linha"><span>'+esc(c.rot)+'<br><span class="sm">'+esc(c.pq)+"</span></span>"
             +'<span class="sm num" style="text-align:right;white-space:nowrap"><b>'+fmtMil(c.n)+"</b><br>"+esc(c.d)+"</span></div>").join("")
           +(((RD.seguidores||{}).suspeito)?'<div class="sm" style="margin-top:8px;color:var(--down);line-height:1.6">⚠ '+esc(RD.seguidores.suspeito)+"</div>":"")
-          +(((RD.seguidores||{}).resumo)?'<div class="sm" style="margin-top:6px">no arquivo do Instagram: '+esc(RD.seguidores.resumo)+"</div>":"")
+          // a linha «você segue 5.168 · 4.200 não te seguem de volta» saiu daqui em
+          // 10/11/2026: esta porta explica por que três contagens de SEGUIDOR não batem, e
+          // o lado de quem ela segue não tem nada a ver com isso. Ela perguntou «isso está
+          // aparecendo na central?» justamente porque o número estava atrás desta porta
+          // fechada. Agora é linha visível da aba, acima, com o endereço da aba ➡️.
           +"</div>");
       // o grupo dos prints vai para trás de uma porta que diz a idade dele no rótulo
       if(cg.length>1){
@@ -2152,7 +2168,7 @@ function aplicaFiltro(){
 // do data.json. Como o data e sempre buscado sem cache e a pagina pode ficar guardada no
 // aparelho (ela usa como aplicativo no iPhone, e o GitHub guarda por 10 minutos), e assim
 // que a propria pagina descobre que esta velha e se oferece para atualizar. 10/11/2026.
-const SHELL_V="2026-11-10-quem-saiu-honesto";
+const SHELL_V="2026-11-10-lado-dela-e-aba-movimento";
 const ABAS=["terca","hoje","agenda","posts","stories","analise","negocio","radar"];
 let ATUAL="terca";
 function ligaSwipe(){
