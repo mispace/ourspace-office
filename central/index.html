@@ -1718,6 +1718,21 @@ function render(data){
         t+='<p class="sm larga" style="margin:10px 2px 0;line-height:1.6"><b>💔 quem deixou de seguir:</b> '
           +esc(SEG.saida)
           +(_planilha?" · os nomes ficam na aba 🔄 Movimento da planilha "+lk(_planilha,"RADAR DE PÚBLICO","golink"):"")+"</p>";
+      // como baixar o arquivo · 10/11/2026. Ela perguntou duas vezes «como faz isso? vc
+      // nao consegue fazer pelo chrome p mim?». Eu consigo PEDIR o arquivo no Chrome dela;
+      // o que eu não faço é o último toque, que é digitar a senha dela. Então o passo a
+      // passo mora aqui, na aba que levanta a pergunta, atrás de porta fechada para não
+      // pesar na leitura de quem só queria o número.
+      if(SEG.at)
+        t+=verm("ver como baixar o arquivo do Instagram",
+          '<div class="card"><div class="sm" style="line-height:1.7">'
+          +"<b>1.</b> Abra "+lk("https://accountscenter.instagram.com/info_and_permissions/dyi/","a Central de Contas ↗","golink")
+          +" e toque em <b>Exportar suas informações</b>.<br>"
+          +"<b>2.</b> Criar exportação, só <b>Seguidores e Seguindo</b>, baixar <b>no dispositivo</b>, formato <b>JSON</b>, <b>todo o período</b>. Fica pronto em alguns minutos e o Instagram avisa.<br>"
+          +"<b>3.</b> Volte na mesma tela, <b>Baixar</b>, e digite a sua senha. Esse toque é só seu: eu peço o arquivo, mas não digito senha sua.<br>"
+          +"<b>4.</b> Me mande o arquivo aqui no chat. Eu comparo com o de "+esc(fmtAbs(SEG.at))
+          +", atualizo a planilha e a Central."
+          +'</div><div class="sm" style="margin-top:8px;line-height:1.6">combinamos uma vez por semana agora, e depois uma vez por mês · cada arquivo vira um bloco com faixa colorida na aba 🔄 Movimento</div></div>');
       // «como essa conta é feita»: os três números de seguidor que a página tem, cada um
       // com a data colada e a razão de diferirem. Antes a mesma tela mostrava 13.066,
       // 13.070 e 13.074 sem uma palavra de explicação.
