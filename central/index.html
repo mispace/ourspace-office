@@ -1714,11 +1714,20 @@ function render(data){
       // que só ela pode dar. O destino virou a aba 🔄 Movimento em 10/11/2026: a 💔, que
       // esta linha citava, foi aposentada na refação da planilha do mesmo dia, e a frase
       // mandava ela clicar numa aba que não existe mais.
+      // 💔 quem saiu · 12/11/2026: o QUANTOS passou a existir, o QUEM não. O número vem do
+      // export completo do Instagram, que ela baixou em 12/11 e que traz o trimestre fechado.
+      // A linha diz as duas coisas na mesma frase, para ela não achar que tem a lista.
+      const TRI=(RD&&RD.trimestre)||null;
       if(SEG.export_unico)
-        t+='<p class="sm larga" style="margin:10px 2px 0;line-height:1.6"><b>💔 quem deixou de seguir:</b> com um arquivo só'
-          +(SEG.at?", o de "+esc(fmtAbs(SEG.at)):"")+", não dá para dizer · quando você baixar o próximo, "
-          +"quem saiu aparece na aba 🔄 Movimento da planilha "+_lkPlan
-          +", junto com quem chegou e com quem você passou a seguir ou deixou de seguir</p>";
+        t+='<p class="sm larga" style="margin:10px 2px 0;line-height:1.6"><b>💔 quem deixou de seguir:</b> '
+          +(TRI&&TRI.sairam!=null
+            ?('no trimestre de '+esc(TRI.periodo)+' foram <b>'+fmtMil(TRI.sairam)+'</b> pessoas, e chegaram <b>'
+              +fmtMil(TRI.chegaram)+'</b>, saldo de <b>'+(TRI.saldo>0?"+":"")+fmtMil(TRI.saldo)
+              +'</b> · isso é contagem, sem nome: o Instagram entrega o número e não a lista. ')
+            :'')
+          +"os nomes só saem comparando dois arquivos de Seguidores e Seguindo, e hoje existe um só"
+          +(SEG.at?", o de "+esc(fmtAbs(SEG.at)):"")
+          +" · quando você baixar o próximo, eles aparecem na aba 🔄 Movimento da planilha "+_lkPlan+"</p>";
       else if(SEG.saida)
         t+='<p class="sm larga" style="margin:10px 2px 0;line-height:1.6"><b>💔 quem deixou de seguir:</b> '
           +esc(SEG.saida)
@@ -1738,6 +1747,33 @@ function render(data){
           +"<b>4.</b> Me mande o arquivo aqui no chat. Eu comparo com o de "+esc(fmtAbs(SEG.at))
           +", atualizo a planilha e a Central."
           +'</div><div class="sm" style="margin-top:8px;line-height:1.6">combinamos uma vez por semana agora, e depois uma vez por mês · cada arquivo vira um bloco com faixa colorida na aba 🔄 Movimento</div></div>');
+      // 📉 o trimestre fechado · 12/11/2026. Primeira vez que esta casa enxerga para TRÁS: a
+      // leitura diária só sabe de hoje em diante. Vem do export completo do Instagram.
+      // Toda ressalva que os conferidores exigiram está escrita na porta, não no código:
+      // o trimestre, contra o que a variação foi medida, e que alcance é estimativa da Meta.
+      if(TRI&&TRI.alcance!=null){
+        const seta=v=>(v==null?"":' <span class="pill '+(v<0?"p-down":(v>0?"p-up":"p-mid"))+'">'
+          +(v<0?"▼ ":(v>0?"▲ +":"▬ "))+esc(String(v).replace(".",","))+"%</span>");
+        t+=verm("ver o trimestre fechado · "+esc(TRI.periodo||""),
+          '<div class="card">'
+          +'<div class="sm" style="line-height:1.6">números do próprio Instagram para <b>'+esc(TRI.periodo||"")
+          +'</b>. Cada variação compara com o trimestre anterior, '+esc(TRI.contra||"")
+          +', e não com o ano. Alcance é estimativa da Meta.</div>'
+          +'<div class="linha"><span>contas alcançadas</span><span class="num">'+fmtMil(TRI.alcance)+seta(TRI.alcance_d)+"</span></div>"
+          +(TRI.visitas!=null?'<div class="linha"><span>visitas ao perfil</span><span class="num">'+fmtMil(TRI.visitas)+seta(TRI.visitas_d)+"</span></div>":"")
+          +(TRI.estranhos_pct!=null?'<div class="linha"><span>do alcance, quem ainda não te segue</span><span class="num">'+esc(String(TRI.estranhos_pct).replace(".",","))+"%</span></div>":"")
+          +((TRI.formatos||[]).length
+            ?'<div class="sm" style="margin:10px 0 2px"><b>interações por formato</b></div>'
+              +TRI.formatos.map(f=>'<div class="linha"><span>'+esc(f.r)+'</span><span class="num">'+fmtMil(f.n)+seta(f.d)+"</span></div>").join("")
+            :"")
+          +(TRI.engaja_seguidor_pct!=null?'<div class="sm" style="margin-top:8px;line-height:1.6">quem descobre você é estranho, quem interage já segue: '
+            +esc(String(TRI.engaja_seguidor_pct).replace(".",","))+"% de quem engajou já era seguidor</div>":"")
+          +(TRI.pecas?'<div class="sm" style="margin-top:8px;line-height:1.6">o mesmo arquivo trouxe o número de <b>'
+            +TRI.pecas.reels+'</b> reels e <b>'+fmtMil(TRI.pecas.stories)+'</b> stories, um a um, de '
+            +esc(TRI.pecas.de)+" a "+esc(TRI.pecas.ate)+". Ainda não estão nesta tela</div>":"")
+          +'<div class="sm" style="margin-top:8px;line-height:1.6">lido do arquivo que você baixou, gerado pelo Instagram em '
+          +esc(TRI.lido_de||"")+"</div></div>");
+      }
       // «como essa conta é feita»: os três números de seguidor que a página tem, cada um
       // com a data colada e a razão de diferirem. Antes a mesma tela mostrava 13.066,
       // 13.070 e 13.074 sem uma palavra de explicação.
@@ -2188,7 +2224,7 @@ function aplicaFiltro(){
 // do data.json. Como o data e sempre buscado sem cache e a pagina pode ficar guardada no
 // aparelho (ela usa como aplicativo no iPhone, e o GitHub guarda por 10 minutos), e assim
 // que a propria pagina descobre que esta velha e se oferece para atualizar. 10/11/2026.
-const SHELL_V="2026-11-11-o-que-o-arquivo-nao-traz";
+const SHELL_V="2026-11-12-trimestre-fechado";
 const ABAS=["terca","hoje","agenda","posts","stories","analise","negocio","radar"];
 let ATUAL="terca";
 function ligaSwipe(){
