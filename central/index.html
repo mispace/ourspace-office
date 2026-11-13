@@ -1718,20 +1718,21 @@ function render(data){
       // export completo do Instagram, que ela baixou em 12/11 e que traz o trimestre fechado.
       // A linha diz as duas coisas na mesma frase, para ela não achar que tem a lista.
       const TRI=(RD&&RD.trimestre)||null;
-      if(SEG.export_unico)
+      // os quatro movimentos, com NOME, que é o que dois arquivos destravam. A contagem do
+      // trimestre (sem nome) mora na porta do trimestre, logo abaixo, para os dois números
+      // de «quem saiu» não aparecerem lado a lado sem explicação.
+      if((SEG.movimentos||[]).length)
+        t+='<div class="sgrid larga" style="margin-top:10px">'
+          +SEG.movimentos.map(m=>'<div class="sig"><div class="sl">'+m.ic+" "+esc(m.r)+"</div>"
+            +'<div class="sn num">'+fmtMil(m.n)+"</div></div>").join("")+"</div>"
+          +'<p class="sm larga" style="margin:6px 2px 0;line-height:1.6">'+esc(SEG.janela_mov||"")
+          +", comparando os dois últimos arquivos do Instagram · os nomes de cada um estão na aba 🔄 Movimento da planilha "
+          +_lkPlan+"</p>";
+      else if(SEG.export_unico)
         t+='<p class="sm larga" style="margin:10px 2px 0;line-height:1.6"><b>💔 quem deixou de seguir:</b> '
-          +(TRI&&TRI.sairam!=null
-            ?('no trimestre de '+esc(TRI.periodo)+' foram <b>'+fmtMil(TRI.sairam)+'</b> pessoas, e chegaram <b>'
-              +fmtMil(TRI.chegaram)+'</b>, saldo de <b>'+(TRI.saldo>0?"+":"")+fmtMil(TRI.saldo)
-              +'</b> · isso é contagem, sem nome: o Instagram entrega o número e não a lista. ')
-            :'')
           +"os nomes só saem comparando dois arquivos de Seguidores e Seguindo, e hoje existe um só"
           +(SEG.at?", o de "+esc(fmtAbs(SEG.at)):"")
           +" · quando você baixar o próximo, eles aparecem na aba 🔄 Movimento da planilha "+_lkPlan+"</p>";
-      else if(SEG.saida)
-        t+='<p class="sm larga" style="margin:10px 2px 0;line-height:1.6"><b>💔 quem deixou de seguir:</b> '
-          +esc(SEG.saida)
-          +(_planilha?" · os nomes ficam na aba 🔄 Movimento da planilha "+lk(_planilha,"RADAR DE PÚBLICO","golink"):"")+"</p>";
       // como baixar o arquivo · 10/11/2026. Ela perguntou duas vezes «como faz isso? vc
       // nao consegue fazer pelo chrome p mim?». Eu consigo PEDIR o arquivo no Chrome dela;
       // o que eu não faço é o último toque, que é digitar a senha dela. Então o passo a
@@ -1759,6 +1760,11 @@ function render(data){
           +'<div class="sm" style="line-height:1.6">números do próprio Instagram para <b>'+esc(TRI.periodo||"")
           +'</b>. Cada variação compara com o trimestre anterior, '+esc(TRI.contra||"")
           +', e não com o ano. Alcance é estimativa da Meta.</div>'
+          // a contagem do trimestre mora AQUI e não ao lado dos quatro movimentos: são duas
+          // medidas de «quem saiu», uma de 90 dias sem nome e outra de dias com nome, e
+          // lado a lado elas se contradizem na leitura
+          +(TRI.sairam!=null?'<div class="linha"><span>deixaram de seguir, no trimestre inteiro<br><span class="sm">contagem do Instagram, sem nome · chegaram '
+            +fmtMil(TRI.chegaram)+", saldo "+(TRI.saldo>0?"+":"")+fmtMil(TRI.saldo)+'</span></span><span class="num">'+fmtMil(TRI.sairam)+"</span></div>":"")
           +'<div class="linha"><span>contas alcançadas</span><span class="num">'+fmtMil(TRI.alcance)+seta(TRI.alcance_d)+"</span></div>"
           +(TRI.visitas!=null?'<div class="linha"><span>visitas ao perfil</span><span class="num">'+fmtMil(TRI.visitas)+seta(TRI.visitas_d)+"</span></div>":"")
           +(TRI.estranhos_pct!=null?'<div class="linha"><span>do alcance, quem ainda não te segue</span><span class="num">'+esc(String(TRI.estranhos_pct).replace(".",","))+"%</span></div>":"")
@@ -2224,7 +2230,7 @@ function aplicaFiltro(){
 // do data.json. Como o data e sempre buscado sem cache e a pagina pode ficar guardada no
 // aparelho (ela usa como aplicativo no iPhone, e o GitHub guarda por 10 minutos), e assim
 // que a propria pagina descobre que esta velha e se oferece para atualizar. 10/11/2026.
-const SHELL_V="2026-11-12-trimestre-fechado";
+const SHELL_V="2026-11-13-quatro-movimentos";
 const ABAS=["terca","hoje","agenda","posts","stories","analise","negocio","radar"];
 let ATUAL="terca";
 function ligaSwipe(){
