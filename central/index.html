@@ -1029,6 +1029,22 @@ function render(data){
     +verm("ver a busca que leva até você"+((AL.busca||[]).length?" ("+Math.min(4,AL.busca.length)+")":""),_iBusca)
     +verm("ver os "+(((D.posts||{}).all||[]).length)+" medidos, e quem eles trouxeram",
       _pJanela+_pMedidos+_pTrouxe+_pColabs)
+    // número por série · 17/11/2026, item do card 🗓️ com prazo a partir de 16/11. O número
+    // que importa aqui não é o de cada série, é quantos posts NÃO estão em série nenhuma: com
+    // 9 séries e 14 de 20 posts avulsos, série ainda é intenção, não é o que ela publica.
+    +(function(){ const SE=(D.posts||{}).series; if(!SE||!SE.total) return "";
+      const fora=SE.avulsos, pct=Math.round(100*fora/SE.total);
+      return verm("ver o número por série · "+SE.em_serie+" de "+SE.total+" posts têm série",
+        '<div class="card">'
+        +'<div class="sm" style="line-height:1.6">de <b>'+SE.total+'</b> posts medidos entre '
+        +esc(SE.janela)+', <b>'+SE.em_serie+'</b> estão dentro de alguma série e <b>'+fora
+        +'</b> não estão em nenhuma, que é '+pct+'% do que você publica.</div>'
+        +SE.linhas.map(l=>'<div class="linha"><span>'+esc(l.s)+(l.duvida?' <span class="sm">· um deles é palpite meu</span>':"")
+          +'</span><span class="sm num" style="white-space:nowrap">'+l.n+(l.n>1?" posts":" post")
+          +' · alcance '+l.alc.map(a=>fmtMil(a)).join(" e ")+"</span></div>").join("")
+        +((SE.sem_post||[]).length?'<div class="sm" style="margin-top:10px;line-height:1.6">sem nenhum post publicado ainda: <b>'
+          +SE.sem_post.map(x=>esc(x)).join("</b> · <b>")+"</b></div>":"")
+        +'<div class="sm" style="margin-top:10px;line-height:1.6">'+esc(SE.ressalva)+"</div></div>"); })()
     +"</section>";
 
   // ---------- STORIES ----------
@@ -2230,7 +2246,7 @@ function aplicaFiltro(){
 // do data.json. Como o data e sempre buscado sem cache e a pagina pode ficar guardada no
 // aparelho (ela usa como aplicativo no iPhone, e o GitHub guarda por 10 minutos), e assim
 // que a propria pagina descobre que esta velha e se oferece para atualizar. 10/11/2026.
-const SHELL_V="2026-11-13-quatro-movimentos";
+const SHELL_V="2026-11-17-numero-por-serie";
 const ABAS=["terca","hoje","agenda","posts","stories","analise","negocio","radar"];
 let ATUAL="terca";
 function ligaSwipe(){
